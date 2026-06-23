@@ -4,7 +4,19 @@
   max-width: 320px;
   margin: 0 auto;
   background: var(--surface);
-  border-radius: 8px;
+  border-radius: 12px;
+}
+
+/* Numeric/coordinate labels read as instrument readouts */
+.graph-axis-label,
+.graph-point-label,
+.graph-target-label,
+.graph-reference-label,
+.graph-critical-label,
+.graph-marker-label,
+.graph-tangent-hint,
+.graph-draggable-point-label {
+  font-family: var(--font-mono);
 }
 
 .graph-canvas--compact {

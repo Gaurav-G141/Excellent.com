@@ -13,7 +13,9 @@
 }
 
 .lesson-title {
+  font-family: var(--font-display);
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text-h);
   font-size: 16px;
 }
@@ -27,23 +29,24 @@
   color: var(--text-muted);
   text-decoration: none;
   font-size: 18px;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .lesson-close:hover {
-  background: var(--code-bg);
+  background: var(--surface-2);
   color: var(--text-h);
 }
 
 .lesson-progress {
-  height: 4px;
+  height: 6px;
   background: var(--border);
 }
 
 .lesson-progress-fill {
   height: 100%;
   background: var(--accent);
-  transition: width 0.25s ease;
+  border-radius: 0 999px 999px 0;
+  transition: width 0.3s ease;
 }
 
 .lesson-slide {
@@ -55,15 +58,19 @@
 }
 
 .slide-copy h2 {
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
   margin: 0 0 8px;
 }
 
 .slide-copy p {
   margin: 0;
   font-size: 16px;
-  color: var(--text-muted);
-  line-height: 1.5;
+  color: var(--text);
+  line-height: 1.55;
 }
 
 .slide-cta {
@@ -71,38 +78,48 @@
   width: 100%;
   min-height: 48px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--accent);
   color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    background 0.15s ease,
+    transform 0.06s ease,
+    opacity 0.15s ease;
 }
 
 .slide-cta:hover:not(:disabled) {
   background: var(--accent-hover);
 }
 
+.slide-cta:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
 .slide-cta:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .slide-scrubber {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .slide-scrubber label {
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.01em;
   color: var(--text-muted);
 }
 
 .slide-scrubber input[type='range'] {
   width: 100%;
-  height: 6px;
-  accent-color: var(--accent);
   cursor: pointer;
 }
 
@@ -124,11 +141,12 @@
 
 .slide-graph-caption {
   margin: 0;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
 .slide-slope-input {
@@ -139,17 +157,33 @@
 }
 
 .slide-slope-input label {
+  font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-muted);
 }
 
-.slide-slope-input input[type='number'] {
+.slide-slope-input input[type='number'],
+.slide-slope-input input[type='text'] {
   width: 100%;
-  min-height: 44px;
-  padding: 0 12px;
+  min-height: 46px;
+  padding: 0 14px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-h);
   font: inherit;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.slide-slope-input input[type='number']:focus,
+.slide-slope-input input[type='text']:focus {
+  outline: none;
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .slide-slope-input .slide-cta {
@@ -165,39 +199,47 @@
 
 .slide-secondary-cta {
   width: 100%;
-  min-height: 44px;
+  min-height: 46px;
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--accent);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.06s ease;
 }
 
 .slide-secondary-cta:hover:not(:disabled) {
   background: var(--accent-bg);
 }
 
+.slide-secondary-cta:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
 .slide-secondary-cta:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .slide-limit-formula {
-  padding: 12px 14px;
+  padding: 14px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--code-bg);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
   text-align: center;
 }
 
 .slide-limit-formula-label {
   margin: 0 0 8px;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 
@@ -207,6 +249,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px 8px;
+  font-family: var(--font-mono);
   font-size: 17px;
   color: var(--text-h);
 }
@@ -266,11 +309,12 @@
 
 .lesson-section-tag {
   margin: 0;
-  padding: 8px 16px 0;
-  font-size: 12px;
+  padding: 10px 16px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   color: var(--accent);
 }
 
@@ -282,7 +326,9 @@
 }
 
 .lesson-complete h2 {
-  font-size: 24px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 

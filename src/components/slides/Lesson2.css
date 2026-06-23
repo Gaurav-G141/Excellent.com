@@ -75,11 +75,12 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 18px;
+  font-family: var(--font-mono);
+  font-size: 17px;
   color: var(--text-h);
   background: var(--code-bg);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: var(--radius-sm);
+  padding: 12px;
 }
 
 .pr-rule-frac {
@@ -132,7 +133,8 @@
 }
 
 .match-prompt-fn {
-  font-size: 18px;
+  font-family: var(--font-mono);
+  font-size: 17px;
   font-weight: 600;
   color: var(--text-h);
   min-width: 56px;
@@ -176,9 +178,17 @@
   border-radius: 999px;
   background: var(--surface);
   color: var(--accent);
-  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.06s ease;
+}
+
+.match-chip:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .match-chip--used {
@@ -208,7 +218,8 @@
 }
 
 .typein-display {
-  font-size: 26px;
+  font-family: var(--font-mono);
+  font-size: 24px;
   font-weight: 600;
   color: var(--text-h);
 }
@@ -297,6 +308,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 6px 14px;
+  font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
 }
@@ -327,7 +339,8 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 6px;
-  font-size: 26px;
+  font-family: var(--font-mono);
+  font-size: 24px;
   font-weight: 600;
   color: var(--text-h);
 }
@@ -410,8 +423,9 @@
   gap: 8px 20px;
   padding: 12px;
   background: var(--code-bg);
-  border-radius: 10px;
-  font-size: 17px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 16px;
   color: var(--text-h);
 }
 

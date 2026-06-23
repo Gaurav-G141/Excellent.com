@@ -1,21 +1,25 @@
 .feedback-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, 0.35);
+  background: rgba(19, 26, 38, 0.4);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   z-index: 100;
+  animation: feedback-fade 0.18s ease-out;
 }
 
 .feedback-sheet {
   width: 100%;
   max-width: 480px;
   background: var(--surface);
-  border-radius: 16px 16px 0 0;
+  border-radius: 20px 20px 0 0;
   padding: 24px 20px 32px;
   border-top: 3px solid var(--error);
   box-sizing: border-box;
+  box-shadow: var(--shadow-pop);
+  animation: feedback-rise 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .feedback-sheet--correct {
@@ -25,7 +29,7 @@
 .feedback-sheet p {
   margin: 0 0 20px;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text-h);
 }
 
@@ -33,16 +37,49 @@
   width: 100%;
   min-height: 48px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--accent);
   color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    background 0.15s ease,
+    transform 0.06s ease;
+}
+
+.feedback-dismiss:hover {
+  background: var(--accent-hover);
+}
+
+.feedback-dismiss:active {
+  transform: translateY(1px);
 }
 
 .feedback-sheet:not(.feedback-sheet--correct) .feedback-dismiss {
   background: var(--surface);
   color: var(--text-h);
   border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+@keyframes feedback-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes feedback-rise {
+  from {
+    transform: translateY(16px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

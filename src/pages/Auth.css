@@ -4,6 +4,11 @@
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 .auth-card {
@@ -11,21 +16,47 @@
   max-width: 400px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 32px 24px;
+  border-radius: var(--radius);
+  padding: 32px 26px;
   text-align: left;
+  box-shadow: var(--shadow-md);
+}
+
+/* Brand eyebrow so the sign-in screen still reads as Excellent */
+.auth-card::before {
+  content: 'Excellent\2032';
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
 }
 
 .auth-card h1 {
-  font-size: 28px;
+  font-family: var(--font-display);
+  font-size: 29px;
+  font-weight: 600;
   margin: 0 0 8px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.025em;
+  color: var(--ink);
 }
 
 .auth-subtitle {
   color: var(--text-muted);
   margin: 0 0 24px;
   font-size: 16px;
+  line-height: 1.5;
+}
+
+.auth-subtitle code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--code-bg);
+  padding: 1px 5px;
+  border-radius: 5px;
 }
 
 .auth-form {
@@ -37,9 +68,9 @@
 .auth-form label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-h);
 }
 
@@ -47,47 +78,61 @@
   font: inherit;
   padding: 12px 14px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
   color: var(--text-h);
-  min-height: 44px;
+  min-height: 46px;
   box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 
 .auth-form input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline: none;
+  background: var(--surface);
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .auth-button {
   margin-top: 8px;
   min-height: 48px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--accent);
   color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    background 0.15s ease,
+    transform 0.06s ease;
 }
 
 .auth-button:hover:not(:disabled) {
   background: var(--accent-hover);
 }
 
+.auth-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
 .auth-button:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 .auth-error {
   margin: 0;
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 11px 13px;
+  border-radius: var(--radius-sm);
   background: var(--error-bg);
   color: var(--error);
   font-size: 14px;
+  border: 1px solid color-mix(in srgb, var(--error) 22%, transparent);
 }
 
 .auth-footer {
@@ -99,7 +144,7 @@
 
 .auth-footer a {
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
 }
 
