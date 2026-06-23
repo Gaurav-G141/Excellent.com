@@ -7,7 +7,8 @@ interface Props {
   onContinue: () => void
 }
 
-const PULL_THRESHOLD = 44
+const PULL_THRESHOLD = 36
+const MAX_OFFSET = 72
 
 interface Term {
   coefficient: number
@@ -20,14 +21,16 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
   const initial: Term = { coefficient: config.coefficient, exponent: config.exponent }
 
   const [term, setTerm] = useState<Term>(initial)
-  const [pull, setPull] = useState(0)
+  const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
+  const [instant, setInstant] = useState(false)
   const [steps, setSteps] = useState(0)
   const startYRef = useRef(0)
 
   const isConstant = term.exponent === 0
   const isZero = term.exponent === 0 && term.coefficient === 0
   const done = isZero
+  const armed = dragging && offset >= PULL_THRESHOLD
 
   const applyStep = useCallback(() => {
     setTerm((prev) => {
@@ -42,46 +45,49 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
     setSteps((s) => s + 1)
   }, [])
 
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      if (done) return
-      e.currentTarget.setPointerCapture(e.pointerId)
-      startYRef.current = e.clientY
-      setDragging(true)
-    },
-    [done],
-  )
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    startYRef.current = e.clientY
+    setInstant(false)
+    setDragging(true)
+    setOffset(0)
+  }, [])
 
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!dragging) return
-      const dy = e.clientY - startYRef.current
-      setPull(Math.max(0, Math.min(dy / PULL_THRESHOLD, 1.3)))
-    },
-    [dragging],
-  )
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
+    const dy = e.clientY - startYRef.current
+    setOffset(Math.max(0, Math.min(dy, MAX_OFFSET)))
+  }, [])
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId)
       }
+      const committed = offset >= PULL_THRESHOLD
       setDragging(false)
-      if (pull >= 1) applyStep()
-      setPull(0)
+      // On a successful pull, snap to place instantly and change the term.
+      // On a short pull, leave instant off so it springs back smoothly.
+      setInstant(committed)
+      setOffset(0)
+      if (committed) applyStep()
     },
-    [pull, applyStep],
+    [offset, applyStep],
   )
 
   const reset = useCallback(() => {
     setTerm(initial)
     setSteps(0)
-    setPull(0)
+    setOffset(0)
     setDragging(false)
+    setInstant(true)
   }, [initial.coefficient, initial.exponent])
 
   const showCoeff = isConstant || term.coefficient !== 1
-  const dragOffset = pull * PULL_THRESHOLD
+  const dragOffset = offset
+  const handleTransition =
+    dragging || instant ? 'none' : 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.22s ease'
+  const handleOpacity = dragging ? Math.max(0.5, 1 - (offset / MAX_OFFSET) * 0.5) : 1
 
   return (
     <>
@@ -96,11 +102,11 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
             <span className="pr-coeff">0</span>
           ) : isConstant ? (
             <span
-              className="pr-handle pr-const"
+              className={`pr-handle pr-const${armed ? ' pr-handle--armed' : ''}`}
               style={{
                 transform: `translateY(${dragOffset}px)`,
-                opacity: 1 - pull * 0.5,
-                transition: dragging ? 'none' : 'transform 0.25s ease, opacity 0.25s ease',
+                opacity: handleOpacity,
+                transition: handleTransition,
               }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
@@ -114,13 +120,11 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
               {showCoeff && <span className="pr-coeff">{term.coefficient}</span>}
               <span className="pr-var">{variable}</span>
               <span
-                className={`pr-exp pr-handle${dragging ? ' pr-handle--dragging' : ''}`}
+                className={`pr-exp pr-handle${dragging ? ' pr-handle--dragging' : ''}${armed ? ' pr-handle--armed' : ''}`}
                 style={{
                   transform: `translateY(${dragOffset}px)`,
-                  opacity: 1 - pull * 0.4,
-                  transition: dragging
-                    ? 'none'
-                    : 'transform 0.25s ease, opacity 0.25s ease',
+                  opacity: handleOpacity,
+                  transition: handleTransition,
                 }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}

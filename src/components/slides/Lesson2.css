@@ -48,6 +48,11 @@
   background: var(--accent-bg);
 }
 
+.pr-handle--armed {
+  background: var(--accent);
+  color: var(--surface);
+}
+
 .pr-const.pr-handle {
   font-size: 56px;
   top: 0;

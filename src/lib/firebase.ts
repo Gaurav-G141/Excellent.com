@@ -1,6 +1,6 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { getAuth, type Auth } from 'firebase/auth'
-import { getFirestore, type Firestore } from 'firebase/firestore'
+import { initializeFirestore, type Firestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -29,7 +29,11 @@ let db: Firestore | undefined
 if (!firebaseConfigError) {
   app = initializeApp(firebaseConfig)
   auth = getAuth(app)
-  db = getFirestore(app)
+  // Auto-detect long polling: on networks that block Firestore's streaming
+  // (WebChannel) transport — common on conference/demo wifi, VPNs, and proxies —
+  // the default transport stalls and reads hang for many seconds. This makes the
+  // SDK fall back to long polling automatically when needed.
+  db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true })
 }
 
 export { auth, db }

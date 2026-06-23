@@ -43,6 +43,14 @@ export function LessonPlayer() {
       setHydrated(true)
       return
     }
+
+    // Never block the lesson on the progress read. If Firestore is slow we show
+    // the first slide after a short wait and apply the saved position when (if)
+    // it arrives — as long as the learner hasn't already navigated away from it.
+    const timeout = window.setTimeout(() => {
+      if (active) setHydrated(true)
+    }, 2000)
+
     loadLessonProgress(user.uid, lesson.id)
       .then((progress) => {
         if (!active || !progress) return
@@ -51,14 +59,18 @@ export function LessonPlayer() {
           return
         }
         const safeIndex = Math.min(Math.max(progress.currentSlideIndex, 0), total - 1)
-        setSlideIndex(safeIndex)
+        setSlideIndex((current) => (current === 0 ? safeIndex : current))
       })
       .catch(() => {})
       .finally(() => {
-        if (active) setHydrated(true)
+        if (active) {
+          window.clearTimeout(timeout)
+          setHydrated(true)
+        }
       })
     return () => {
       active = false
+      window.clearTimeout(timeout)
     }
   }, [user, lesson.id, total])
 
