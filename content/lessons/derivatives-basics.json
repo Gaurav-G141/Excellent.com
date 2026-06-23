@@ -1,0 +1,156 @@
+{
+  "id": "derivatives-basics",
+  "title": "Derivatives",
+  "subject": "Calculus BC",
+  "appendRandomQuestions": true,
+  "slides": [
+    {
+      "id": "slide-0-rate-of-change",
+      "type": "demo",
+      "component": "rateOfChangeArrow",
+      "title": "How fast is this function changing?",
+      "body": "Watch the arrow as it moves along the curve. Its direction shows the rate of change at each point — steeper means a larger derivative.",
+      "config": {
+        "coefficients": [2, 1, -0.5, 0.1],
+        "viewport": { "xMin": -2, "xMax": 4, "yMin": -3, "yMax": 5 },
+        "animation": { "mode": "auto", "durationMs": 5000, "loop": true },
+        "showScrubSlider": true
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "slide-1-greatest-derivative",
+      "type": "problem",
+      "component": "greatestDerivative",
+      "title": "Where is the derivative greatest?",
+      "body": "Tap the point where the function is increasing fastest.",
+      "config": {
+        "viewport": { "xMin": -2, "xMax": 4, "yMin": -2, "yMax": 8 },
+        "options": [
+          { "label": "A", "x": -1, "y": 0 },
+          { "label": "B", "x": 0.5, "y": 1 },
+          { "label": "C", "x": 2, "y": 5 },
+          { "label": "D", "x": 3.2, "y": 7 }
+        ]
+      },
+      "feedback": {
+        "correct": "Notice how the arrow is pointed closest to straight up at {point}. Therefore, the greatest derivative of this graph is at {point}",
+        "wrong": "Notice how at {correct answer}, the arrow is more steeply pointed up than at {answer}. Therefore, the greatest derivative is at {correct answer}"
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "slide-2-draggable-secant",
+      "type": "demo",
+      "component": "draggableSecant",
+      "title": "Secant lines approximate the derivative",
+      "body": "Drag the two points along the curve. The purple line is a secant. Move them together at one spot to see the tangent.",
+      "config": {
+        "coefficients": [0.52, 1.18, -0.32, 0.05],
+        "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },
+        "initialPoints": [{ "id": "A", "x": 0.5 }, { "id": "B", "x": 2.5 }],
+        "coincidentThreshold": 0.08
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "slide-3-secant-zoom-derivative",
+      "type": "problem",
+      "component": "secantZoomDerivative",
+      "title": "Estimate the derivative",
+      "body": "Use the zoom slider to magnify the marked point. Each grid square is 1 unit — when the curve looks straight, estimate its slope.",
+      "config": {
+        "coefficients": [0.52, 1.18, -0.32, 0.05],
+        "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },
+        "targetX": 2,
+        "referenceX": 2.4,
+        "minorGridStep": 0.2,
+        "zoomLevels": 5,
+        "tolerance": 0.15
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "The point of interest is at {x value to find derivative at}. Zoom in further — the curve should look almost straight. Recall that a derivative is the slope of the tangent line."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "slide-4-limit-secant",
+      "type": "demo",
+      "component": "limitSecantDemo",
+      "title": "The derivative as a limit",
+      "body": "Use the slider to choose point a on the curve. Then play the animation—a second point slides in from the right, and the secant slope approaches the tangent slope.",
+      "config": {
+        "coefficients": [0.52, 1.18, -0.32, 0.05],
+        "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },
+        "initialAnchorX": 2,
+        "coincidentThreshold": 0.06,
+        "animationDurationMs": 4500
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "slide-5-secant-to-tangent",
+      "type": "problem",
+      "component": "secantToTangent",
+      "title": "Approach the fixed point",
+      "body": "Drag point P toward the fixed point at (2, 2). When the two points are very close, the secant slope approximates the derivative.",
+      "config": {
+        "coefficients": [0.52, 1.18, -0.32, 0.05],
+        "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },
+        "targetX": 2,
+        "initialVariableX": 3.5,
+        "minorGridStep": 0.2,
+        "coincidentThreshold": 0.08,
+        "tolerance": 0.15
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Drag P closer to the fixed point, then estimate the slope of the secant line."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "slide-6-horizontal-critical",
+      "type": "demo",
+      "component": "horizontalCritical",
+      "title": "Critical points and zero slope",
+      "body": "Move the horizontal line until it touches the curve. Where it touches, the tangent is flat — so f\u2032(x), the slope of f (its derivative), equals 0.",
+      "config": {
+        "coefficients": [2.7, 1.225, -2.345, 1.935, -0.725, 0.1],
+        "viewport": { "xMin": 0, "xMax": 3, "yMin": 2.5, "yMax": 3.15 },
+        "criticalPoints": [
+          { "x": 0.5, "type": "max" },
+          { "x": 1.4, "type": "critical" },
+          { "x": 2.5, "type": "min" }
+        ],
+        "snapThreshold": 0.04,
+        "initialLineY": 2.7
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "slide-7-derivative-critical-points",
+      "type": "problem",
+      "component": "derivativeCriticalPoints",
+      "title": "Find every critical point",
+      "body": "The bottom graph shows f\u2032(x). Tap every x-value where the derivative is zero — those are the critical points of f.",
+      "config": {
+        "coefficients": [2.7, 1.225, -2.345, 1.935, -0.725, 0.1],
+        "viewport": { "xMin": 0, "xMax": 3, "yMin": 2.5, "yMax": 3.15 },
+        "derivativeViewport": { "xMin": 0, "xMax": 3, "yMin": -0.5, "yMax": 1.8 },
+        "criticalPoints": [
+          { "x": 0.5, "type": "max" },
+          { "x": 1.4, "type": "critical" },
+          { "x": 2.5, "type": "min" }
+        ],
+        "selectTolerance": 0.25
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Find every x where f\u2032(x) = 0 on the derivative graph. Tap each zero crossing."
+      },
+      "attempts": "unlimited"
+    }
+  ]
+}

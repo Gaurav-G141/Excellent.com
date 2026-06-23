@@ -1,0 +1,140 @@
+import { useMemo, useState } from 'react'
+import type { GreatestDerivativeConfig, ProblemSlide } from '../../types/lesson'
+import {
+  evaluateDerivative,
+  interpolatePolynomial,
+} from '../../utils/polynomial'
+import { GraphCanvas, TangentArrow } from '../graph/GraphCanvas'
+import { CorrectFlash } from '../lesson/CorrectFlash'
+import { FeedbackPopup } from '../lesson/FeedbackPopup'
+
+interface Props {
+  slide: ProblemSlide
+  onCorrect: () => void
+}
+
+export function GreatestDerivativeSlide({ slide, onCorrect }: Props) {
+  const config = slide.config as unknown as GreatestDerivativeConfig
+  const { viewport, options } = config
+
+  const coefficients = useMemo(
+    () => interpolatePolynomial(options.map((o) => ({ x: o.x, y: o.y }))),
+    [options],
+  )
+
+  const correctLabel = useMemo(() => {
+    let best = options[0]
+    let bestDeriv = evaluateDerivative(coefficients, best.x)
+    for (const opt of options.slice(1)) {
+      const d = evaluateDerivative(coefficients, opt.x)
+      if (d > bestDeriv) {
+        bestDeriv = d
+        best = opt
+      }
+    }
+    return best.label
+  }, [coefficients, options])
+
+  const [selected, setSelected] = useState<string | null>(null)
+  const [wrongFeedback, setWrongFeedback] = useState<string | null>(null)
+  const [solved, setSolved] = useState(false)
+  const [flashCorrect, setFlashCorrect] = useState(false)
+
+  function handleCheck() {
+    if (!selected || solved) return
+
+    if (selected === correctLabel) {
+      setSolved(true)
+      setFlashCorrect(true)
+      setWrongFeedback(null)
+    } else {
+      const message = slide.feedback.wrong
+        .replace(/\{correct answer\}/g, correctLabel)
+        .replace(/\{answer\}/g, selected)
+      setWrongFeedback(message)
+    }
+  }
+
+  return (
+    <>
+      <CorrectFlash active={flashCorrect}>
+        <GraphCanvas coefficients={coefficients} viewport={viewport}>
+          {(api) => (
+            <>
+              {options.map((opt) => {
+                const screen = api.toScreen(opt.x, opt.y)
+                const isSelected = selected === opt.label
+
+                return (
+                  <g key={`${opt.label}-bubble`}>
+                    <circle
+                      cx={screen.x}
+                      cy={screen.y}
+                      r={16}
+                      className={`graph-point-ring${isSelected ? ' selected' : ''}${solved && opt.label === correctLabel ? ' correct' : ''}`}
+                      style={{ cursor: solved ? 'default' : 'pointer' }}
+                      onClick={() => !solved && setSelected(opt.label)}
+                    />
+                    <text
+                      x={screen.x}
+                      y={screen.y}
+                      className="graph-point-label"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      {opt.label}
+                    </text>
+                  </g>
+                )
+              })}
+
+              {options.map((opt) => {
+                const screen = api.toScreen(opt.x, opt.y)
+                const angle = api.tangentScreenAngle(opt.x)
+
+                return (
+                  <g key={`${opt.label}-arrow`} className="graph-slope-arrow">
+                    <TangentArrow
+                      cx={screen.x}
+                      cy={screen.y}
+                      angle={angle}
+                      length={26}
+                      variant="tangent"
+                    />
+                  </g>
+                )
+              })}
+            </>
+          )}
+        </GraphCanvas>
+
+        <div className="slide-copy">
+          <h2>{slide.title}</h2>
+          <p>{slide.body}</p>
+        </div>
+
+        {solved ? (
+          <button type="button" className="slide-cta" onClick={onCorrect}>
+            Continue
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="slide-cta"
+            disabled={!selected}
+            onClick={handleCheck}
+          >
+            Check
+          </button>
+        )}
+      </CorrectFlash>
+
+      {wrongFeedback && (
+        <FeedbackPopup
+          message={wrongFeedback}
+          correct={false}
+          onDismiss={() => setWrongFeedback(null)}
+        />
+      )}
+    </>
+  )
+}

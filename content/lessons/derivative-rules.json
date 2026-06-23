@@ -1,0 +1,160 @@
+{
+  "id": "derivative-rules",
+  "title": "Rules of Derivatives",
+  "subject": "Calculus BC",
+  "slides": [
+    {
+      "id": "l2-slide-0-power-rule",
+      "type": "demo",
+      "component": "powerRuleExponent",
+      "title": "The power rule",
+      "body": "Drag the exponent down. It multiplies out front and the power drops by one. Keep going to differentiate again.",
+      "config": {
+        "coefficient": 1,
+        "exponent": 3,
+        "variable": "x"
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l2-slide-1-power-match",
+      "type": "problem",
+      "component": "dragMatch",
+      "title": "Match each function to its derivative",
+      "body": "Apply the power rule, then pair each function with the correct derivative.",
+      "config": {
+        "pairs": [
+          { "prompt": "x³", "answer": "3x²" },
+          { "prompt": "x⁵", "answer": "5x⁴" },
+          { "prompt": "3x⁴", "answer": "12x³" },
+          { "prompt": "x²", "answer": "2x" }
+        ]
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Some matches are off. Remember: the exponent comes down and the power drops by one."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l2-slide-2-sum-rule",
+      "type": "demo",
+      "component": "sumRule",
+      "title": "The sum rule",
+      "body": "Move the point. On each curve the tangent arrow shows the slope. The slope of f + g is just the slope of f plus the slope of g.",
+      "config": {
+        "coefficientsF": [0, 0, 0.5],
+        "coefficientsG": [0, 1],
+        "viewport": { "xMin": -1, "xMax": 3, "yMin": -1.5, "yMax": 8 },
+        "initialX": 1
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l2-slide-3-sum-type-in",
+      "type": "problem",
+      "component": "typeInDerivative",
+      "title": "Differentiate the sum",
+      "body": "Use the power rule on each term, then add. Any equivalent form is accepted.",
+      "config": {
+        "coefficients": [0, 3, 1],
+        "display": "x² + 3x",
+        "prompt": "f′(x) =",
+        "placeholder": "type a polynomial in x"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Differentiate each term separately and add: (x²)′ + (3x)′."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l2-slide-4-chain-rule",
+      "type": "demo",
+      "component": "chainRule",
+      "title": "The chain rule",
+      "body": "For a function inside a function, differentiate the outside, then multiply by the derivative of the inside.",
+      "config": {
+        "outerCoefficients": [0, 0, 0, 1],
+        "innerCoefficients": [1, 2],
+        "outerDisplay": "u³",
+        "innerDisplay": "2x + 1",
+        "viewport": { "xMin": -2, "xMax": 2, "yMin": -8, "yMax": 8 }
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l2-slide-5-chain-type-in",
+      "type": "problem",
+      "component": "typeInDerivative",
+      "title": "Differentiate the composite",
+      "body": "Apply the chain rule. You can leave it factored or expand it — either form is accepted.",
+      "config": {
+        "coefficients": [4, 12, 9],
+        "display": "(3x + 2)²",
+        "prompt": "f′(x) =",
+        "placeholder": "factored or expanded is fine"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Outer first: 2(3x + 2). Then multiply by the inside's derivative, (3x + 2)′ = 3."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l2-slide-6-mvt",
+      "type": "demo",
+      "component": "meanValueTheorem",
+      "title": "The Mean Value Theorem",
+      "body": "Place the two endpoints to draw a secant. Somewhere between them, the tangent runs exactly parallel — same slope as the secant.",
+      "config": {
+        "coefficients": [2, -1.5, 0, 0.25],
+        "viewport": { "xMin": -0.5, "xMax": 3.2, "yMin": -0.5, "yMax": 6 },
+        "initialAx": 0.3,
+        "initialBx": 2.8
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l2-slide-7-mvt-multipart",
+      "type": "problem",
+      "component": "mvtMultiPart",
+      "title": "Apply the Mean Value Theorem",
+      "body": "Points A and B sit on the curve. Use the given equations to work through the two parts.",
+      "config": {
+        "coefficients": [0, 0, 0.25],
+        "viewport": { "xMin": -1, "xMax": 5, "yMin": -1, "yMax": 5 },
+        "ax": 0,
+        "bx": 4,
+        "functionDisplay": "0.25x²",
+        "derivativeDisplay": "0.5x",
+        "slopeTolerance": 0.1,
+        "cTolerance": 0.2,
+        "derivativeTolerance": 0.12
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Check that step and try again. Secant slope = (f(b) − f(a)) / (b − a)."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l2-slide-8-combining",
+      "type": "problem",
+      "component": "typeInDerivative",
+      "title": "Combine the rules",
+      "body": "This one needs the chain rule, the power rule, and the sum rule together. Any equivalent form is accepted.",
+      "config": {
+        "coefficients": [1, 4, 4, 3],
+        "display": "(2x + 1)² + 3x³",
+        "prompt": "f′(x) =",
+        "placeholder": "type a polynomial in x"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Differentiate each piece: chain rule on (2x + 1)², power rule on 3x³, then add."
+      },
+      "attempts": "unlimited"
+    }
+  ]
+}

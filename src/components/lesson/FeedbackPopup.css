@@ -1,0 +1,48 @@
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.35);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+
+.feedback-sheet {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px 32px;
+  border-top: 3px solid var(--error);
+  box-sizing: border-box;
+}
+
+.feedback-sheet--correct {
+  border-top-color: var(--accent);
+}
+
+.feedback-sheet p {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-h);
+}
+
+.feedback-dismiss {
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.feedback-sheet:not(.feedback-sheet--correct) .feedback-dismiss {
+  background: var(--surface);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+}
