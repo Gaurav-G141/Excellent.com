@@ -1,0 +1,110 @@
+{
+  "id": "related-rates",
+  "title": "Related Rates and Motion",
+  "subject": "Calculus BC",
+  "randomQuestions": { "kind": "relatedRates", "count": 2 },
+  "slides": [
+    {
+      "id": "l3-slide-0-expanding-circle",
+      "type": "demo",
+      "component": "expandingCircle",
+      "title": "How area follows the radius",
+      "body": "Grow the circle. The new area is added as a thin rim — its width is dr and its length is the circumference, so dA = 2πr · dr.",
+      "config": {
+        "minR": 1,
+        "maxR": 5,
+        "dr": 0.4,
+        "initialR": 2,
+        "unit": "cm"
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l3-slide-1-related-rates",
+      "type": "problem",
+      "component": "relatedRates",
+      "title": "Relate the rates",
+      "body": "Differentiate the measure with respect to its changing dimension, then multiply by the given rate.",
+      "config": {},
+      "feedback": {
+        "correct": "",
+        "wrong": ""
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l3-slide-2-motion-vectors",
+      "type": "demo",
+      "component": "motionVectors",
+      "title": "Velocity and acceleration",
+      "body": "Play the motion. Velocity is the first derivative of position; acceleration is the second. Watch how each vector points.",
+      "config": {
+        "xCoefficients": [-3, 1.5],
+        "yCoefficients": [-2, 3, -0.6],
+        "tMax": 4,
+        "viewport": { "xMin": -4, "xMax": 4, "yMin": -3, "yMax": 3 },
+        "velocityScale": 0.45,
+        "accelerationScale": 0.9,
+        "durationMs": 4200
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l3-slide-3-acceleration",
+      "type": "problem",
+      "component": "secondDerivative",
+      "title": "Acceleration at an instant",
+      "body": "The bug's position along the track is s(t). Find its acceleration at the given time.",
+      "config": {
+        "coefficients": [0, 0, 2, 1],
+        "display": "t³ + 2t²",
+        "t0": 2,
+        "tMax": 4,
+        "unit": "m",
+        "prompt": "Acceleration at t = 2 (m/s²)",
+        "placeholder": "enter a number"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "a(t) = s″(t). Differentiate s(t) twice, then substitute t = 2."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l3-slide-4-ivt",
+      "type": "demo",
+      "component": "intermediateValueTheorem",
+      "title": "The Intermediate Value Theorem",
+      "body": "Place A and B on the curve, then enter any value between f(a) and f(b). A continuous curve must reach it — reveal the point c where it does.",
+      "config": {
+        "coefficients": [2, 0.5, -0.5, 0.15],
+        "viewport": { "xMin": -1, "xMax": 5, "yMin": -1, "yMax": 12 },
+        "initialAx": 0,
+        "initialBx": 4
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l3-slide-5-ivt-problem",
+      "type": "problem",
+      "component": "ivtProblem",
+      "title": "Apply the Intermediate Value Theorem",
+      "body": "Points A and B sit on the curve. Use the given equation to answer both parts.",
+      "config": {
+        "coefficients": [0, 0, 0.25],
+        "viewport": { "xMin": -1, "xMax": 5, "yMin": -1, "yMax": 6 },
+        "ax": 0,
+        "bx": 4,
+        "functionDisplay": "0.25x²",
+        "guaranteedValue": 1,
+        "distractors": [6, -1],
+        "cTolerance": 0.25
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "The IVT only guarantees values that lie between f(a) and f(b)."
+      },
+      "attempts": "unlimited"
+    }
+  ]
+}

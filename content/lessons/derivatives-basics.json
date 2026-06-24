@@ -2,7 +2,7 @@
   "id": "derivatives-basics",
   "title": "Derivatives",
   "subject": "Calculus BC",
-  "appendRandomQuestions": true,
+  "randomQuestions": { "kind": "derivatives", "count": 3 },
   "slides": [
     {
       "id": "slide-0-rate-of-change",

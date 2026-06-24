@@ -18,6 +18,39 @@
   letter-spacing: -0.01em;
   color: var(--text-h);
   font-size: 16px;
+  text-align: center;
+  flex: 1;
+}
+
+.lesson-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.lesson-back:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text-h);
+}
+
+.lesson-back:disabled {
+  opacity: 0;
+  cursor: default;
+  pointer-events: none;
 }
 
 .lesson-close {

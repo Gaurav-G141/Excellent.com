@@ -35,6 +35,18 @@ function tokenize(input: string): Token[] | null {
       continue
     }
 
+    if (ch === '\u03c0') {
+      tokens.push({ type: 'num', value: Math.PI })
+      i++
+      continue
+    }
+
+    if ((ch === 'p' || ch === 'P') && (src[i + 1] === 'i' || src[i + 1] === 'I')) {
+      tokens.push({ type: 'num', value: Math.PI })
+      i += 2
+      continue
+    }
+
     if (ch === 'x' || ch === 'X') {
       tokens.push({ type: 'var' })
       i++
@@ -202,6 +214,32 @@ export function parseExpression(input: string): ((x: number) => number | null) |
   const rpn = toRpn(tokens)
   if (!rpn) return null
   return (x: number) => evalRpn(rpn, x)
+}
+
+/**
+ * Evaluate a constant expression (no variable) to a number. Accepts π via the
+ * `pi`/`π` tokens, so "72pi", "72*pi", and "226.19" all resolve. Returns null
+ * if the input can't be parsed.
+ */
+export function evaluateNumericExpression(input: string): number | null {
+  const evaluator = parseExpression(input)
+  if (!evaluator) return null
+  return evaluator(0)
+}
+
+/**
+ * Grade a typed numeric answer against an expected value within a tolerance.
+ * Tolerance is relative to the magnitude so big π-multiples stay forgiving.
+ */
+export function matchesNumber(
+  input: string,
+  expected: number,
+  tolerance?: number,
+): boolean {
+  const got = evaluateNumericExpression(input)
+  if (got === null) return false
+  const tol = tolerance ?? Math.max(0.05, Math.abs(expected) * 0.01)
+  return Math.abs(got - expected) <= tol
 }
 
 /**

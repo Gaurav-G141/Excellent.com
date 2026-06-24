@@ -21,6 +21,11 @@ export function evaluateSecondDerivative(coefficients: number[], x: number): num
   }, 0)
 }
 
+/** Second-derivative coefficients (apply the power rule twice). */
+export function secondDerivativeCoefficients(coefficients: number[]): number[] {
+  return derivativeCoefficients(derivativeCoefficients(coefficients))
+}
+
 export type CriticalPointType = 'max' | 'min' | 'critical'
 
 export interface CriticalPoint {
@@ -178,6 +183,34 @@ export function findWhereDerivativeEquals(
 
   for (let x = lo + step; x <= hi; x += step) {
     const g = evaluatePoly(derivative, x) - target
+    if (g === 0) return x
+    if (prevG * g < 0) {
+      return prevX + (step * Math.abs(prevG)) / (Math.abs(prevG) + Math.abs(g))
+    }
+    prevX = x
+    prevG = g
+  }
+  return null
+}
+
+/**
+ * Find an x in [a, b] where f(x) equals `target` (the IVT reveal point).
+ * Scans for a sign change in f(x) - target and linearly interpolates the root.
+ */
+export function findWhereEquals(
+  coefficients: number[],
+  target: number,
+  a: number,
+  b: number,
+  step = 0.0005,
+): number | null {
+  const lo = Math.min(a, b)
+  const hi = Math.max(a, b)
+  let prevX = lo
+  let prevG = evaluatePoly(coefficients, lo) - target
+
+  for (let x = lo + step; x <= hi; x += step) {
+    const g = evaluatePoly(coefficients, x) - target
     if (g === 0) return x
     if (prevG * g < 0) {
       return prevX + (step * Math.abs(prevG)) / (Math.abs(prevG) + Math.abs(g))

@@ -4,6 +4,8 @@ import { db } from './firebase'
 export interface LessonProgress {
   currentSlideIndex: number
   lessonCompleted: boolean
+  /** When this lesson was last touched, in epoch ms (null if never written). */
+  updatedAt: number | null
 }
 
 function progressRef(uid: string, lessonId: string) {
@@ -19,10 +21,15 @@ export async function loadLessonProgress(
   const snapshot = await getDoc(progressRef(uid, lessonId))
   if (!snapshot.exists()) return null
   const data = snapshot.data()
+  const updatedAt = data.updatedAt
   return {
     currentSlideIndex:
       typeof data.currentSlideIndex === 'number' ? data.currentSlideIndex : 0,
     lessonCompleted: Boolean(data.lessonCompleted),
+    updatedAt:
+      updatedAt && typeof updatedAt.toMillis === 'function'
+        ? updatedAt.toMillis()
+        : null,
   }
 }
 

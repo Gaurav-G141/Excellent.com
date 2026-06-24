@@ -199,3 +199,99 @@ export function generateEndingQuestions(count: number): ProblemSlide[] {
   const chosen = shuffle(kinds).slice(0, count)
   return chosen.map((kind, i) => generateByKind(kind, `ending-${i}-${kind}`))
 }
+
+// --- Lesson 3 review questions ---
+
+const SUPERSCRIPTS: Record<string, string> = {
+  '0': '\u2070',
+  '1': '\u00b9',
+  '2': '\u00b2',
+  '3': '\u00b3',
+  '4': '\u2074',
+  '5': '\u2075',
+  '6': '\u2076',
+  '7': '\u2077',
+  '8': '\u2078',
+  '9': '\u2079',
+}
+
+function superscript(power: number): string {
+  return String(power)
+    .split('')
+    .map((d) => SUPERSCRIPTS[d] ?? d)
+    .join('')
+}
+
+/** Format a polynomial (low-to-high coefficients) in t with unicode superscripts. */
+function formatPolynomialT(coefficients: number[]): string {
+  const parts: string[] = []
+  for (let power = coefficients.length - 1; power >= 0; power--) {
+    const c = coefficients[power]
+    if (c === 0) continue
+    const abs = Math.abs(c)
+    let term: string
+    if (power === 0) term = `${abs}`
+    else {
+      const coeffStr = abs === 1 ? '' : `${abs}`
+      const varStr = power === 1 ? 't' : `t${superscript(power)}`
+      term = `${coeffStr}${varStr}`
+    }
+    if (parts.length === 0) parts.push(c < 0 ? `-${term}` : term)
+    else parts.push(c < 0 ? `\u2212 ${term}` : `+ ${term}`)
+  }
+  return parts.length > 0 ? parts.join(' ') : '0'
+}
+
+/** A related-rates question — the component randomizes its own shape and values. */
+function makeRelatedRatesQuestion(id: string): ProblemSlide {
+  return {
+    id,
+    type: 'problem',
+    component: 'relatedRates',
+    title: 'Relate the rates',
+    body: 'Differentiate the measure with respect to the changing dimension, then multiply by the given rate.',
+    config: {},
+    feedback: { correct: '', wrong: '' },
+    attempts: 'unlimited',
+  }
+}
+
+/** A kinematics question: random position s(t); ask acceleration at t0. */
+function makeKinematicsQuestion(id: string): ProblemSlide {
+  const a = pick([1, 2])
+  const b = pick([1, 2, 3])
+  const c = pick([0, 1, 2])
+  const coefficients = [0, c, b, a] // s(t) = a t³ + b t² + c t
+  const t0 = pick([1, 2, 3])
+  const tMax = Math.max(4, t0 + 1)
+
+  return {
+    id,
+    type: 'problem',
+    component: 'secondDerivative',
+    title: 'Find the acceleration',
+    body: 'Acceleration is the second derivative of position. Differentiate twice, then plug in the time.',
+    config: {
+      coefficients,
+      display: formatPolynomialT(coefficients),
+      t0,
+      tMax,
+      unit: 'm',
+      prompt: `Acceleration at t = ${t0} (m/s²)`,
+      placeholder: 'enter a number',
+    },
+    feedback: {
+      correct: '',
+      wrong: 'a(t) = s″(t). Differentiate the position twice, then substitute the time.',
+    },
+    attempts: 'unlimited',
+  }
+}
+
+/** Two on-topic review questions: one related-rates, one kinematics. */
+export function generateLesson3Questions(count: number): ProblemSlide[] {
+  const builders = [makeRelatedRatesQuestion, makeKinematicsQuestion]
+  return Array.from({ length: count }, (_, i) =>
+    builders[i % builders.length](`l3-review-${i}`),
+  )
+}

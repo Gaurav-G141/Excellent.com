@@ -3,15 +3,21 @@ import { ChainRuleSlide } from '../slides/ChainRuleSlide'
 import { DerivativeCriticalPointsSlide } from '../slides/DerivativeCriticalPointsSlide'
 import { DragMatchSlide } from '../slides/DragMatchSlide'
 import { DraggableSecantSlide } from '../slides/DraggableSecantSlide'
+import { ExpandingCircleSlide } from '../slides/ExpandingCircleSlide'
 import { GreatestDerivativeSlide } from '../slides/GreatestDerivativeSlide'
 import { HorizontalCriticalSlide } from '../slides/HorizontalCriticalSlide'
+import { IntermediateValueTheoremSlide } from '../slides/IntermediateValueTheoremSlide'
+import { IvtProblemSlide } from '../slides/IvtProblemSlide'
 import { LimitSecantDemoSlide } from '../slides/LimitSecantDemoSlide'
 import { MeanValueTheoremSlide } from '../slides/MeanValueTheoremSlide'
+import { MotionVectorsSlide } from '../slides/MotionVectorsSlide'
 import { MvtMultiPartSlide } from '../slides/MvtMultiPartSlide'
 import { PowerRuleExponentSlide } from '../slides/PowerRuleExponentSlide'
 import { RateOfChangeArrowSlide } from '../slides/RateOfChangeArrowSlide'
+import { RelatedRatesProblemSlide } from '../slides/RelatedRatesProblemSlide'
 import { SecantToTangentSlide } from '../slides/SecantToTangentSlide'
 import { SecantZoomDerivativeSlide } from '../slides/SecantZoomDerivativeSlide'
+import { SecondDerivativeProblemSlide } from '../slides/SecondDerivativeProblemSlide'
 import { SumRuleSlide } from '../slides/SumRuleSlide'
 import { TypeInDerivativeSlide } from '../slides/TypeInDerivativeSlide'
 
@@ -79,6 +85,30 @@ export function SlideRenderer({ slide, onAdvance }: Props) {
 
   if (slide.type === 'problem' && slide.component === 'mvtMultiPart') {
     return <MvtMultiPartSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'demo' && slide.component === 'expandingCircle') {
+    return <ExpandingCircleSlide slide={slide} onContinue={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'relatedRates') {
+    return <RelatedRatesProblemSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'demo' && slide.component === 'motionVectors') {
+    return <MotionVectorsSlide slide={slide} onContinue={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'secondDerivative') {
+    return <SecondDerivativeProblemSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'demo' && slide.component === 'intermediateValueTheorem') {
+    return <IntermediateValueTheoremSlide slide={slide} onContinue={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'ivtProblem') {
+    return <IvtProblemSlide slide={slide} onCorrect={onAdvance} />
   }
 
   return (

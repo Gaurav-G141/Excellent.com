@@ -31,13 +31,19 @@ export interface ProblemSlide {
 
 export type Slide = DemoSlide | ProblemSlide
 
+export interface RandomQuestionSpec {
+  /** Which generator to draw review questions from. */
+  kind: 'derivatives' | 'relatedRates'
+  count: number
+}
+
 export interface Lesson {
   id: string
   title: string
   subject: string
   slides: Slide[]
-  /** When true, 3 randomized review questions are appended after the slides. */
-  appendRandomQuestions?: boolean
+  /** Randomized review questions appended after the slides. */
+  randomQuestions?: RandomQuestionSpec
 }
 
 export interface GraphOption {
@@ -185,4 +191,62 @@ export interface MvtMultiPartConfig {
   slopeTolerance?: number
   cTolerance?: number
   derivativeTolerance?: number
+}
+
+// --- Lesson 3: Related rates and practical use ---
+
+export interface ExpandingCircleConfig {
+  minR: number
+  maxR: number
+  /** Width of the highlighted rim that represents the added area dA. */
+  dr: number
+  initialR: number
+  unit?: string
+}
+
+export interface MotionVectorsConfig {
+  /** Position component polynomials in t (low-to-high coefficients). */
+  xCoefficients: number[]
+  yCoefficients: number[]
+  tMax: number
+  viewport: Viewport
+  /** Screen-pixel scale applied to velocity/acceleration vectors. */
+  velocityScale?: number
+  accelerationScale?: number
+  durationMs?: number
+}
+
+export interface SecondDerivativeProblemConfig {
+  /** Position s(t) polynomial in t (low-to-high coefficients). */
+  coefficients: number[]
+  /** Human-readable s(t), e.g. "2t³ + 3t²". */
+  display: string
+  /** Time at which acceleration is asked. */
+  t0: number
+  tMax: number
+  unit?: string
+  tolerance?: number
+  prompt?: string
+  placeholder?: string
+  feedbackWrong?: string
+}
+
+export interface IntermediateValueTheoremConfig {
+  coefficients: number[]
+  viewport: Viewport
+  initialAx: number
+  initialBx: number
+}
+
+export interface IvtProblemConfig {
+  coefficients: number[]
+  viewport: Viewport
+  ax: number
+  bx: number
+  functionDisplay: string
+  /** Value strictly between f(a) and f(b) — the one the IVT guarantees. */
+  guaranteedValue: number
+  /** Values outside [f(a), f(b)] used as multiple-choice distractors. */
+  distractors: number[]
+  cTolerance?: number
 }

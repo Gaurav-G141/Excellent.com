@@ -4,19 +4,65 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { LESSON_ICONS, lessonList } from '../lessons'
 import { db } from '../lib/firebase'
+import { loadLessonProgress } from '../lib/progress'
+import { calendarDaysAgo, currentStreak } from '../lib/streak'
 import './HomePage.css'
+
+interface LessonStatus {
+  daysAgo: number | null
+  completed: boolean
+}
+
+function studiedLabel(status: LessonStatus | undefined): string {
+  if (!status || status.daysAgo === null) return 'Not started yet'
+  const when =
+    status.daysAgo === 0
+      ? 'today'
+      : status.daysAgo === 1
+        ? 'yesterday'
+        : `${status.daysAgo} days ago`
+  return status.completed ? `Finished · last studied ${when}` : `Last studied ${when}`
+}
 
 export default function HomePage() {
   const { user, signOut } = useAuth()
   const [displayName, setDisplayName] = useState<string | null>(null)
+  const [streak, setStreak] = useState(0)
+  const [statuses, setStatuses] = useState<Record<string, LessonStatus>>({})
 
   useEffect(() => {
     if (!user || !db) return
 
     getDoc(doc(db, 'users', user.uid)).then((snapshot) => {
-      if (snapshot.exists()) {
-        setDisplayName(snapshot.data().displayName as string)
-      }
+      if (!snapshot.exists()) return
+      const data = snapshot.data()
+      setDisplayName((data.displayName as string) ?? null)
+      setStreak(
+        currentStreak({
+          count: typeof data.streakCount === 'number' ? data.streakCount : 0,
+          lastActiveDate:
+            typeof data.lastActiveDate === 'string' ? data.lastActiveDate : null,
+          longest: 0,
+        }),
+      )
+    })
+
+    lessonList.forEach((lesson) => {
+      loadLessonProgress(user.uid, lesson.id)
+        .then((progress) => {
+          if (!progress) return
+          setStatuses((current) => ({
+            ...current,
+            [lesson.id]: {
+              daysAgo:
+                progress.updatedAt !== null
+                  ? calendarDaysAgo(progress.updatedAt)
+                  : null,
+              completed: progress.lessonCompleted,
+            },
+          }))
+        })
+        .catch(() => {})
     })
   }, [user])
 
@@ -30,25 +76,72 @@ export default function HomePage() {
       </header>
 
       <main className="home-main">
-        <p className="home-greeting">
-          Hello, {displayName ?? user?.email ?? 'learner'}!
-        </p>
-
-        {lessonList.map((lesson) => (
-          <Link
-            key={lesson.id}
-            to={`/lessons/${lesson.id}`}
-            className="home-lesson-card"
+        <div className="home-intro">
+          <p className="home-greeting">
+            Hello, {displayName ?? user?.email ?? 'learner'}!
+          </p>
+          <span
+            className={`home-streak${streak > 0 ? ' home-streak--active' : ''}`}
+            aria-label={streak > 0 ? `${streak} day streak` : 'No active streak'}
           >
-            <span className="home-lesson-icon">{LESSON_ICONS[lesson.id] ?? '∂'}</span>
-            <div>
-              <h2>{lesson.title}</h2>
-              <p>
-                {lesson.subject} · {lesson.slides.length} slides
-              </p>
-            </div>
-          </Link>
-        ))}
+            {streak > 0 ? (
+              <>
+                <span className="home-streak-count">{streak}</span>
+                day streak
+              </>
+            ) : (
+              'Start your streak today'
+            )}
+          </span>
+        </div>
+
+        {lessonList.map((lesson, index) => {
+          const prev = index > 0 ? lessonList[index - 1] : null
+          const unlocked =
+            !prev ||
+            statuses[lesson.id]?.completed === true ||
+            statuses[prev.id]?.completed === true
+
+          if (!unlocked) {
+            return (
+              <div
+                key={lesson.id}
+                className="home-lesson-card home-lesson-card--locked"
+                aria-disabled="true"
+              >
+                <span className="home-lesson-icon home-lesson-icon--locked" aria-hidden>
+                  {'\u{1F512}'}
+                </span>
+                <div>
+                  <h2>{lesson.title}</h2>
+                  <p>
+                    {lesson.subject} · {lesson.slides.length} slides
+                  </p>
+                  <p className="home-lesson-status home-lesson-status--locked">
+                    Finish {prev.title} to unlock
+                  </p>
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <Link
+              key={lesson.id}
+              to={`/lessons/${lesson.id}`}
+              className="home-lesson-card"
+            >
+              <span className="home-lesson-icon">{LESSON_ICONS[lesson.id] ?? '∂'}</span>
+              <div>
+                <h2>{lesson.title}</h2>
+                <p>
+                  {lesson.subject} · {lesson.slides.length} slides
+                </p>
+                <p className="home-lesson-status">{studiedLabel(statuses[lesson.id])}</p>
+              </div>
+            </Link>
+          )
+        })}
       </main>
     </div>
   )

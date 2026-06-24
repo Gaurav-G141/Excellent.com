@@ -11,8 +11,9 @@ registered in [`src/lessons/index.ts`](../../src/lessons/index.ts).
 - `src/lessons/index.ts` holds the lesson registry (`lessons`, `lessonList`, `LESSON_ICONS`).
 - Route is `/lessons/:lessonId`; `LessonPlayer` selects the lesson from the param.
 - Progress is persisted per `lesson.id` (Firestore `progress/{uid}/lessons/{lessonId}`).
-- Randomized review questions are appended only when a lesson sets
-  `"appendRandomQuestions": true` (Lesson 1 only).
+- Randomized review questions are appended when a lesson sets
+  `"randomQuestions": { "kind": ..., "count": ... }` (Lesson 1: derivatives; Lesson 3:
+  related rates).
 
 ## Shared utilities
 
