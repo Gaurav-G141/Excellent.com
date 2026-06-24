@@ -107,18 +107,20 @@ export function DragMatchSlide({ slide, onCorrect }: Props) {
                 >
                   <span className="match-prompt-fn">{pair.prompt}</span>
                   <span className="match-arrow">→</span>
-                  <span
-                    className={`match-slot${assigned ? ' match-slot--filled' : ''}`}
-                    onClick={(e) => {
-                      if (assigned) {
-                        e.stopPropagation()
-                        clearPrompt(i)
-                      }
-                    }}
-                  >
+                  <span className={`match-slot${assigned ? ' match-slot--filled' : ''}`}>
                     {assigned ?? 'tap to fill'}
                   </span>
                 </button>
+                {assigned && !solved && (
+                  <button
+                    type="button"
+                    className="match-clear"
+                    aria-label={`Clear the match for ${pair.prompt}`}
+                    onClick={() => clearPrompt(i)}
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             )
           })}

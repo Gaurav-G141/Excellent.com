@@ -39,9 +39,16 @@ export async function saveLessonProgress(
   data: Partial<LessonProgress>,
 ): Promise<void> {
   if (!db) return
-  await setDoc(
-    progressRef(uid, lessonId),
-    { ...data, updatedAt: serverTimestamp() },
-    { merge: true },
-  )
+  // Sanitize so we never emit values the security rules reject (index is a
+  // bounded non-negative integer; completion is a boolean).
+  const payload: Record<string, unknown> = {}
+  if (typeof data.currentSlideIndex === 'number' && Number.isFinite(data.currentSlideIndex)) {
+    payload.currentSlideIndex = Math.max(0, Math.min(1000, Math.round(data.currentSlideIndex)))
+  }
+  if (typeof data.lessonCompleted === 'boolean') {
+    payload.lessonCompleted = data.lessonCompleted
+  }
+  await setDoc(progressRef(uid, lessonId), { ...payload, updatedAt: serverTimestamp() }, {
+    merge: true,
+  })
 }

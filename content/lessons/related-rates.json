@@ -25,7 +25,16 @@
       "component": "relatedRates",
       "title": "Relate the rates",
       "body": "Differentiate the measure with respect to its changing dimension, then multiply by the given rate.",
-      "config": {},
+      "config": {
+        "problem": {
+          "shape": "sphere",
+          "prompt": "A sphere's radius grows at dr/dt = 3 cm/s. At r = 4 cm, how fast is its volume changing?",
+          "scaffold": "dV/dt = (dV/dr)(dr/dt),  with  dV/dr = 4πr²",
+          "exact": 603.1857894892403,
+          "measureUnit": "cm³/s",
+          "hint": "dV/dr = 4πr² = 4π·4². Multiply by dr/dt = 3. You can answer with π."
+        }
+      },
       "feedback": {
         "correct": "",
         "wrong": ""

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ProblemSlide, SecantZoomDerivativeConfig } from '../../types/lesson'
 import { evaluateDerivative, evaluatePoly } from '../../utils/polynomial'
+import { formatFeedback } from '../../utils/feedback'
 import { zoomViewport } from '../../utils/viewport'
 import { GraphCanvas } from '../graph/GraphCanvas'
 import { CorrectFlash } from '../lesson/CorrectFlash'
@@ -58,11 +59,11 @@ export function SecantZoomDerivativeSlide({ slide, onCorrect }: Props) {
       setFlashCorrect(true)
       setWrongFeedback(null)
     } else {
-      const message = slide.feedback.wrong.replace(
-        /\{x value to find derivative at\}/g,
-        String(targetX),
+      setWrongFeedback(
+        formatFeedback(slide.feedback.wrong, {
+          'x value to find derivative at': String(targetX),
+        }),
       )
-      setWrongFeedback(message)
     }
   }
 

@@ -1,10 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { MvtMultiPartConfig, ProblemSlide } from '../../types/lesson'
-import {
-  derivativeCoefficients,
-  evaluatePoly,
-  findWhereDerivativeEquals,
-} from '../../utils/polynomial'
+import { derivativeCoefficients, evaluatePoly } from '../../utils/polynomial'
+import { isCloseTo, isValidMeanValuePoint } from '../../utils/grading'
 import { GraphCanvas } from '../graph/GraphCanvas'
 import { SecantLine } from '../graph/SecantLine'
 import { CorrectFlash } from '../lesson/CorrectFlash'
@@ -26,7 +23,6 @@ export function MvtMultiPartSlide({ slide, onCorrect }: Props) {
     functionDisplay,
     derivativeDisplay,
     slopeTolerance = 0.1,
-    cTolerance = 0.2,
     derivativeTolerance = 0.12,
   } = config
 
@@ -36,10 +32,6 @@ export function MvtMultiPartSlide({ slide, onCorrect }: Props) {
   const secantSlope = useMemo(
     () => (evaluatePoly(coefficients, hi) - evaluatePoly(coefficients, lo)) / (hi - lo),
     [coefficients, lo, hi],
-  )
-  const cValue = useMemo(
-    () => findWhereDerivativeEquals(coefficients, secantSlope, lo, hi),
-    [coefficients, secantSlope, lo, hi],
   )
 
   const [part, setPart] = useState(0)
@@ -68,13 +60,16 @@ export function MvtMultiPartSlide({ slide, onCorrect }: Props) {
 
     let correct = false
     if (part === 0) {
-      correct = Math.abs(entered - secantSlope) <= slopeTolerance
+      correct = isCloseTo(entered, secantSlope, slopeTolerance)
     } else {
-      correct =
-        entered > lo &&
-        entered < hi &&
-        Math.abs(evaluatePoly(derivative, entered) - secantSlope) <= derivativeTolerance &&
-        (cValue == null || Math.abs(entered - cValue) <= cTolerance + 0.5)
+      correct = isValidMeanValuePoint(
+        entered,
+        derivative,
+        secantSlope,
+        lo,
+        hi,
+        derivativeTolerance,
+      )
     }
 
     if (!correct) {

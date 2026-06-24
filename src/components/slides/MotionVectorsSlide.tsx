@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { DemoSlide, MotionVectorsConfig } from '../../types/lesson'
+import { useTween } from '../../hooks/useTween'
 import {
   derivativeCoefficients,
   evaluatePoly,
@@ -57,8 +58,7 @@ export function MotionVectorsSlide({ slide, onContinue }: Props) {
   } = config
 
   const [t, setT] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const rafRef = useRef(0)
+  const { play, stop, playing } = useTween(durationMs, (progress) => setT(progress * tMax))
 
   const vx = useMemo(() => derivativeCoefficients(xCoefficients), [xCoefficients])
   const vy = useMemo(() => derivativeCoefficients(yCoefficients), [yCoefficients])
@@ -82,19 +82,6 @@ export function MotionVectorsSlide({ slide, onContinue }: Props) {
     }).join(' ')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [xCoefficients, yCoefficients, tMax, viewport])
-
-  useEffect(() => {
-    if (!playing) return
-    const start = performance.now()
-    const tick = (now: number) => {
-      const elapsed = (now - start) / durationMs
-      setT(Math.min(tMax, elapsed * tMax))
-      if (elapsed < 1) rafRef.current = requestAnimationFrame(tick)
-      else setPlaying(false)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [playing, tMax, durationMs])
 
   const bug = toScreen(evaluatePoly(xCoefficients, t), evaluatePoly(yCoefficients, t))
   const velEnd = {
@@ -142,7 +129,7 @@ export function MotionVectorsSlide({ slide, onContinue }: Props) {
           step={0.02}
           value={t}
           onChange={(e) => {
-            setPlaying(false)
+            stop()
             setT(Number(e.target.value))
           }}
         />
@@ -154,7 +141,7 @@ export function MotionVectorsSlide({ slide, onContinue }: Props) {
           className="slide-secondary-cta"
           onClick={() => {
             setT(0)
-            setPlaying(true)
+            play()
           }}
         >
           {playing ? 'Playing…' : 'Play'}

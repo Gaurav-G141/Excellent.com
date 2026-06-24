@@ -1,23 +1,32 @@
-import type { ProblemSlide } from '../types/lesson'
+import type { ProblemSlide, RelatedRatesProblem, RelatedRatesShape } from '../types/lesson'
 import {
   derivativeCoefficients,
   evaluateDerivative,
   interpolatePolynomial,
 } from './polynomial'
+import { mulberry32 } from './random'
 
 type QuestionKind = 'greatest' | 'zoom' | 'tangent' | 'critical'
 
-function pick<T>(values: T[]): T {
-  return values[Math.floor(Math.random() * values.length)]
+/** A source of random floats in [0, 1). Defaults to Math.random when unseeded. */
+type Rng = () => number
+
+function pick<T>(values: T[], rng: Rng): T {
+  return values[Math.floor(rng() * values.length)]
 }
 
-function shuffle<T>(values: T[]): T[] {
+function shuffle<T>(values: T[], rng: Rng): T[] {
   const copy = [...values]
   for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(rng() * (i + 1))
     ;[copy[i], copy[j]] = [copy[j], copy[i]]
   }
   return copy
+}
+
+/** Build an RNG from an optional seed; unseeded falls back to Math.random. */
+function rngFromSeed(seed?: number): Rng {
+  return seed === undefined ? Math.random : mulberry32(seed)
 }
 
 /** Integer-padded y-bounds of a polynomial over [xMin, xMax]. */
@@ -35,17 +44,17 @@ function curveBounds(coefficients: number[], xMin: number, xMax: number, pad = 0
 }
 
 /** A cubic through 4 labeled points with a clear, positive steepest slope. */
-function generateGreatest(id: string): ProblemSlide {
+function generateGreatest(id: string, rng: Rng): ProblemSlide {
   const xs = [-1, 0.5, 2, 3.2]
   const labels = ['A', 'B', 'C', 'D']
 
-  let ys = xs.map(() => Math.round(Math.random() * 7))
+  let ys = xs.map(() => Math.round(rng() * 7))
   for (let attempt = 0; attempt < 60; attempt++) {
     const coeffs = interpolatePolynomial(xs.map((x, i) => ({ x, y: ys[i] })))
     const derivs = xs.map((x) => evaluateDerivative(coeffs, x))
     const sorted = [...derivs].sort((a, b) => b - a)
     if (sorted[0] > 0.5 && sorted[0] - sorted[1] > 0.8) break
-    ys = xs.map(() => Math.round(Math.random() * 7))
+    ys = xs.map(() => Math.round(rng() * 7))
   }
 
   return {
@@ -67,18 +76,18 @@ function generateGreatest(id: string): ProblemSlide {
 }
 
 /** Gentle quadratic with a clean derivative m at an integer point. */
-function buildQuadratic() {
-  const targetX = pick([1, 2])
-  const m = pick([0.5, 1, 1.5, 2])
+function buildQuadratic(rng: Rng) {
+  const targetX = pick([1, 2], rng)
+  const m = pick([0.5, 1, 1.5, 2], rng)
   const a = 0.25
   const b = m - 2 * a * targetX
-  const targetY = pick([2, 3])
+  const targetY = pick([2, 3], rng)
   const c = targetY - a * targetX * targetX - b * targetX
   return { coefficients: [c, b, a], targetX, targetY, slope: m }
 }
 
-function generateZoom(id: string): ProblemSlide {
-  const { coefficients, targetX } = buildQuadratic()
+function generateZoom(id: string, rng: Rng): ProblemSlide {
+  const { coefficients, targetX } = buildQuadratic(rng)
   const xMin = targetX - 3
   const xMax = targetX + 3
   const { yMin, yMax } = curveBounds(coefficients, xMin, xMax)
@@ -106,8 +115,8 @@ function generateZoom(id: string): ProblemSlide {
   }
 }
 
-function generateTangent(id: string): ProblemSlide {
-  const { coefficients, targetX } = buildQuadratic()
+function generateTangent(id: string, rng: Rng): ProblemSlide {
+  const { coefficients, targetX } = buildQuadratic(rng)
   const xMin = targetX - 2
   const xMax = targetX + 3
   const { yMin, yMax } = curveBounds(coefficients, xMin, xMax)
@@ -136,10 +145,10 @@ function generateTangent(id: string): ProblemSlide {
 }
 
 /** Cubic with two clean critical points (a max then a min). */
-function generateCritical(id: string): ProblemSlide {
-  const r1 = pick([0.5, 1])
-  const r2 = pick([2, 2.5])
-  const a = pick([0.5, 1])
+function generateCritical(id: string, rng: Rng): ProblemSlide {
+  const r1 = pick([0.5, 1], rng)
+  const r2 = pick([2, 2.5], rng)
+  const a = pick([0.5, 1], rng)
   const c0 = 2
 
   // f'(x) = a(x - r1)(x - r2)  ⇒  integrate for f(x)
@@ -180,24 +189,29 @@ function generateCritical(id: string): ProblemSlide {
   }
 }
 
-function generateByKind(kind: QuestionKind, id: string): ProblemSlide {
+function generateByKind(kind: QuestionKind, id: string, rng: Rng): ProblemSlide {
   switch (kind) {
     case 'greatest':
-      return generateGreatest(id)
+      return generateGreatest(id, rng)
     case 'zoom':
-      return generateZoom(id)
+      return generateZoom(id, rng)
     case 'tangent':
-      return generateTangent(id)
+      return generateTangent(id, rng)
     case 'critical':
-      return generateCritical(id)
+      return generateCritical(id, rng)
   }
 }
 
-/** Pick `count` distinct problem types and generate fresh polynomials for each. */
-export function generateEndingQuestions(count: number): ProblemSlide[] {
+/**
+ * Pick `count` distinct problem types and generate fresh polynomials for each.
+ * Pass a `seed` to make the set reproducible (so a resumed lesson shows the
+ * same questions at the same indices).
+ */
+export function generateEndingQuestions(count: number, seed?: number): ProblemSlide[] {
+  const rng = rngFromSeed(seed)
   const kinds: QuestionKind[] = ['greatest', 'zoom', 'tangent', 'critical']
-  const chosen = shuffle(kinds).slice(0, count)
-  return chosen.map((kind, i) => generateByKind(kind, `ending-${i}-${kind}`))
+  const chosen = shuffle(kinds, rng).slice(0, count)
+  return chosen.map((kind, i) => generateByKind(kind, `ending-${i}-${kind}`, rng))
 }
 
 // --- Lesson 3 review questions ---
@@ -242,27 +256,63 @@ function formatPolynomialT(coefficients: number[]): string {
   return parts.length > 0 ? parts.join(' ') : '0'
 }
 
-/** A related-rates question — the component randomizes its own shape and values. */
-function makeRelatedRatesQuestion(id: string): ProblemSlide {
+/** Build a related-rates problem deterministically from an RNG. */
+export function buildRelatedRatesProblem(rng: Rng = Math.random): RelatedRatesProblem {
+  const shape = pick<RelatedRatesShape>(['sphere', 'square', 'cube'], rng)
+  const size = 2 + Math.floor(rng() * 4) // 2..5
+  const rate = 1 + Math.floor(rng() * 4) // 1..4
+
+  if (shape === 'sphere') {
+    return {
+      shape,
+      prompt: `A sphere's radius grows at dr/dt = ${rate} cm/s. At r = ${size} cm, how fast is its volume changing?`,
+      scaffold: 'dV/dt = (dV/dr)(dr/dt),  with  dV/dr = 4πr²',
+      exact: 4 * Math.PI * size * size * rate,
+      measureUnit: 'cm³/s',
+      hint: `dV/dr = 4πr² = 4π·${size}². Multiply by dr/dt = ${rate}. You can answer with π.`,
+    }
+  }
+  if (shape === 'square') {
+    return {
+      shape,
+      prompt: `A square's side grows at ds/dt = ${rate} cm/s. At s = ${size} cm, how fast is its area changing?`,
+      scaffold: 'dA/dt = (dA/ds)(ds/dt),  with  dA/ds = 2s',
+      exact: 2 * size * rate,
+      measureUnit: 'cm²/s',
+      hint: `dA/ds = 2s = 2·${size}. Multiply by ds/dt = ${rate}.`,
+    }
+  }
+  return {
+    shape,
+    prompt: `A cube's edge grows at ds/dt = ${rate} cm/s. At s = ${size} cm, how fast is its volume changing?`,
+    scaffold: 'dV/dt = (dV/ds)(ds/dt),  with  dV/ds = 3s²',
+    exact: 3 * size * size * rate,
+    measureUnit: 'cm³/s',
+    hint: `dV/ds = 3s² = 3·${size}². Multiply by ds/dt = ${rate}.`,
+  }
+}
+
+/** A related-rates question; the problem is fixed at generation time. */
+function makeRelatedRatesQuestion(id: string, rng: Rng): ProblemSlide {
   return {
     id,
     type: 'problem',
     component: 'relatedRates',
     title: 'Relate the rates',
     body: 'Differentiate the measure with respect to the changing dimension, then multiply by the given rate.',
-    config: {},
+    config: { problem: buildRelatedRatesProblem(rng) },
     feedback: { correct: '', wrong: '' },
     attempts: 'unlimited',
   }
 }
 
 /** A kinematics question: random position s(t); ask acceleration at t0. */
-function makeKinematicsQuestion(id: string): ProblemSlide {
-  const a = pick([1, 2])
-  const b = pick([1, 2, 3])
-  const c = pick([0, 1, 2])
+function makeKinematicsQuestion(id: string, rng: Rng): ProblemSlide {
+  const a = pick([1, 2], rng)
+  const b = pick([1, 2, 3], rng)
+  const c = pick([0, 1, 2], rng)
   const coefficients = [0, c, b, a] // s(t) = a t³ + b t² + c t
-  const t0 = pick([1, 2, 3])
+  const t0 = pick([1, 2, 3], rng)
   const tMax = Math.max(4, t0 + 1)
 
   return {
@@ -288,10 +338,14 @@ function makeKinematicsQuestion(id: string): ProblemSlide {
   }
 }
 
-/** Two on-topic review questions: one related-rates, one kinematics. */
-export function generateLesson3Questions(count: number): ProblemSlide[] {
+/**
+ * Two on-topic review questions: one related-rates, one kinematics. Pass a
+ * `seed` to make the set reproducible across reloads.
+ */
+export function generateLesson3Questions(count: number, seed?: number): ProblemSlide[] {
+  const rng = rngFromSeed(seed)
   const builders = [makeRelatedRatesQuestion, makeKinematicsQuestion]
   return Array.from({ length: count }, (_, i) =>
-    builders[i % builders.length](`l3-review-${i}`),
+    builders[i % builders.length](`l3-review-${i}`, rng),
   )
 }

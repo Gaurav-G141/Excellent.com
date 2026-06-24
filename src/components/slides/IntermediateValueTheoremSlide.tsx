@@ -51,6 +51,10 @@ export function IntermediateValueTheoremSlide({ slide, onContinue }: Props) {
       )
       return
     }
+    if (findWhereEquals(coefficients, value, lo, hi) == null) {
+      setError('Couldn’t locate a crossing in this interval — try another value or move A and B.')
+      return
+    }
     setError(null)
     setRevealed(true)
   }

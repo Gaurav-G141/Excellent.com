@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { DEFAULT_LESSON_ID, lessons, prerequisiteLessonId } from '../../lessons'
+import { evaluatePrereqAccess } from '../../lib/lessonAccess'
 import { loadLessonProgress, saveLessonProgress } from '../../lib/progress'
 import { recordDailyActivity } from '../../lib/streak'
 import {
   generateEndingQuestions,
   generateLesson3Questions,
 } from '../../utils/generateQuestion'
+import { hashStringToSeed } from '../../utils/random'
 import { ProgressBar } from './ProgressBar'
 import { SlideRenderer } from './SlideRenderer'
 import './LessonPlayer.css'
@@ -25,13 +27,16 @@ export function LessonPlayer() {
   )
   const coreCount = lesson.slides.length
 
+  // Seed the random questions per (user, lesson) so a resumed slide index lands
+  // on the SAME question content it did before, rather than a freshly randomized one.
   const endingQuestions = useMemo(() => {
     const spec = lesson.randomQuestions
     if (!spec) return []
+    const seed = user ? hashStringToSeed(`${user.uid}:${lesson.id}`) : undefined
     return spec.kind === 'relatedRates'
-      ? generateLesson3Questions(spec.count)
-      : generateEndingQuestions(spec.count)
-  }, [lesson])
+      ? generateLesson3Questions(spec.count, seed)
+      : generateEndingQuestions(spec.count, seed)
+  }, [lesson, user])
   const slides = useMemo(
     () => [...lesson.slides, ...endingQuestions],
     [lesson, endingQuestions],
@@ -41,34 +46,35 @@ export function LessonPlayer() {
   const [slideIndex, setSlideIndex] = useState(0)
   const [completed, setCompleted] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const activityRecorded = useRef(false)
 
   const prereqId = useMemo(() => prerequisiteLessonId(lesson.id), [lesson.id])
-  const [locked, setLocked] = useState(false)
-  const [accessChecked, setAccessChecked] = useState(false)
+  // 'checking' until the prereq read resolves; 'error' fails CLOSED so a failed
+  // read can never silently unlock a gated lesson.
+  const [access, setAccess] = useState<'checking' | 'unlocked' | 'locked' | 'error'>(
+    'checking',
+  )
+  const [retryToken, setRetryToken] = useState(0)
 
   useEffect(() => {
     let active = true
-    setAccessChecked(false)
-    setLocked(false)
+    setAccess('checking')
     if (!prereqId || !user) {
-      setAccessChecked(true)
+      setAccess('unlocked')
       return
     }
     loadLessonProgress(user.uid, prereqId)
       .then((progress) => {
-        if (active) setLocked(!progress?.lessonCompleted)
+        if (active) setAccess(evaluatePrereqAccess(prereqId, progress?.lessonCompleted))
       })
       .catch(() => {
-        if (active) setLocked(false)
-      })
-      .finally(() => {
-        if (active) setAccessChecked(true)
+        if (active) setAccess('error')
       })
     return () => {
       active = false
     }
-  }, [prereqId, user])
+  }, [prereqId, user, retryToken])
 
   useEffect(() => {
     let active = true
@@ -117,7 +123,9 @@ export function LessonPlayer() {
       saveLessonProgress(user.uid, lesson.id, {
         currentSlideIndex: index,
         lessonCompleted: done,
-      }).catch(() => {})
+      })
+        .then(() => setSaveError(false))
+        .catch(() => setSaveError(true))
     },
     [user, lesson.id],
   )
@@ -159,7 +167,7 @@ export function LessonPlayer() {
     return <Navigate to="/" replace />
   }
 
-  if (!accessChecked || !hydrated) {
+  if (access === 'checking' || !hydrated) {
     return (
       <div className="lesson-player">
         <main className="lesson-slide">
@@ -169,7 +177,38 @@ export function LessonPlayer() {
     )
   }
 
-  if (locked && !completed) {
+  if (access === 'error' && !completed) {
+    return (
+      <div className="lesson-player">
+        <header className="lesson-header">
+          <span className="lesson-title">{lesson.title}</span>
+          <Link to="/" className="lesson-close" aria-label="Exit lesson">
+            ✕
+          </Link>
+        </header>
+        <main className="lesson-slide lesson-complete">
+          <h2>Couldn’t verify access</h2>
+          <p>We couldn’t confirm your progress on the previous lesson. Check your
+            connection and try again.</p>
+          <button
+            type="button"
+            className="slide-cta"
+            onClick={() => {
+              setAccess('checking')
+              setRetryToken((token) => token + 1)
+            }}
+          >
+            Try again
+          </button>
+          <Link to="/" className="lesson-restart">
+            Back to home
+          </Link>
+        </main>
+      </div>
+    )
+  }
+
+  if (access === 'locked' && !completed) {
     const prereq = prereqId ? lessons[prereqId] : null
     return (
       <div className="lesson-player">
@@ -238,6 +277,12 @@ export function LessonPlayer() {
       </header>
 
       <ProgressBar current={slideIndex} total={total} />
+
+      {saveError && (
+        <p className="lesson-save-error" role="status">
+          Your progress couldn’t be saved — check your connection.
+        </p>
+      )}
 
       {inFinal && (
         <p className="lesson-section-tag">

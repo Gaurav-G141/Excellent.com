@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import type { DemoSlide, PowerRuleExponentConfig } from '../../types/lesson'
+import { clampPull, isPullCommitted } from '../../utils/drag'
 import './Lesson2.css'
 
 interface Props {
@@ -56,7 +57,7 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
     const dy = e.clientY - startYRef.current
-    setOffset(Math.max(0, Math.min(dy, MAX_OFFSET)))
+    setOffset(clampPull(dy, MAX_OFFSET))
   }, [])
 
   const handlePointerUp = useCallback(
@@ -64,7 +65,9 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId)
       }
-      const committed = offset >= PULL_THRESHOLD
+      // Decide from the live pointer delta, not React state, so a fast final
+      // move that hasn't flushed to `offset` yet still commits correctly.
+      const committed = isPullCommitted(e.clientY - startYRef.current, PULL_THRESHOLD, MAX_OFFSET)
       setDragging(false)
       // On a successful pull, snap to place instantly and change the term.
       // On a short pull, leave instant off so it springs back smoothly.
@@ -72,7 +75,7 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
       setOffset(0)
       if (committed) applyStep()
     },
-    [offset, applyStep],
+    [applyStep],
   )
 
   const reset = useCallback(() => {

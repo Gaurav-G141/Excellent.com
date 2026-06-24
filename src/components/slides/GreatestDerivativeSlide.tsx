@@ -4,6 +4,7 @@ import {
   evaluateDerivative,
   interpolatePolynomial,
 } from '../../utils/polynomial'
+import { formatFeedback } from '../../utils/feedback'
 import { GraphCanvas, TangentArrow } from '../graph/GraphCanvas'
 import { CorrectFlash } from '../lesson/CorrectFlash'
 import { FeedbackPopup } from '../lesson/FeedbackPopup'
@@ -48,10 +49,12 @@ export function GreatestDerivativeSlide({ slide, onCorrect }: Props) {
       setFlashCorrect(true)
       setWrongFeedback(null)
     } else {
-      const message = slide.feedback.wrong
-        .replace(/\{correct answer\}/g, correctLabel)
-        .replace(/\{answer\}/g, selected)
-      setWrongFeedback(message)
+      setWrongFeedback(
+        formatFeedback(slide.feedback.wrong, {
+          'correct answer': correctLabel,
+          answer: selected,
+        }),
+      )
     }
   }
 
@@ -73,7 +76,17 @@ export function GreatestDerivativeSlide({ slide, onCorrect }: Props) {
                       r={16}
                       className={`graph-point-ring${isSelected ? ' selected' : ''}${solved && opt.label === correctLabel ? ' correct' : ''}`}
                       style={{ cursor: solved ? 'default' : 'pointer' }}
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={`Point ${opt.label}`}
+                      tabIndex={solved ? -1 : 0}
                       onClick={() => !solved && setSelected(opt.label)}
+                      onKeyDown={(e) => {
+                        if (!solved && (e.key === 'Enter' || e.key === ' ')) {
+                          e.preventDefault()
+                          setSelected(opt.label)
+                        }
+                      }}
                     />
                     <text
                       x={screen.x}

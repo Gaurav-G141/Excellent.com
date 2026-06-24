@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { DemoSlide, ExpandingCircleConfig } from '../../types/lesson'
+import { useTween } from '../../hooks/useTween'
 import './Lesson3.css'
 
 interface Props {
@@ -16,27 +17,13 @@ export function ExpandingCircleSlide({ slide, onContinue }: Props) {
   const { minR, maxR, dr, initialR, unit = 'cm' } = config
 
   const [r, setR] = useState(initialR)
-  const [playing, setPlaying] = useState(false)
-  const rafRef = useRef(0)
+  const span = maxR - minR
+  const { play, stop } = useTween(1500, (t) => {
+    const eased = 1 - (1 - t) * (1 - t)
+    setR(minR + span * eased)
+  })
 
   const scale = (CENTER - MARGIN) / (maxR + dr)
-
-  useEffect(() => {
-    if (!playing) return
-    const start = performance.now()
-    const duration = 1500
-    const span = maxR - minR
-
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / duration)
-      const eased = 1 - (1 - t) * (1 - t)
-      setR(minR + span * eased)
-      if (t < 1) rafRef.current = requestAnimationFrame(tick)
-      else setPlaying(false)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [playing, minR, maxR])
 
   const area = Math.PI * r * r
   const circumference = 2 * Math.PI * r
@@ -90,7 +77,7 @@ export function ExpandingCircleSlide({ slide, onContinue }: Props) {
           step={0.05}
           value={r}
           onChange={(e) => {
-            setPlaying(false)
+            stop()
             setR(Number(e.target.value))
           }}
         />
@@ -121,7 +108,7 @@ export function ExpandingCircleSlide({ slide, onContinue }: Props) {
           className="slide-secondary-cta"
           onClick={() => {
             setR(minR)
-            setPlaying(true)
+            play()
           }}
         >
           Grow it

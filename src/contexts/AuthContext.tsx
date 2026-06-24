@@ -16,6 +16,7 @@ import {
   type ReactNode,
 } from 'react'
 import { auth, db } from '../lib/firebase'
+import { isValidDisplayName, normalizeDisplayName } from '../lib/authValidation'
 
 interface AuthContextValue {
   user: User | null
@@ -47,12 +48,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = useCallback(
     async (email: string, password: string, displayName: string) => {
       if (!auth || !db) throw new Error('Firebase is not configured.')
+      const name = normalizeDisplayName(displayName)
+      if (!isValidDisplayName(name)) {
+        throw new Error('Please enter your name (1–100 characters).')
+      }
       const credential = await createUserWithEmailAndPassword(auth, email, password)
-      await setDoc(doc(db, 'users', credential.user.uid), {
-        displayName,
-        email,
-        createdAt: serverTimestamp(),
-      })
+      try {
+        await setDoc(doc(db, 'users', credential.user.uid), {
+          displayName: name,
+          email,
+          createdAt: serverTimestamp(),
+        })
+      } catch (error) {
+        // Roll back the half-created account so we don't orphan an auth user
+        // with no profile document; the learner can retry cleanly.
+        await credential.user.delete().catch(() => {})
+        throw error
+      }
     },
     [],
   )

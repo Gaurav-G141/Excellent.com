@@ -61,7 +61,7 @@ export interface GraphApi {
   secantSegment: (x1: number, x2: number, epsilon?: number) => ScreenSegment
 }
 
-function clipLineThroughPoint(
+export function clipLineThroughPoint(
   cx: number,
   cy: number,
   angle: number,
@@ -88,6 +88,11 @@ function clipLineThroughPoint(
   }
 
   const valid = ts.filter(inPlot)
+  if (valid.length === 0) {
+    // Line never crosses the plot rect — return a degenerate segment at the
+    // point rather than producing ±Infinity coordinates from Math.min/max([]).
+    return { x1: cx, y1: cy, x2: cx, y2: cy, angle }
+  }
   const tMin = Math.min(...valid)
   const tMax = Math.max(...valid)
 
@@ -201,30 +206,31 @@ export const GraphCanvas = forwardRef<SVGSVGElement, GraphCanvasProps>(function 
 
   const plotW = width - PAD.left - PAD.right
   const plotH = height - PAD.top - PAD.bottom
-  const xTicks = 5
-  const yTicks = 5
 
-  const xMajorValues = unitGrid
-    ? integerRange(Math.ceil(viewport.xMin), Math.floor(viewport.xMax))
-    : Array.from({ length: xTicks + 1 }, (_, i) =>
-        viewport.xMin + (i / xTicks) * (viewport.xMax - viewport.xMin),
-      )
-
-  const yMajorValues = unitGrid
-    ? integerRange(Math.ceil(viewport.yMin), Math.floor(viewport.yMax))
-    : Array.from({ length: yTicks + 1 }, (_, i) =>
-        viewport.yMin + (i / yTicks) * (viewport.yMax - viewport.yMin),
-      )
-
-  const xMinorValues =
-    unitGrid && minorGridStep > 0
-      ? minorGridRange(viewport.xMin, viewport.xMax, minorGridStep)
-      : []
-
-  const yMinorValues =
-    unitGrid && minorGridStep > 0
-      ? minorGridRange(viewport.yMin, viewport.yMax, minorGridStep)
-      : []
+  const { xMajorValues, yMajorValues, xMinorValues, yMinorValues } = useMemo(() => {
+    const xTicks = 5
+    const yTicks = 5
+    return {
+      xMajorValues: unitGrid
+        ? integerRange(Math.ceil(viewport.xMin), Math.floor(viewport.xMax))
+        : Array.from({ length: xTicks + 1 }, (_, i) =>
+            viewport.xMin + (i / xTicks) * (viewport.xMax - viewport.xMin),
+          ),
+      yMajorValues: unitGrid
+        ? integerRange(Math.ceil(viewport.yMin), Math.floor(viewport.yMax))
+        : Array.from({ length: yTicks + 1 }, (_, i) =>
+            viewport.yMin + (i / yTicks) * (viewport.yMax - viewport.yMin),
+          ),
+      xMinorValues:
+        unitGrid && minorGridStep > 0
+          ? minorGridRange(viewport.xMin, viewport.xMax, minorGridStep)
+          : [],
+      yMinorValues:
+        unitGrid && minorGridStep > 0
+          ? minorGridRange(viewport.yMin, viewport.yMax, minorGridStep)
+          : [],
+    }
+  }, [unitGrid, minorGridStep, viewport])
 
   return (
     <svg

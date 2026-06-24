@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { ProblemSlide, SecondDerivativeProblemConfig } from '../../types/lesson'
+import { useTween } from '../../hooks/useTween'
 import { matchesNumber } from '../../utils/expression'
 import { evaluatePoly, evaluateSecondDerivative } from '../../utils/polynomial'
 import { CorrectFlash } from '../lesson/CorrectFlash'
@@ -47,27 +48,12 @@ export function SecondDerivativeProblemSlide({ slide, onCorrect }: Props) {
   }, [coefficients, tMax])
 
   const [t, setT] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const rafRef = useRef(0)
+  const { play, playing } = useTween(2600, (progress) => setT(progress * tMax))
 
   const [answer, setAnswer] = useState('')
   const [solved, setSolved] = useState(false)
   const [flashCorrect, setFlashCorrect] = useState(false)
   const [wrongFeedback, setWrongFeedback] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!playing) return
-    const start = performance.now()
-    const duration = 2600
-    const tick = (now: number) => {
-      const elapsed = (now - start) / duration
-      setT(Math.min(tMax, elapsed * tMax))
-      if (elapsed < 1) rafRef.current = requestAnimationFrame(tick)
-      else setPlaying(false)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [playing, tMax])
 
   const sNow = evaluatePoly(coefficients, t)
   const bugX = PAD + ((sNow - sBounds.lo) / (sBounds.hi - sBounds.lo)) * (W - 2 * PAD)
@@ -121,7 +107,7 @@ export function SecondDerivativeProblemSlide({ slide, onCorrect }: Props) {
             className="cr-step-btn"
             onClick={() => {
               setT(0)
-              setPlaying(true)
+              play()
             }}
           >
             {playing ? 'Playing…' : 'Replay motion'}

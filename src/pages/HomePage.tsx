@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { LESSON_ICONS, lessonList } from '../lessons'
 import { db } from '../lib/firebase'
+import { isUnlockedByPrereq } from '../lib/lessonAccess'
 import { loadLessonProgress } from '../lib/progress'
 import { calendarDaysAgo, currentStreak } from '../lib/streak'
 import './HomePage.css'
@@ -29,41 +30,55 @@ export default function HomePage() {
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [streak, setStreak] = useState(0)
   const [statuses, setStatuses] = useState<Record<string, LessonStatus>>({})
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    if (!user || !db) return
+    if (!user || !db) {
+      setLoaded(true)
+      return
+    }
+    let active = true
+    setLoaded(false)
 
-    getDoc(doc(db, 'users', user.uid)).then((snapshot) => {
-      if (!snapshot.exists()) return
-      const data = snapshot.data()
-      setDisplayName((data.displayName as string) ?? null)
-      setStreak(
-        currentStreak({
-          count: typeof data.streakCount === 'number' ? data.streakCount : 0,
-          lastActiveDate:
-            typeof data.lastActiveDate === 'string' ? data.lastActiveDate : null,
-          longest: 0,
-        }),
-      )
-    })
+    const userPromise = getDoc(doc(db, 'users', user.uid))
+      .then((snapshot) => {
+        if (!active || !snapshot.exists()) return
+        const data = snapshot.data()
+        setDisplayName((data.displayName as string) ?? null)
+        setStreak(
+          currentStreak({
+            count: typeof data.streakCount === 'number' ? data.streakCount : 0,
+            lastActiveDate:
+              typeof data.lastActiveDate === 'string' ? data.lastActiveDate : null,
+            longest: 0,
+          }),
+        )
+      })
+      .catch(() => {})
 
-    lessonList.forEach((lesson) => {
+    const lessonPromises = lessonList.map((lesson) =>
       loadLessonProgress(user.uid, lesson.id)
         .then((progress) => {
-          if (!progress) return
+          if (!active || !progress) return
           setStatuses((current) => ({
             ...current,
             [lesson.id]: {
               daysAgo:
-                progress.updatedAt !== null
-                  ? calendarDaysAgo(progress.updatedAt)
-                  : null,
+                progress.updatedAt !== null ? calendarDaysAgo(progress.updatedAt) : null,
               completed: progress.lessonCompleted,
             },
           }))
         })
-        .catch(() => {})
+        .catch(() => {}),
+    )
+
+    Promise.all([userPromise, ...lessonPromises]).finally(() => {
+      if (active) setLoaded(true)
     })
+
+    return () => {
+      active = false
+    }
   }, [user])
 
   return (
@@ -95,12 +110,16 @@ export default function HomePage() {
           </span>
         </div>
 
-        {lessonList.map((lesson, index) => {
+        {!loaded && <p className="home-loading slide-hint">Loading your lessons…</p>}
+
+        {loaded &&
+          lessonList.map((lesson, index) => {
           const prev = index > 0 ? lessonList[index - 1] : null
-          const unlocked =
-            !prev ||
-            statuses[lesson.id]?.completed === true ||
-            statuses[prev.id]?.completed === true
+          const unlocked = isUnlockedByPrereq(
+            prev !== null,
+            prev ? statuses[prev.id]?.completed === true : false,
+            statuses[lesson.id]?.completed === true,
+          )
 
           if (!unlocked) {
             return (
@@ -118,7 +137,7 @@ export default function HomePage() {
                     {lesson.subject} · {lesson.slides.length} slides
                   </p>
                   <p className="home-lesson-status home-lesson-status--locked">
-                    Finish {prev.title} to unlock
+                    Finish {prev?.title ?? 'the previous lesson'} to unlock
                   </p>
                 </div>
               </div>

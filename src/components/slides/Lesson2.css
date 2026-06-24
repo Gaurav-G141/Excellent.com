@@ -111,6 +111,24 @@
 
 .match-row {
   display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.match-clear {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted, #667085);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.match-clear:hover {
+  color: var(--danger, #b42318);
 }
 
 .match-prompt {

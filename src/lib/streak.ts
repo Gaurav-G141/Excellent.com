@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, runTransaction } from 'firebase/firestore'
 import { db } from './firebase'
 
 export interface StreakState {
@@ -39,7 +39,7 @@ export function currentStreak(state: StreakState | null, now = new Date()): numb
   return 0
 }
 
-function readStreak(data: Record<string, unknown> | undefined): StreakState {
+export function readStreak(data: Record<string, unknown> | undefined): StreakState {
   return {
     count: typeof data?.streakCount === 'number' ? data.streakCount : 0,
     lastActiveDate:
@@ -49,27 +49,38 @@ function readStreak(data: Record<string, unknown> | undefined): StreakState {
 }
 
 /**
- * Mark today as an active learning day and roll the streak forward. Idempotent:
- * a second call on the same day is a no-op that returns the unchanged state.
+ * Pure streak roll: given the previous state, return the new state for "active
+ * today", or `null` if today was already recorded (no change). Extends the
+ * streak when the last active day was yesterday, otherwise resets to 1.
+ */
+export function rollStreak(previous: StreakState, now = new Date()): StreakState | null {
+  const today = dayKey(now)
+  if (previous.lastActiveDate === today) return null
+  const yesterday = dayKey(new Date(now.getTime() - MS_PER_DAY))
+  const count = previous.lastActiveDate === yesterday ? previous.count + 1 : 1
+  const longest = Math.max(previous.longest, count)
+  return { count, lastActiveDate: today, longest }
+}
+
+/**
+ * Mark today as an active learning day and roll the streak forward. Runs inside
+ * a Firestore transaction so concurrent calls (multiple tabs / rapid clicks)
+ * can't both read a stale count and clobber each other. Idempotent within a day.
  */
 export async function recordDailyActivity(uid: string): Promise<StreakState | null> {
   if (!db) return null
-  const ref = doc(db, 'users', uid)
-  const snapshot = await getDoc(ref)
-  const previous = readStreak(snapshot.exists() ? snapshot.data() : undefined)
-
-  const today = dayKey()
-  if (previous.lastActiveDate === today) return previous
-
-  const yesterday = dayKey(new Date(Date.now() - MS_PER_DAY))
-  const count = previous.lastActiveDate === yesterday ? previous.count + 1 : 1
-  const longest = Math.max(previous.longest, count)
-
-  const next: StreakState = { count, lastActiveDate: today, longest }
-  await setDoc(
-    ref,
-    { streakCount: count, lastActiveDate: today, longestStreak: longest },
-    { merge: true },
-  )
-  return next
+  const database = db
+  const ref = doc(database, 'users', uid)
+  return runTransaction(database, async (tx) => {
+    const snapshot = await tx.get(ref)
+    const previous = readStreak(snapshot.exists() ? snapshot.data() : undefined)
+    const next = rollStreak(previous)
+    if (!next) return previous
+    tx.set(
+      ref,
+      { streakCount: next.count, lastActiveDate: next.lastActiveDate, longestStreak: next.longest },
+      { merge: true },
+    )
+    return next
+  })
 }

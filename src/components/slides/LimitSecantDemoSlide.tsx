@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import type { DemoSlide, LimitSecantDemoConfig } from '../../types/lesson'
+import { useTween } from '../../hooks/useTween'
 import { easeOutQuint } from '../../utils/easing'
 import { GraphCanvas, TangentIndicator } from '../graph/GraphCanvas'
 import { SecantLine } from '../graph/SecantLine'
@@ -22,37 +23,20 @@ export function LimitSecantDemoSlide({ slide, onContinue }: Props) {
     Math.max(sliderMin, Math.min(sliderMax, defaultAnchor)),
   )
   const [movingX, setMovingX] = useState<number | null>(null)
-  const [animating, setAnimating] = useState(false)
   const [animationDone, setAnimationDone] = useState(false)
 
-  const runAnimation = useCallback(() => {
-    if (animating) return
+  const startX = viewport.xMax - 0.05
+  const { play, playing: animating } = useTween(
+    animationDurationMs,
+    (t) => setMovingX(startX + (anchorX - startX) * easeOutQuint(t)),
+    () => setAnimationDone(true),
+  )
 
-    const startX = viewport.xMax - 0.05
-    const endX = anchorX
-    setAnimating(true)
-    setAnimationDone(false)
+  function runAnimation() {
     setMovingX(startX)
-
-    const startTime = performance.now()
-    let frame = 0
-
-    const tick = (now: number) => {
-      const raw = Math.min(1, (now - startTime) / animationDurationMs)
-      const t = easeOutQuint(raw)
-      setMovingX(startX + (endX - startX) * t)
-
-      if (raw < 1) {
-        frame = requestAnimationFrame(tick)
-      } else {
-        setAnimating(false)
-        setAnimationDone(true)
-      }
-    }
-
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [anchorX, animating, viewport.xMax, animationDurationMs])
+    setAnimationDone(false)
+    play()
+  }
 
   function handleAnchorChange(x: number) {
     setAnchorX(x)

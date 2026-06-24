@@ -1,12 +1,42 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isBoundedInt(v, lo, hi) {
+      return v is int && v >= lo && v <= hi;
+    }
+
+    // Mirror of src/lib/firestoreValidation.ts (isValidUserPatch).
+    function validUser(d) {
+      return d.keys().hasOnly(['displayName', 'email', 'createdAt', 'streakCount', 'lastActiveDate', 'longestStreak'])
+        && (!('displayName' in d) || (d.displayName is string && d.displayName.size() >= 1 && d.displayName.size() <= 100))
+        && (!('email' in d) || d.email is string)
+        && (!('streakCount' in d) || isBoundedInt(d.streakCount, 0, 100000))
+        && (!('longestStreak' in d) || isBoundedInt(d.longestStreak, 0, 100000))
+        && (!('lastActiveDate' in d) || (d.lastActiveDate is string && d.lastActiveDate.size() <= 10));
+    }
+
+    // Mirror of src/lib/firestoreValidation.ts (isValidProgressDoc).
+    function validProgress(d) {
+      return d.keys().hasOnly(['currentSlideIndex', 'lessonCompleted', 'updatedAt'])
+        && isBoundedInt(d.currentSlideIndex, 0, 1000)
+        && d.lessonCompleted is bool;
+    }
+
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && validUser(request.resource.data);
     }
+
     match /progress/{userId}/lessons/{lessonId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && validProgress(request.resource.data);
     }
+
     match /courses/{courseId} {
       allow read: if request.auth != null;
       allow write: if false;

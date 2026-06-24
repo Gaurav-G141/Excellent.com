@@ -1,6 +1,12 @@
 import { useState } from 'react'
-import type { ProblemSlide } from '../../types/lesson'
+import type {
+  ProblemSlide,
+  RelatedRatesProblem,
+  RelatedRatesProblemConfig,
+  RelatedRatesShape,
+} from '../../types/lesson'
 import { matchesNumber } from '../../utils/expression'
+import { buildRelatedRatesProblem } from '../../utils/generateQuestion'
 import { CorrectFlash } from '../lesson/CorrectFlash'
 import { FeedbackPopup } from '../lesson/FeedbackPopup'
 import './Lesson3.css'
@@ -10,63 +16,7 @@ interface Props {
   onCorrect: () => void
 }
 
-type Shape = 'sphere' | 'square' | 'cube'
-
-interface Problem {
-  shape: Shape
-  prompt: string
-  scaffold: string
-  exact: number
-  measureUnit: string
-  hint: string
-}
-
-function randInt(lo: number, hi: number): number {
-  return lo + Math.floor(Math.random() * (hi - lo + 1))
-}
-
-function pick<T>(values: T[]): T {
-  return values[Math.floor(Math.random() * values.length)]
-}
-
-function makeProblem(): Problem {
-  const shape = pick<Shape>(['sphere', 'square', 'cube'])
-  const size = randInt(2, 5)
-  const rate = randInt(1, 4)
-
-  if (shape === 'sphere') {
-    return {
-      shape,
-      prompt: `A sphere's radius grows at dr/dt = ${rate} cm/s. At r = ${size} cm, how fast is its volume changing?`,
-      scaffold: 'dV/dt = (dV/dr)(dr/dt),  with  dV/dr = 4πr²',
-      exact: 4 * Math.PI * size * size * rate,
-      measureUnit: 'cm³/s',
-      hint: `dV/dr = 4πr² = 4π·${size}². Multiply by dr/dt = ${rate}. You can answer with π.`,
-    }
-  }
-
-  if (shape === 'square') {
-    return {
-      shape,
-      prompt: `A square's side grows at ds/dt = ${rate} cm/s. At s = ${size} cm, how fast is its area changing?`,
-      scaffold: 'dA/dt = (dA/ds)(ds/dt),  with  dA/ds = 2s',
-      exact: 2 * size * rate,
-      measureUnit: 'cm²/s',
-      hint: `dA/ds = 2s = 2·${size}. Multiply by ds/dt = ${rate}.`,
-    }
-  }
-
-  return {
-    shape,
-    prompt: `A cube's edge grows at ds/dt = ${rate} cm/s. At s = ${size} cm, how fast is its volume changing?`,
-    scaffold: 'dV/dt = (dV/ds)(ds/dt),  with  dV/ds = 3s²',
-    exact: 3 * size * size * rate,
-    measureUnit: 'cm³/s',
-    hint: `dV/ds = 3s² = 3·${size}². Multiply by ds/dt = ${rate}.`,
-  }
-}
-
-function ShapeGlyph({ shape }: { shape: Shape }) {
+function ShapeGlyph({ shape }: { shape: RelatedRatesShape }) {
   if (shape === 'sphere') {
     return (
       <svg className="rr-shape" viewBox="0 0 80 80" aria-hidden>
@@ -92,7 +42,12 @@ function ShapeGlyph({ shape }: { shape: Shape }) {
 }
 
 export function RelatedRatesProblemSlide({ slide, onCorrect }: Props) {
-  const [problem] = useState(makeProblem)
+  const configProblem = (slide.config as unknown as Partial<RelatedRatesProblemConfig>).problem
+  // Fall back to a generated problem if the lesson JSON didn't supply one, so a
+  // config-less slide renders a valid question instead of crashing.
+  const [problem] = useState<RelatedRatesProblem>(
+    () => configProblem ?? buildRelatedRatesProblem(),
+  )
   const [answer, setAnswer] = useState('')
   const [solved, setSolved] = useState(false)
   const [flashCorrect, setFlashCorrect] = useState(false)

@@ -100,6 +100,12 @@ function insertImplicitMultiplication(tokens: Token[]): Token[] {
 
 const PRECEDENCE: Record<string, number> = { '+': 2, '-': 2, '*': 3, '/': 3, '^': 4 }
 
+/**
+ * Unary minus binds looser than exponentiation but tighter than multiplication,
+ * so `-x^2` is `-(x^2)` (standard math convention) rather than `(-x)^2`.
+ */
+const UNARY_PRECEDENCE = 3.5
+
 type BinOp = '+' | '-' | '*' | '/' | '^'
 
 type RpnItem =
@@ -133,7 +139,7 @@ function toRpn(tokens: Token[]): RpnItem[] | null {
         while (stack.length > 0) {
           const top = stack[stack.length - 1]
           if (top.kind === 'lparen') break
-          const topPrec = top.kind === 'unary' ? 5 : PRECEDENCE[top.value]
+          const topPrec = top.kind === 'unary' ? UNARY_PRECEDENCE : PRECEDENCE[top.value]
           if (topPrec > curPrec || (topPrec === curPrec && !rightAssoc)) {
             output.push(stack.pop() as RpnItem)
           } else break

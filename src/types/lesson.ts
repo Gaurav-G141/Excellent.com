@@ -37,6 +37,21 @@ export interface RandomQuestionSpec {
   count: number
 }
 
+export type RelatedRatesShape = 'sphere' | 'square' | 'cube'
+
+export interface RelatedRatesProblem {
+  shape: RelatedRatesShape
+  prompt: string
+  scaffold: string
+  exact: number
+  measureUnit: string
+  hint: string
+}
+
+export interface RelatedRatesProblemConfig {
+  problem: RelatedRatesProblem
+}
+
 export interface Lesson {
   id: string
   title: string
