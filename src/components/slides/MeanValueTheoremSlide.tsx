@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import type { DemoSlide, MeanValueTheoremConfig } from '../../types/lesson'
-import { evaluatePoly, findWhereDerivativeEquals } from '../../utils/polynomial'
+import { evaluateDerivative, evaluatePoly, findWhereDerivativeEquals } from '../../utils/polynomial'
 import { DraggableGraphPoint } from '../graph/DraggableGraphPoint'
 import { GraphCanvas } from '../graph/GraphCanvas'
 import { SecantLine } from '../graph/SecantLine'
@@ -22,10 +22,16 @@ export function MeanValueTheoremSlide({ slide, onContinue }: Props) {
 
   const lo = Math.min(ax, bx)
   const hi = Math.max(ax, bx)
+  const tooClose = Math.abs(hi - lo) < 0.4
+  const midX = (lo + hi) / 2
+
   const secantSlope = useMemo(
     () => (evaluatePoly(coefficients, hi) - evaluatePoly(coefficients, lo)) / (hi - lo),
     [coefficients, lo, hi],
   )
+  // When the points are too close the secant slope is unstable (and NaN when
+  // they coincide), so fall back to the tangent slope at the shared point.
+  const displaySlope = tooClose ? evaluateDerivative(coefficients, midX) : secantSlope
   const cValue = useMemo(
     () => findWhereDerivativeEquals(coefficients, secantSlope, lo, hi),
     [coefficients, secantSlope, lo, hi],
@@ -37,8 +43,6 @@ export function MeanValueTheoremSlide({ slide, onContinue }: Props) {
     else setBx(clamped)
     setShowTangent(false)
   }
-
-  const tooClose = Math.abs(hi - lo) < 0.4
 
   return (
     <>
@@ -55,7 +59,9 @@ export function MeanValueTheoremSlide({ slide, onContinue }: Props) {
         showAxisLabels
       >
         {(api) => {
-          const segment = api.secantSegment(ax, bx, 0)
+          // Avoid a degenerate/infinite secant when the points coincide by
+          // drawing the tangent at the shared point instead.
+          const segment = tooClose ? api.clippedTangentSegment(midX) : api.secantSegment(ax, bx, 0)
           const tangent =
             showTangent && cValue != null ? api.clippedTangentSegment(cValue) : null
           const cScreen =
@@ -94,7 +100,7 @@ export function MeanValueTheoremSlide({ slide, onContinue }: Props) {
 
       <div className="slide-copy">
         <p className="slide-hint">
-          Secant slope (average rate) = <strong>{secantSlope.toFixed(2)}</strong>
+          Secant slope (average rate) = <strong>{displaySlope.toFixed(2)}</strong>
           {showTangent && cValue != null && (
             <>
               {' '}

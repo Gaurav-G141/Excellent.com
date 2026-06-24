@@ -5,6 +5,7 @@ import {
   evaluatePoly,
   resolveCriticalPoints,
 } from '../../utils/polynomial'
+import { countNonCriticalSelections } from '../../utils/grading'
 import { clientToSvg } from '../../utils/svgCoords'
 import { GraphCanvas, type GraphApi } from '../graph/GraphCanvas'
 import { CorrectFlash } from '../lesson/CorrectFlash'
@@ -90,7 +91,12 @@ export function DerivativeCriticalPointsSlide({ slide, onCorrect }: Props) {
     }
 
     if (!allSelectedAreCritical) {
-      setWrongFeedback('One or more of your points are not critical points. Try again.')
+      const nonCriticalCount = countNonCriticalSelections(
+        selectedXs,
+        points.map((point) => point.x),
+        selectTolerance,
+      )
+      setWrongFeedback(`${nonCriticalCount} of your points are not critical points. Try again.`)
     } else {
       setWrongFeedback(
         'You have not found all critical points. Tap where f\u2032(x) = 0 on the derivative graph.',

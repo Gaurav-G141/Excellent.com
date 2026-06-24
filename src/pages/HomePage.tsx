@@ -119,6 +119,7 @@ export default function HomePage() {
             prev !== null,
             prev ? statuses[prev.id]?.completed === true : false,
             statuses[lesson.id]?.completed === true,
+            statuses[lesson.id] !== undefined,
           )
 
           if (!unlocked) {

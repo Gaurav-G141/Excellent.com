@@ -8,7 +8,7 @@ interface Props {
   onContinue: () => void
 }
 
-const PULL_THRESHOLD = 36
+const PULL_THRESHOLD = 28
 const MAX_OFFSET = 72
 
 interface Term {
@@ -27,6 +27,10 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
   const [instant, setInstant] = useState(false)
   const [steps, setSteps] = useState(0)
   const startYRef = useRef(0)
+  // Largest downward pull seen during the current gesture. Committing on this
+  // (not just the release delta) means a clear drag still derives even if the
+  // finger eased back up slightly before release.
+  const maxPullRef = useRef(0)
 
   const isConstant = term.exponent === 0
   const isZero = term.exponent === 0 && term.coefficient === 0
@@ -49,6 +53,7 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId)
     startYRef.current = e.clientY
+    maxPullRef.current = 0
     setInstant(false)
     setDragging(true)
     setOffset(0)
@@ -56,8 +61,9 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
-    const dy = e.clientY - startYRef.current
-    setOffset(clampPull(dy, MAX_OFFSET))
+    const pull = clampPull(e.clientY - startYRef.current, MAX_OFFSET)
+    maxPullRef.current = Math.max(maxPullRef.current, pull)
+    setOffset(pull)
   }, [])
 
   const handlePointerUp = useCallback(
@@ -65,9 +71,12 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId)
       }
-      // Decide from the live pointer delta, not React state, so a fast final
-      // move that hasn't flushed to `offset` yet still commits correctly.
-      const committed = isPullCommitted(e.clientY - startYRef.current, PULL_THRESHOLD, MAX_OFFSET)
+      // Commit if either the release delta or the largest pull during the drag
+      // crossed the threshold, so a clear downward drag reliably derives even
+      // if the last move didn't flush to state or eased back before release.
+      const committed =
+        isPullCommitted(e.clientY - startYRef.current, PULL_THRESHOLD, MAX_OFFSET) ||
+        maxPullRef.current >= PULL_THRESHOLD
       setDragging(false)
       // On a successful pull, snap to place instantly and change the term.
       // On a short pull, leave instant off so it springs back smoothly.

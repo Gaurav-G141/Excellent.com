@@ -43,8 +43,9 @@ export function HorizontalCriticalSlide({ slide, onContinue }: Props) {
     <>
       <GraphCanvas coefficients={coefficients} viewport={viewport}>
         {(api) => {
-          const lineRenderY = activePoint ? activePoint.y : lineY
-          const lineScreenY = api.toScreen(viewport.xMin, lineRenderY).y
+          // Track the slider continuously (no snapping) so the line glides; the
+          // nearby critical dot still lights up when the line is close.
+          const lineScreenY = api.toScreen(viewport.xMin, lineY).y
 
           return (
             <>

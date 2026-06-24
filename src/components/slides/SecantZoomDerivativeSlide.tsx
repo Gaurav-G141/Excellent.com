@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { ProblemSlide, SecantZoomDerivativeConfig } from '../../types/lesson'
 import { evaluateDerivative, evaluatePoly } from '../../utils/polynomial'
-import { formatFeedback } from '../../utils/feedback'
 import { zoomViewport } from '../../utils/viewport'
 import { GraphCanvas } from '../graph/GraphCanvas'
 import { CorrectFlash } from '../lesson/CorrectFlash'
@@ -11,6 +10,14 @@ interface Props {
   slide: ProblemSlide
   onCorrect: () => void
 }
+
+// Fraction of the available zoom range the learner must reach before we assume
+// they've zoomed in enough to read the slope (below this we nudge them to keep
+// zooming instead of telling them the slope is wrong).
+const ZOOM_ENOUGH_FRACTION = 0.6
+const NEEDS_ZOOM_MESSAGE = 'Zoom in further, the curve should roughly look like a straight line'
+const WRONG_SLOPE_MESSAGE =
+  'Recall that a derivative is the slope of the tangent line. The slope of a line is the change in y divided by the change in x'
 
 export function SecantZoomDerivativeSlide({ slide, onCorrect }: Props) {
   const config = slide.config as unknown as SecantZoomDerivativeConfig
@@ -47,7 +54,8 @@ export function SecantZoomDerivativeSlide({ slide, onCorrect }: Props) {
   )
 
   const targetLabel = formatGridCoord(targetX, targetY, minorGridStep)
-  const referenceLabel = formatGridCoord(referenceX, referenceY, minorGridStep)
+
+  const zoomEnoughThreshold = 1 + (zoomLevels - 1) * ZOOM_ENOUGH_FRACTION
 
   function handleCheck() {
     if (solved) return
@@ -58,12 +66,10 @@ export function SecantZoomDerivativeSlide({ slide, onCorrect }: Props) {
       setSolved(true)
       setFlashCorrect(true)
       setWrongFeedback(null)
+    } else if (zoom < zoomEnoughThreshold) {
+      setWrongFeedback(NEEDS_ZOOM_MESSAGE)
     } else {
-      setWrongFeedback(
-        formatFeedback(slide.feedback.wrong, {
-          'x value to find derivative at': String(targetX),
-        }),
-      )
+      setWrongFeedback(WRONG_SLOPE_MESSAGE)
     }
   }
 
@@ -109,13 +115,6 @@ export function SecantZoomDerivativeSlide({ slide, onCorrect }: Props) {
                   r={5}
                   className="graph-reference-dot"
                 />
-                <text
-                  x={refScreen.x}
-                  y={refScreen.y + 18}
-                  className="graph-reference-label"
-                >
-                  {referenceLabel}
-                </text>
               </>
             )
           }}

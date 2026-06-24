@@ -38,12 +38,15 @@ export function DragMatchSlide({ slide, onCorrect }: Props) {
   const [solved, setSolved] = useState(false)
   const [flashCorrect, setFlashCorrect] = useState(false)
   const [wrongFeedback, setWrongFeedback] = useState<string | null>(null)
+  // Prompt indices whose current match was wrong on the last check.
+  const [wrongPrompts, setWrongPrompts] = useState<Set<number>>(new Set())
 
   const allAssigned = pairs.every((_, i) => assignments[i] !== undefined)
   const usedChipIds = new Set(Object.values(assignments))
 
   function assignChip(chipId: number) {
     if (solved || selectedPrompt === null) return
+    setWrongPrompts(new Set())
     setAssignments((prev) => {
       const next: Record<number, number> = {}
       // remove this chip from any other prompt (each chip used once)
@@ -58,6 +61,7 @@ export function DragMatchSlide({ slide, onCorrect }: Props) {
 
   function clearPrompt(promptIndex: number) {
     if (solved) return
+    setWrongPrompts(new Set())
     setAssignments((prev) => {
       const next = { ...prev }
       delete next[promptIndex]
@@ -75,7 +79,14 @@ export function DragMatchSlide({ slide, onCorrect }: Props) {
       setSolved(true)
       setFlashCorrect(true)
       setWrongFeedback(null)
+      setWrongPrompts(new Set())
     } else {
+      const wrong = new Set<number>()
+      pairs.forEach((pair, i) => {
+        const chip = answerChips.find((c) => c.id === assignments[i])
+        if (chip?.text !== pair.answer) wrong.add(i)
+      })
+      setWrongPrompts(wrong)
       setWrongFeedback(
         slide.feedback.wrong || 'Some matches are off. Apply the power rule and try again.',
       )
@@ -97,17 +108,20 @@ export function DragMatchSlide({ slide, onCorrect }: Props) {
           {pairs.map((pair, i) => {
             const assigned = chipText(assignments[i])
             const isSelected = selectedPrompt === i
+            const isWrong = wrongPrompts.has(i)
             return (
               <div key={pair.prompt} className="match-row">
                 <button
                   type="button"
-                  className={`match-prompt${isSelected ? ' match-prompt--selected' : ''}`}
+                  className={`match-prompt${isSelected ? ' match-prompt--selected' : ''}${isWrong ? ' match-prompt--wrong' : ''}`}
                   disabled={solved}
                   onClick={() => setSelectedPrompt(isSelected ? null : i)}
                 >
                   <span className="match-prompt-fn">{pair.prompt}</span>
                   <span className="match-arrow">→</span>
-                  <span className={`match-slot${assigned ? ' match-slot--filled' : ''}`}>
+                  <span
+                    className={`match-slot${assigned ? ' match-slot--filled' : ''}${isWrong ? ' match-slot--wrong' : ''}`}
+                  >
                     {assigned ?? 'tap to fill'}
                   </span>
                 </button>

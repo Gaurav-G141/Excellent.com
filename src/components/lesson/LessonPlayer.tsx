@@ -48,6 +48,10 @@ export function LessonPlayer() {
   const [hydrated, setHydrated] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const activityRecorded = useRef(false)
+  // Completion is sticky: once a lesson has ever been finished we never write
+  // `lessonCompleted: false` again, so reviewing/restarting it can't re-lock the
+  // next lesson by un-completing its prerequisite.
+  const everCompleted = useRef(false)
 
   const prereqId = useMemo(() => prerequisiteLessonId(lesson.id), [lesson.id])
   // 'checking' until the prereq read resolves; 'error' fails CLOSED so a failed
@@ -64,9 +68,19 @@ export function LessonPlayer() {
       setAccess('unlocked')
       return
     }
-    loadLessonProgress(user.uid, prereqId)
-      .then((progress) => {
-        if (active) setAccess(evaluatePrereqAccess(prereqId, progress?.lessonCompleted))
+    Promise.all([
+      loadLessonProgress(user.uid, lesson.id),
+      loadLessonProgress(user.uid, prereqId),
+    ])
+      .then(([self, prereq]) => {
+        if (!active) return
+        // A lesson that has ever been opened keeps its own progress doc, so it
+        // stays unlocked forever — it can never re-lock after being unlocked.
+        if (self != null) {
+          setAccess('unlocked')
+          return
+        }
+        setAccess(evaluatePrereqAccess(prereqId, prereq?.lessonCompleted))
       })
       .catch(() => {
         if (active) setAccess('error')
@@ -74,7 +88,7 @@ export function LessonPlayer() {
     return () => {
       active = false
     }
-  }, [prereqId, user, retryToken])
+  }, [prereqId, user, lesson.id, retryToken])
 
   useEffect(() => {
     let active = true
@@ -82,6 +96,7 @@ export function LessonPlayer() {
     setCompleted(false)
     setSlideIndex(0)
     activityRecorded.current = false
+    everCompleted.current = false
     if (!user) {
       setHydrated(true)
       return
@@ -98,6 +113,7 @@ export function LessonPlayer() {
       .then((progress) => {
         if (!active || !progress) return
         if (progress.lessonCompleted) {
+          everCompleted.current = true
           setCompleted(true)
           return
         }
@@ -120,9 +136,10 @@ export function LessonPlayer() {
   const persist = useCallback(
     (index: number, done: boolean) => {
       if (!user) return
+      if (done) everCompleted.current = true
       saveLessonProgress(user.uid, lesson.id, {
         currentSlideIndex: index,
-        lessonCompleted: done,
+        lessonCompleted: done || everCompleted.current,
       })
         .then(() => setSaveError(false))
         .catch(() => setSaveError(true))

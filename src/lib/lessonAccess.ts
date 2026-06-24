@@ -16,13 +16,16 @@ export function evaluatePrereqAccess(
 }
 
 /**
- * Home-screen unlock rule: a lesson is reachable if it is the first lesson, or
- * the previous lesson is completed, or it has itself already been completed.
+ * Home-screen unlock rule: a lesson is reachable if it is the first lesson, the
+ * previous lesson is completed, it has itself already been completed, or it has
+ * already been started. The last condition guarantees a lesson never re-locks
+ * once the learner has been able to open it.
  */
 export function isUnlockedByPrereq(
   hasPrev: boolean,
   prevCompleted: boolean,
   selfCompleted: boolean,
+  selfStarted = false,
 ): boolean {
-  return !hasPrev || prevCompleted || selfCompleted
+  return !hasPrev || prevCompleted || selfCompleted || selfStarted
 }

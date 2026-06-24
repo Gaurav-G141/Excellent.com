@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isCloseTo, isValidMeanValuePoint } from './grading'
+import { countNonCriticalSelections, isCloseTo, isValidMeanValuePoint } from './grading'
 import { derivativeCoefficients } from './polynomial'
 
 describe('isCloseTo', () => {
@@ -35,5 +35,23 @@ describe('isValidMeanValuePoint', () => {
 
   it('rejects an interior point whose slope does not match', () => {
     expect(isValidMeanValuePoint(0, derivative, secantSlope, lo, hi, tol)).toBe(false)
+  })
+})
+
+describe('countNonCriticalSelections', () => {
+  const criticalXs = [0.5, 1.4, 2.5]
+  const tol = 0.25
+
+  it('returns 0 when every selection is near a critical point', () => {
+    expect(countNonCriticalSelections([0.5, 1.45, 2.4], criticalXs, tol)).toBe(0)
+  })
+
+  it('counts only the selections that miss every critical point', () => {
+    // 1.0 and 3.2 are not within 0.25 of any critical x; 0.5 and 2.5 are.
+    expect(countNonCriticalSelections([0.5, 1.0, 2.5, 3.2], criticalXs, tol)).toBe(2)
+  })
+
+  it('counts all selections when none are critical', () => {
+    expect(countNonCriticalSelections([0, 3], criticalXs, tol)).toBe(2)
   })
 })

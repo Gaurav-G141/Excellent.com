@@ -22,16 +22,7 @@ function shuffle<T>(values: T[]): T[] {
 
 export function IvtProblemSlide({ slide, onCorrect }: Props) {
   const config = slide.config as unknown as IvtProblemConfig
-  const {
-    coefficients,
-    viewport,
-    ax,
-    bx,
-    functionDisplay,
-    guaranteedValue,
-    distractors,
-    cTolerance = 0.25,
-  } = config
+  const { coefficients, viewport, ax, bx, functionDisplay, guaranteedValue, distractors } = config
 
   const lo = Math.min(ax, bx)
   const hi = Math.max(ax, bx)
@@ -43,16 +34,16 @@ export function IvtProblemSlide({ slide, onCorrect }: Props) {
     [guaranteedValue, distractors],
   )
 
-  const [part, setPart] = useState(0)
-  const [cInput, setCInput] = useState('')
+  const [solved, setSolved] = useState(false)
   const [flash, setFlash] = useState(false)
   const [wrongFeedback, setWrongFeedback] = useState<string | null>(null)
 
   function chooseOption(value: number) {
+    if (solved) return
     if (value === guaranteedValue) {
       setWrongFeedback(null)
       setFlash(true)
-      setPart(1)
+      setSolved(true)
     } else {
       setWrongFeedback(
         slide.feedback.wrong ||
@@ -60,29 +51,6 @@ export function IvtProblemSlide({ slide, onCorrect }: Props) {
       )
     }
   }
-
-  function checkC() {
-    const value = cInput.trim()
-    if (value === '') return
-    const entered = Number.parseFloat(value)
-    if (Number.isNaN(entered)) {
-      setWrongFeedback('Enter a number.')
-      return
-    }
-    const onInterval = entered > lo && entered < hi
-    const hits = Math.abs(evaluatePoly(coefficients, entered) - guaranteedValue) <= cTolerance
-    if (onInterval && hits) {
-      setWrongFeedback(null)
-      setFlash(true)
-      setPart(2)
-    } else {
-      setWrongFeedback(
-        `Solve ${functionDisplay} = ${guaranteedValue} for an x between ${lo} and ${hi}.`,
-      )
-    }
-  }
-
-  const solved = part >= 2
 
   return (
     <>
@@ -119,7 +87,7 @@ export function IvtProblemSlide({ slide, onCorrect }: Props) {
           }}
         </GraphCanvas>
 
-        {part === 0 && (
+        {!solved && (
           <div className="ivt-question">
             <p className="ivt-question-prompt">
               Which value is f guaranteed to take somewhere on [{lo}, {hi}]?
@@ -136,35 +104,6 @@ export function IvtProblemSlide({ slide, onCorrect }: Props) {
                 </button>
               ))}
             </div>
-          </div>
-        )}
-
-        {part === 1 && (
-          <div className="slide-slope-input">
-            <label htmlFor="ivt-c">
-              Find an x in ({lo}, {hi}) where f(x) = {guaranteedValue}
-            </label>
-            <input
-              id="ivt-c"
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="enter a number"
-              value={cInput}
-              onChange={(e) => setCInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') checkC()
-              }}
-            />
-            <button
-              type="button"
-              className="slide-cta"
-              disabled={cInput.trim() === ''}
-              onClick={checkC}
-            >
-              Check
-            </button>
           </div>
         )}
 

@@ -66,7 +66,9 @@ export function SecantToTangentSlide({ slide, onCorrect }: Props) {
       setFlashCorrect(true)
       setWrongFeedback(null)
     } else {
-      setWrongFeedback('Estimate the slope of the secant line when P is close to the fixed point.')
+      setWrongFeedback(
+        'The slope of a line is the change in y divided by the change in x. Estimate the slope of the line between the fixed point and P',
+      )
     }
   }
 

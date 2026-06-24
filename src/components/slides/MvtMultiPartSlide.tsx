@@ -26,6 +26,8 @@ export function MvtMultiPartSlide({ slide, onCorrect }: Props) {
     derivativeTolerance = 0.12,
   } = config
 
+  const formatNumber = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2))
+
   const lo = Math.min(ax, bx)
   const hi = Math.max(ax, bx)
   const derivative = useMemo(() => derivativeCoefficients(coefficients), [coefficients])
@@ -73,7 +75,13 @@ export function MvtMultiPartSlide({ slide, onCorrect }: Props) {
     }
 
     if (!correct) {
-      setWrongFeedback(slide.feedback.wrong || 'Not quite — check your work and try again.')
+      if (part === 1) {
+        setWrongFeedback(
+          `What value of x would make ${derivativeDisplay} equal to ${formatNumber(secantSlope)}`,
+        )
+      } else {
+        setWrongFeedback(slide.feedback.wrong || 'Not quite — check your work and try again.')
+      }
       return
     }
 

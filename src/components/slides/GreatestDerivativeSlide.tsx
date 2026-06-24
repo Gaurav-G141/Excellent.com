@@ -23,6 +23,7 @@ export function GreatestDerivativeSlide({ slide, onCorrect }: Props) {
     [options],
   )
 
+  // The answer is the point with the greatest (most positive) derivative.
   const correctLabel = useMemo(() => {
     let best = options[0]
     let bestDeriv = evaluateDerivative(coefficients, best.x)
@@ -45,6 +46,7 @@ export function GreatestDerivativeSlide({ slide, onCorrect }: Props) {
     if (!selected || solved) return
 
     if (selected === correctLabel) {
+      // A correct answer is acknowledged by the green flash only — no popup.
       setSolved(true)
       setFlashCorrect(true)
       setWrongFeedback(null)
@@ -53,6 +55,7 @@ export function GreatestDerivativeSlide({ slide, onCorrect }: Props) {
         formatFeedback(slide.feedback.wrong, {
           'correct answer': correctLabel,
           answer: selected,
+          point: selected,
         }),
       )
     }

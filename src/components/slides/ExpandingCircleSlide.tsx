@@ -95,6 +95,12 @@ export function ExpandingCircleSlide({ slide, onContinue }: Props) {
         </span>
       </div>
 
+      <div className="rr-derivation">
+        <p className="rr-derivation-title">How the rate formula is derived</p>
+        <p className="rr-derivation-step">A(t) = π · r(t)²</p>
+        <p className="rr-derivation-step">By the chain rule: A′(t) = π · 2 · r(t) · r′(t)</p>
+      </div>
+
       <div className="rr-formula">
         <span className="rr-formula-main">dA = 2πr · dr</span>
         <span className="rr-formula-sub">
@@ -111,7 +117,7 @@ export function ExpandingCircleSlide({ slide, onContinue }: Props) {
             play()
           }}
         >
-          Grow it
+          ▶ Grow the circle
         </button>
         <button type="button" className="slide-cta" onClick={onContinue}>
           {slide.ctaLabel ?? 'Continue'}

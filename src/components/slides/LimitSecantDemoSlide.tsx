@@ -32,6 +32,9 @@ export function LimitSecantDemoSlide({ slide, onContinue }: Props) {
     () => setAnimationDone(true),
   )
 
+  // The gap in x between the fixed point a and the moving point (a + h).
+  const h = movingX != null ? movingX - anchorX : null
+
   function runAnimation() {
     setMovingX(startX)
     setAnimationDone(false)
@@ -120,6 +123,11 @@ export function LimitSecantDemoSlide({ slide, onContinue }: Props) {
             <span className="slide-limit-formula-den">h</span>
           </span>
         </div>
+        {h != null && (
+          <p className="slide-limit-h" aria-live="polite">
+            h = {h.toFixed(2)}
+          </p>
+        )}
       </div>
 
       <div className="slide-copy">

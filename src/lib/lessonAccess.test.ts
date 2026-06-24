@@ -33,5 +33,11 @@ describe('isUnlockedByPrereq', () => {
 
   it('locks when there is an incomplete prerequisite and self is incomplete', () => {
     expect(isUnlockedByPrereq(true, false, false)).toBe(false)
+    expect(isUnlockedByPrereq(true, false, false, false)).toBe(false)
+  })
+
+  it('stays unlocked once the lesson has been started, even if prereq is incomplete', () => {
+    // Guarantees a lesson never re-locks after the learner has opened it.
+    expect(isUnlockedByPrereq(true, false, false, true)).toBe(true)
   })
 })

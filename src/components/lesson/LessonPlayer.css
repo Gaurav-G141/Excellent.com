@@ -343,6 +343,14 @@
   padding-top: 2px;
 }
 
+.slide-limit-h {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .lesson-end-note {
   text-align: center;
   font-size: 14px;

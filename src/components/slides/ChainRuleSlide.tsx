@@ -32,13 +32,15 @@ export function ChainRuleSlide({ slide, onContinue }: Props) {
   const [runId, setRunId] = useState(0)
 
   // Re-runs whenever a new play is requested (runId bump), animating both steps.
+  // The first step reveals almost immediately so the animation starts as soon
+  // as Play is pressed; the second follows one beat later.
   useEffect(() => {
     if (!playing) return
-    const t1 = window.setTimeout(() => setStep(1), STEP_MS)
+    const t1 = window.setTimeout(() => setStep(1), 60)
     const t2 = window.setTimeout(() => {
       setStep(2)
       setPlaying(false)
-    }, STEP_MS * 2)
+    }, STEP_MS + 60)
     return () => {
       window.clearTimeout(t1)
       window.clearTimeout(t2)
@@ -65,7 +67,7 @@ export function ChainRuleSlide({ slide, onContinue }: Props) {
 
   const captions = [
     'A function inside a function: the outer power wraps the inner expression.',
-    'Step 1 — differentiate the outer power: bring the exponent down, drop the power by one. Leave the inside untouched.',
+    'Step 1 — differentiate the outer power: bring the exponent down, drop the power by one, and keep the inside untouched as a factor (still to be differentiated).',
     `Step 2 — multiply by the derivative of the inside: (${innerDisplay})\u2032 = ${innerDerivConstant ?? '?'}.`,
   ]
 
@@ -94,9 +96,16 @@ export function ChainRuleSlide({ slide, onContinue }: Props) {
               {coeffLabel(step1Coeff)}({innerDisplay})
               <Superscript value={n - 1} />
             </span>
+            {/* The inside's derivative is part of f′(x) from the start; step 1 leaves
+                it written symbolically, step 2 substitutes its value. */}
+            <span className={`cr-mult${step === 2 ? ' cr-hl' : ''}`}>
+              {' · '}
+              {step >= 2 && innerDerivConstant != null
+                ? innerDerivConstant
+                : `(${innerDisplay})\u2032`}
+            </span>
             {step >= 2 && innerDerivConstant != null && (
               <>
-                <span className={`cr-mult${step === 2 ? ' cr-hl' : ''}`}> · {innerDerivConstant}</span>
                 <span className="cr-equals"> = </span>
                 <span className="cr-result">
                   {coeffLabel(step2Coeff)}({innerDisplay})

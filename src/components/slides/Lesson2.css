@@ -183,6 +183,19 @@
   background: var(--accent-bg);
 }
 
+.match-prompt--wrong {
+  border-color: var(--danger, #b42318);
+  box-shadow: 0 0 0 2px rgba(180, 35, 24, 0.15);
+}
+
+.match-slot--wrong,
+.match-slot--filled.match-slot--wrong {
+  border-style: solid;
+  border-color: var(--danger, #b42318);
+  background: rgba(180, 35, 24, 0.08);
+  color: var(--danger, #b42318);
+}
+
 .match-bank {
   display: flex;
   flex-wrap: wrap;
@@ -251,12 +264,18 @@
 
 .sr-graph {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
+/* Caption sits to the left of the graph so it never overlaps the plot. */
 .sr-graph .slide-graph-caption {
-  margin-bottom: -8px;
+  margin: 0;
+  flex: 0 0 auto;
+  min-width: 56px;
+  text-align: right;
 }
 
 /* Shrink so all three stacked graphs are visible at once. */

@@ -16,6 +16,17 @@ interface Props {
   onCorrect: () => void
 }
 
+/** Chain-rule derivation steps shown for each shape (mirrors L3S1's style). */
+function derivationSteps(shape: RelatedRatesShape): string[] {
+  if (shape === 'sphere') {
+    return ['V = 4⁄3 · πr³', 'dV/dr = 4πr²', 'By the chain rule: dV/dt = 4πr² · (dr/dt)']
+  }
+  if (shape === 'square') {
+    return ['A = s²', 'dA/ds = 2s', 'By the chain rule: dA/dt = 2s · (ds/dt)']
+  }
+  return ['V = s³', 'dV/ds = 3s²', 'By the chain rule: dV/dt = 3s² · (ds/dt)']
+}
+
 function ShapeGlyph({ shape }: { shape: RelatedRatesShape }) {
   if (shape === 'sphere') {
     return (
@@ -75,6 +86,15 @@ export function RelatedRatesProblemSlide({ slide, onCorrect }: Props) {
         <div className="rr-problem">
           <ShapeGlyph shape={problem.shape} />
           <p className="rr-prompt">{problem.prompt}</p>
+        </div>
+
+        <div className="rr-derivation">
+          <p className="rr-derivation-title">How the rate formula is derived</p>
+          {derivationSteps(problem.shape).map((step) => (
+            <p key={step} className="rr-derivation-step">
+              {step}
+            </p>
+          ))}
         </div>
 
         <p className="rr-scaffold">{problem.scaffold}</p>

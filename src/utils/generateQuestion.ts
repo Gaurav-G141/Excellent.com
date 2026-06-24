@@ -68,8 +68,9 @@ function generateGreatest(id: string, rng: Rng): ProblemSlide {
       options: labels.map((label, i) => ({ label, x: xs[i], y: ys[i] })),
     },
     feedback: {
-      correct: '',
-      wrong: 'At {correct answer}, the curve climbs more steeply than at {answer}. The greatest derivative is at {correct answer}.',
+      correct:
+        'Notice how at {correct answer}, the arrow is more steeply pointed up than at {point}. Therefore, the greatest derivative is at {correct answer}',
+      wrong: 'There is a point more steep than {point}',
     },
     attempts: 'unlimited',
   }

@@ -134,7 +134,7 @@
       },
       "feedback": {
         "correct": "",
-        "wrong": "Check that step and try again. Secant slope = (f(b) − f(a)) / (b − a)."
+        "wrong": "Recall that secant slope = (f(b) − f(a)) / (b − a)"
       },
       "attempts": "unlimited"
     },

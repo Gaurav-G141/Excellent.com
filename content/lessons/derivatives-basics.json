@@ -9,7 +9,7 @@
       "type": "demo",
       "component": "rateOfChangeArrow",
       "title": "How fast is this function changing?",
-      "body": "Watch the arrow as it moves along the curve. Its direction shows the rate of change at each point — steeper means a larger derivative.",
+      "body": "Watch the arrow as it moves along the curve. Its direction shows the instant rate of change, or derivative, at each point, and a steeper arrow means a larger derivative.",
       "config": {
         "coefficients": [2, 1, -0.5, 0.1],
         "viewport": { "xMin": -2, "xMax": 4, "yMin": -3, "yMax": 5 },
@@ -27,15 +27,15 @@
       "config": {
         "viewport": { "xMin": -2, "xMax": 4, "yMin": -2, "yMax": 8 },
         "options": [
-          { "label": "A", "x": -1, "y": 0 },
-          { "label": "B", "x": 0.5, "y": 1 },
-          { "label": "C", "x": 2, "y": 5 },
-          { "label": "D", "x": 3.2, "y": 7 }
+          { "label": "A", "x": -1, "y": 3 },
+          { "label": "B", "x": 0, "y": 1 },
+          { "label": "C", "x": 1.5, "y": 4 },
+          { "label": "D", "x": 3, "y": 7 }
         ]
       },
       "feedback": {
-        "correct": "Notice how the arrow is pointed closest to straight up at {point}. Therefore, the greatest derivative of this graph is at {point}",
-        "wrong": "Notice how at {correct answer}, the arrow is more steeply pointed up than at {answer}. Therefore, the greatest derivative is at {correct answer}"
+        "correct": "",
+        "wrong": "There is a point more steep than {point}"
       },
       "attempts": "unlimited"
     },
@@ -44,7 +44,7 @@
       "type": "demo",
       "component": "draggableSecant",
       "title": "Secant lines approximate the derivative",
-      "body": "Drag the two points along the curve. The purple line is a secant. Move them together at one spot to see the tangent.",
+      "body": "Drag the two points along the curve. The green line is a secant; the purple curve is the function itself. Move the points together at one spot to see the tangent.",
       "config": {
         "coefficients": [0.52, 1.18, -0.32, 0.05],
         "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },
@@ -124,7 +124,7 @@
           { "x": 1.4, "type": "critical" },
           { "x": 2.5, "type": "min" }
         ],
-        "snapThreshold": 0.04,
+        "snapThreshold": 0.06,
         "initialLineY": 2.7
       },
       "ctaLabel": "Continue"

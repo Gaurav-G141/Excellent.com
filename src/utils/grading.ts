@@ -21,3 +21,16 @@ export function isValidMeanValuePoint(
   if (!(entered > lo && entered < hi)) return false
   return isCloseTo(evaluatePoly(derivativeCoefficients, entered), secantSlope, tolerance)
 }
+
+/**
+ * How many of the learner's selected x-values are NOT within `tolerance` of any
+ * true critical point — used to tell them "{n} of your points are not critical
+ * points".
+ */
+export function countNonCriticalSelections(
+  selectedXs: number[],
+  criticalXs: number[],
+  tolerance: number,
+): number {
+  return selectedXs.filter((x) => !criticalXs.some((cx) => Math.abs(x - cx) <= tolerance)).length
+}
