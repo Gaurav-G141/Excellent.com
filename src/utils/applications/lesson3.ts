@@ -83,6 +83,7 @@ const relatedRates: ApplicationTopicDef = {
     let quantity: string
     let formulaText: string
     let placeholder: string | undefined
+    let growthUnit: string
 
     if (theme.shape === 'sphere') {
       expected = 4 * Math.PI * measure * measure * rate
@@ -91,18 +92,21 @@ const relatedRates: ApplicationTopicDef = {
       quantity = 'volume'
       formulaText = 'A sphere of radius r has volume V = (4/3)·π·r³.'
       placeholder = 'a number (you may type pi)'
+      growthUnit = 'cubic cm per second'
     } else if (theme.shape === 'cube') {
       expected = 3 * measure * measure * rate
       dimension = 'edge'
       unit = 'mm'
       quantity = 'volume'
       formulaText = 'A cube with edge s has volume V = s³.'
+      growthUnit = 'cubic mm per second'
     } else {
       expected = 2 * measure * rate
       dimension = 'side'
       unit = 'cm'
       quantity = 'area'
       formulaText = 'A square with side s has area A = s².'
+      growthUnit = 'square cm per second'
     }
 
     const Obj = theme.object.charAt(0).toUpperCase() + theme.object.slice(1)
@@ -112,6 +116,7 @@ const relatedRates: ApplicationTopicDef = {
       label: `How fast the ${quantity} is growing right now`,
       expected,
       ...(placeholder !== undefined ? { placeholder } : {}),
+      meaning: `how fast the ${quantity} of ${theme.object} is growing at this instant, in ${growthUnit}`,
     }
 
     return {
@@ -247,6 +252,7 @@ const velocityAcceleration: ApplicationTopicDef = {
       kind: 'number',
       label: `How hard it\u2019s speeding up at t = ${t0} (m/s\u00b2)`,
       expected,
+      meaning: `how hard ${theme.vehicle} is speeding up at t = ${t0} seconds, in metres per second, per second`,
     }
 
     return {
@@ -344,6 +350,7 @@ const valueThatMustOccur: ApplicationTopicDef = {
       label: 'Which reading must have occurred?',
       options,
       correct,
+      meaning: `which ${theme.reading} value the system is guaranteed to have passed through at some point during the sweep`,
     }
 
     return {

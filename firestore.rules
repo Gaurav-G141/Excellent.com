@@ -10,14 +10,20 @@ service cloud.firestore {
       return v is int && v >= lo && v <= hi;
     }
 
+    function isBoundedNumber(v, lo, hi) {
+      return v is number && v >= lo && v <= hi;
+    }
+
     // Mirror of src/lib/firestoreValidation.ts (isValidUserPatch).
     function validUser(d) {
-      return d.keys().hasOnly(['displayName', 'email', 'createdAt', 'streakCount', 'lastActiveDate', 'longestStreak'])
+      return d.keys().hasOnly(['displayName', 'email', 'createdAt', 'streakCount', 'lastActiveDate', 'longestStreak', 'applicationsRating', 'applicationsGames'])
         && (!('displayName' in d) || (d.displayName is string && d.displayName.size() >= 1 && d.displayName.size() <= 100))
         && (!('email' in d) || d.email is string)
         && (!('streakCount' in d) || isBoundedInt(d.streakCount, 0, 100000))
         && (!('longestStreak' in d) || isBoundedInt(d.longestStreak, 0, 100000))
-        && (!('lastActiveDate' in d) || (d.lastActiveDate is string && d.lastActiveDate.size() <= 10));
+        && (!('lastActiveDate' in d) || (d.lastActiveDate is string && d.lastActiveDate.size() <= 10))
+        && (!('applicationsRating' in d) || isBoundedNumber(d.applicationsRating, 1, 15))
+        && (!('applicationsGames' in d) || isBoundedInt(d.applicationsGames, 0, 100000));
     }
 
     // Mirror of src/lib/firestoreValidation.ts (isValidProgressDoc).

@@ -1,0 +1,26 @@
+---
+description: Pre-deployment security checklist (secrets exposed in the client bundle). Surface before any deploy/hosting/build-for-production work.
+alwaysApply: true
+---
+
+# Before deploying this app publicly
+
+This is a client-side Vite app: every `VITE_*` env var is compiled into the
+public JS bundle and is readable by anyone who visits the site. Before any
+public deploy (e.g. when the user runs a deploy skill, `firebase deploy`, or
+Firebase App Hosting), proactively remind the user and offer to fix:
+
+1. **OpenAI key is a real secret.** `VITE_OPENAI_API_KEY` (see `src/lib/ai.ts`)
+   must NOT ship in a public bundle. Stand up a server proxy (e.g. a Firebase
+   Cloud Function) that holds the real key, and point the app at it via
+   `VITE_OPENAI_BASE_URL` while `VITE_OPENAI_API_KEY` becomes a token the proxy
+   checks. Details in `docs/openai-setup.md`.
+
+2. **Firebase web API key is NOT a secret** — it's fine in the bundle. Data is
+   protected by Firebase Auth + `firestore.rules`. For a public launch, still
+   recommend: enable **Firebase App Check** (not yet configured) and add API key
+   restrictions (HTTP referrer allowlist) in Google Cloud Console.
+
+Do not block the deploy, but do raise these and offer to implement the proxy /
+App Check first. This reminder is for the testing phase only; once the proxy and
+App Check are in place, this rule can be deleted.

@@ -18,6 +18,12 @@ export interface NumberField {
   /** Absolute tolerance; defaults to the grader's magnitude-relative tolerance. */
   tolerance?: number
   placeholder?: string
+  /**
+   * Plain-English description of WHAT this blank asks for, including its unit,
+   * so an AI rewrite can keep the ask intact. Never contains the numeric answer
+   * or math jargon.
+   */
+  meaning?: string
 }
 
 /**
@@ -33,6 +39,12 @@ export interface ExpressionField {
   sampleXs?: number[]
   tolerance?: number
   placeholder?: string
+  /**
+   * Plain-English description of WHAT this blank asks for, including its unit,
+   * so an AI rewrite can keep the ask intact. Never contains the numeric answer
+   * or math jargon.
+   */
+  meaning?: string
 }
 
 /** A multiple-choice numeric answer. */
@@ -43,6 +55,12 @@ export interface ChoiceField {
   options: number[]
   /** The single correct option (must be present in `options`). */
   correct: number
+  /**
+   * Plain-English description of WHAT this blank asks for, including its unit,
+   * so an AI rewrite can keep the ask intact. Never contains the numeric answer
+   * or math jargon.
+   */
+  meaning?: string
 }
 
 export type AppField = NumberField | ExpressionField | ChoiceField

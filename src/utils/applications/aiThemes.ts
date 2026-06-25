@@ -1,9 +1,9 @@
 /**
- * AI-powered mad-lib prefetch. Asks Gemini (via Firebase AI Logic) for extra
- * narrative themes for each registered topic, validates them, and merges the
- * survivors into the theme pool. Everything here is best-effort: any failure
- * (no config, ToS not accepted, offline, schema mismatch) is swallowed and the
- * app simply keeps using its built-in static themes.
+ * AI-powered mad-lib prefetch. Asks OpenAI for extra narrative themes for each
+ * registered topic, validates them, and merges the survivors into the theme pool.
+ * Everything here is best-effort: any failure (no API key, offline, billing
+ * error, schema mismatch) is swallowed and the app simply keeps using its
+ * built-in static themes.
  */
 import { getJsonModel, Schema } from '../../lib/ai'
 import { allMadlibSpecs, type MadlibSpec } from './madlib'

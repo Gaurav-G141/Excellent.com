@@ -14,6 +14,8 @@ const USER_FIELDS = [
   'streakCount',
   'lastActiveDate',
   'longestStreak',
+  'applicationsRating',
+  'applicationsGames',
 ] as const
 
 const PROGRESS_FIELDS = ['currentSlideIndex', 'lessonCompleted', 'updatedAt'] as const
@@ -24,6 +26,10 @@ function hasOnlyKeys(data: Record<string, unknown>, allowed: readonly string[]):
 
 function isBoundedInt(value: unknown, lo: number, hi: number): boolean {
   return typeof value === 'number' && Number.isInteger(value) && value >= lo && value <= hi
+}
+
+function isBoundedNumber(value: unknown, lo: number, hi: number): boolean {
+  return typeof value === 'number' && Number.isFinite(value) && value >= lo && value <= hi
 }
 
 /**
@@ -41,6 +47,8 @@ export function isValidUserPatch(data: Record<string, unknown>): boolean {
   if ('email' in data && typeof data.email !== 'string') return false
   if ('streakCount' in data && !isBoundedInt(data.streakCount, 0, 100000)) return false
   if ('longestStreak' in data && !isBoundedInt(data.longestStreak, 0, 100000)) return false
+  if ('applicationsRating' in data && !isBoundedNumber(data.applicationsRating, 1, 15)) return false
+  if ('applicationsGames' in data && !isBoundedInt(data.applicationsGames, 0, 100000)) return false
   if ('lastActiveDate' in data) {
     const date = data.lastActiveDate
     if (typeof date !== 'string' || date.length > 10) return false

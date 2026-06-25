@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AppField, WordProblem } from '../../utils/applications/types'
+import type { Outcome } from '../../utils/applications/difficulty'
 import { gradeField } from '../../utils/applications/grade'
 import { CorrectFlash } from '../lesson/CorrectFlash'
 import { FeedbackPopup } from '../lesson/FeedbackPopup'
@@ -8,7 +9,7 @@ import './WordProblemCard.css'
 interface Props {
   problem: WordProblem
   /** Called once the learner answers every field correctly. */
-  onSolved: () => void
+  onSolved: (outcome: Outcome) => void
 }
 
 /**
@@ -21,6 +22,18 @@ export function WordProblemCard({ problem, onSolved }: Props) {
   const [hint, setHint] = useState<string | null>(null)
   const [solved, setSolved] = useState(false)
   const [attempts, setAttempts] = useState(0)
+  const [wrongAttempts, setWrongAttempts] = useState(0)
+
+  // Holds the post-correct flash timer so we can cancel it if this card unmounts
+  // (e.g. the learner hits Skip during the 700ms flash); otherwise a stale timer
+  // would fire onSolved on an already-replaced problem and double-count it.
+  const solveTimer = useRef<number | null>(null)
+  useEffect(
+    () => () => {
+      if (solveTimer.current !== null) window.clearTimeout(solveTimer.current)
+    },
+    [],
+  )
 
   const allFilled = useMemo(
     () => problem.fields.every((field, i) => fieldHasValue(field, answers[i])),
@@ -42,8 +55,12 @@ export function WordProblemCard({ problem, onSolved }: Props) {
     if (correct) {
       setSolved(true)
       setHint(null)
-      window.setTimeout(onSolved, 700)
+      solveTimer.current = window.setTimeout(
+        () => onSolved({ solved: true, wrongAttempts, skipped: false }),
+        700,
+      )
     } else {
+      setWrongAttempts((n) => n + 1)
       setHint(problem.hint)
     }
   }
