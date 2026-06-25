@@ -11,10 +11,8 @@
 .graph-axis-label,
 .graph-point-label,
 .graph-target-label,
-.graph-reference-label,
 .graph-critical-label,
 .graph-marker-label,
-.graph-tangent-hint,
 .graph-draggable-point-label {
   font-family: var(--font-mono);
 }
@@ -64,10 +62,6 @@
   stroke: var(--tangent-arrow);
   stroke-width: 2;
   stroke-dasharray: 5 4;
-}
-
-.graph-tangent-head {
-  fill: var(--tangent-arrow);
 }
 
 .graph-arrow-line {
@@ -130,17 +124,6 @@
   fill: var(--tangent-arrow);
 }
 
-.graph-hint-arrow .graph-arrow-line {
-  stroke: var(--text-muted);
-  stroke-width: 1.5;
-  opacity: 0.6;
-}
-
-.graph-hint-arrow .graph-arrow-head {
-  fill: var(--text-muted);
-  opacity: 0.6;
-}
-
 .graph-secant-line {
   stroke: var(--secant-line);
   stroke-width: 2.5;
@@ -200,25 +183,10 @@
   pointer-events: none;
 }
 
-.graph-tangent-hint {
-  font-size: 10px;
-  font-weight: 600;
-  fill: var(--tangent-arrow);
-  text-anchor: middle;
-  pointer-events: none;
-}
-
 .graph-reference-dot {
   fill: var(--surface);
   stroke: var(--text-muted);
   stroke-width: 2;
-}
-
-.graph-reference-label {
-  font-size: 10px;
-  font-weight: 600;
-  fill: var(--text-muted);
-  text-anchor: middle;
 }
 
 .graph-secant-guide {

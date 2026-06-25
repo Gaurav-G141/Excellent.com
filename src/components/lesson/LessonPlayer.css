@@ -351,13 +351,6 @@
   color: var(--accent);
 }
 
-.lesson-end-note {
-  text-align: center;
-  font-size: 14px;
-  color: var(--text-muted);
-  padding-bottom: 16px;
-}
-
 .lesson-section-tag {
   margin: 0;
   padding: 10px 16px 0;

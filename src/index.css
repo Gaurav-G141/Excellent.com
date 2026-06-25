@@ -3,9 +3,6 @@
   --font-display: 'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif;
   --font-sans: 'IBM Plex Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  /* legacy aliases referenced throughout the app */
-  --sans: var(--font-sans);
-  --heading: var(--font-display);
 
   /* Color — "graphing notebook": cool paper, indigo plot, coral + teal curves */
   --ink: #131a26;
@@ -27,7 +24,6 @@
   --tangent-arrow: #f0612f;
   --secant-line: #0f9488;
 
-  --success: #16a34a;
   --success-flash: rgba(22, 163, 74, 0.22);
   --error: #dc2626;
   --error-bg: rgba(220, 38, 38, 0.08);

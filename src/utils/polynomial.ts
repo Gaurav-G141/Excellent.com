@@ -46,42 +46,6 @@ export function resolveCriticalPoints(
   }))
 }
 
-/** Scan for points where f'(x) ≈ 0 and classify via f''(x). */
-export function findCriticalPoints(
-  coefficients: number[],
-  xMin: number,
-  xMax: number,
-  step = 0.001,
-): CriticalPoint[] {
-  const samples: { x: number; y: number; d1: number; d2: number }[] = []
-
-  for (let x = xMin; x <= xMax; x += step) {
-    const d1 = evaluateDerivative(coefficients, x)
-    if (Math.abs(d1) > 0.02) continue
-    samples.push({
-      x,
-      y: evaluatePoly(coefficients, x),
-      d1: Math.abs(d1),
-      d2: evaluateSecondDerivative(coefficients, x),
-    })
-  }
-
-  const clusters: (typeof samples)[] = []
-  for (const sample of samples) {
-    const cluster = clusters.find((group) => Math.abs(group[0].x - sample.x) < 0.22)
-    if (cluster) cluster.push(sample)
-    else clusters.push([sample])
-  }
-
-  return clusters.map((cluster) => {
-    const best = cluster.reduce((a, b) => (a.d1 < b.d1 ? a : b))
-    let type: CriticalPointType = 'critical'
-    if (best.d2 < -0.03) type = 'max'
-    else if (best.d2 > 0.03) type = 'min'
-    return { x: best.x, y: best.y, type }
-  })
-}
-
 /** Lagrange interpolation through (x, y) pairs — returns coeffs low-to-high degree */
 export function interpolatePolynomial(points: { x: number; y: number }[]): number[] {
   const n = points.length
@@ -134,34 +98,6 @@ export function sampleCurve(
 export function addPolynomials(a: number[], b: number[]): number[] {
   const length = Math.max(a.length, b.length)
   return Array.from({ length }, (_, i) => (a[i] ?? 0) + (b[i] ?? 0))
-}
-
-/** Multiply two polynomials (low-to-high coefficient arrays). */
-export function multiplyPolynomials(a: number[], b: number[]): number[] {
-  if (a.length === 0 || b.length === 0) return [0]
-  const result = new Array(a.length + b.length - 1).fill(0)
-  for (let i = 0; i < a.length; i++) {
-    for (let j = 0; j < b.length; j++) {
-      result[i + j] += a[i] * b[j]
-    }
-  }
-  return result
-}
-
-/** Remove trailing (highest-degree) zero coefficients, keeping at least one term. */
-function trimTrailingZeros(coefficients: number[]): number[] {
-  let end = coefficients.length
-  while (end > 1 && coefficients[end - 1] === 0) end--
-  return coefficients.slice(0, end)
-}
-
-/** Compose outer(inner(x)) via Horner's method, returning expanded coefficients. */
-export function composePolynomials(outer: number[], inner: number[]): number[] {
-  let result: number[] = [0]
-  for (let i = outer.length - 1; i >= 0; i--) {
-    result = addPolynomials(multiplyPolynomials(result, inner), [outer[i]])
-  }
-  return trimTrailingZeros(result)
 }
 
 /**

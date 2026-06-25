@@ -45,17 +45,54 @@ function curveBounds(coefficients: number[], xMin: number, xMax: number, pad = 0
 
 /** A cubic through 4 labeled points with a clear, positive steepest slope. */
 function generateGreatest(id: string, rng: Rng): ProblemSlide {
-  const xs = [-1, 0.5, 2, 3.2]
   const labels = ['A', 'B', 'C', 'D']
 
-  let ys = xs.map(() => Math.round(rng() * 7))
-  for (let attempt = 0; attempt < 60; attempt++) {
+  // Non-overlapping slots keep the four x-positions strictly increasing and
+  // comfortably spread across the viewport while still randomizing each one.
+  const slots: [number, number][] = [
+    [-1.8, -0.9],
+    [-0.4, 0.6],
+    [1.1, 2.0],
+    [2.5, 3.6],
+  ]
+  const pickXs = () =>
+    slots.map(([lo, hi]) => Math.round((lo + rng() * (hi - lo)) * 10) / 10)
+  const pickYs = () => Array.from({ length: 4 }, () => Math.floor(rng() * 9)) // 0..8
+
+  // Replicate exactly how the component finds the steepest point: interpolate a
+  // cubic through the four points and compare f'(x) at each x. Require one point
+  // to be unambiguously steepest (margin >= 1.5, a clear visual gap between the
+  // two steepest arrows) and clearly increasing (steepest > 1.0). Track the best
+  // vetted candidate seen — among sets whose steepest derivative is positive, so
+  // the steepest point is always genuinely unique — and fall back to it if no
+  // set clears the strict threshold, so we always return a gradeable problem.
+  let xs = pickXs()
+  let ys = pickYs()
+  let bestXs = xs
+  let bestYs = ys
+  let bestMargin = -Infinity
+  for (let attempt = 0; attempt < 200; attempt++) {
     const coeffs = interpolatePolynomial(xs.map((x, i) => ({ x, y: ys[i] })))
     const derivs = xs.map((x) => evaluateDerivative(coeffs, x))
     const sorted = [...derivs].sort((a, b) => b - a)
-    if (sorted[0] > 0.5 && sorted[0] - sorted[1] > 0.8) break
-    ys = xs.map(() => Math.round(rng() * 7))
+    const steepest = sorted[0]
+    const margin = sorted[0] - sorted[1]
+    if (steepest > 0 && margin > bestMargin) {
+      bestMargin = margin
+      bestXs = xs
+      bestYs = ys
+    }
+    if (steepest > 1.0 && margin >= 1.5) break
+    xs = pickXs()
+    ys = pickYs()
   }
+  xs = bestXs
+  ys = bestYs
+
+  const xMin = Math.floor(Math.min(...xs) - 1)
+  const xMax = Math.ceil(Math.max(...xs) + 1)
+  const yMin = Math.min(...ys) - 2
+  const yMax = Math.max(...ys) + 2
 
   return {
     id,
@@ -64,7 +101,7 @@ function generateGreatest(id: string, rng: Rng): ProblemSlide {
     title: 'Where is the derivative greatest?',
     body: 'Tap the point where the function is increasing fastest.',
     config: {
-      viewport: { xMin: -2, xMax: 4, yMin: -2, yMax: 8 },
+      viewport: { xMin, xMax, yMin, yMax },
       options: labels.map((label, i) => ({ label, x: xs[i], y: ys[i] })),
     },
     feedback: {
@@ -78,11 +115,22 @@ function generateGreatest(id: string, rng: Rng): ProblemSlide {
 
 /** Gentle quadratic with a clean derivative m at an integer point. */
 function buildQuadratic(rng: Rng) {
-  const targetX = pick([1, 2], rng)
-  const m = pick([0.5, 1, 1.5, 2], rng)
-  const a = 0.25
+  // targetX stays an integer so the zoom slide's grid-snapped label (minor grid
+  // step 0.2) reads exactly on the marked point. Vary curvature, sign, the clean
+  // (half-step) slope, and the height of the marked point for a wide problem set.
+  const targetX = pick([1, 2, 3], rng)
+  // Curvature is restricted to EXACT binary fractions (and an optional sign).
+  // With an integer targetX, every product a*targetX^k is then exact in IEEE-754,
+  // so evaluatePoly(coefficients, targetX) equals the integer targetY with zero
+  // float error. The secant→tangent slide renders that raw value as the fixed
+  // point's label, so this avoids artifacts like "(2, 2.9999999996)". (0.2/0.3
+  // are NOT exact binary fractions and would reintroduce the artifact.)
+  const a = pick([0.25, 0.5, 0.125, 0.75], rng) * pick([1, -1], rng)
+  // Slopes are multiples of 0.5 so the answer is enterable within tolerance 0.15;
+  // f'(targetX) is forced to exactly this value below.
+  const m = pick([-2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2], rng)
   const b = m - 2 * a * targetX
-  const targetY = pick([2, 3], rng)
+  const targetY = pick([1, 2, 3, 4], rng)
   const c = targetY - a * targetX * targetX - b * targetX
   return { coefficients: [c, b, a], targetX, targetY, slope: m }
 }
@@ -145,19 +193,28 @@ function generateTangent(id: string, rng: Rng): ProblemSlide {
   }
 }
 
-/** Cubic with two clean critical points (a max then a min). */
+/** Cubic with two clean critical points (a max and a min). */
 function generateCritical(id: string, rng: Rng): ProblemSlide {
-  const r1 = pick([0.5, 1], rng)
-  const r2 = pick([2, 2.5], rng)
-  const a = pick([0.5, 1], rng)
-  const c0 = 2
+  // f'(x) = a(x - r1)(x - r2). Roots are separated by gap >= 1.5, far more than
+  // 2 * selectTolerance (0.5), so the two zeros never share a tap window.
+  const r1 = pick([-1, -0.5, 0, 0.5, 1], rng)
+  const gap = pick([1.5, 2, 2.5], rng)
+  const r2 = r1 + gap
+  const a = pick([0.5, 0.75, 1], rng) * pick([1, -1], rng)
+  const c0 = pick([-1, 0, 1, 2], rng)
 
-  // f'(x) = a(x - r1)(x - r2)  ⇒  integrate for f(x)
+  // Integrate f'(x) = a(x - r1)(x - r2) for f(x) (low-to-high coefficients).
   const coefficients = [c0, a * r1 * r2, (-a * (r1 + r2)) / 2, a / 3]
   const derivativeCoeffs = derivativeCoefficients(coefficients)
 
-  const xMin = 0
-  const xMax = 3
+  // a > 0 rises before r1 (max), dips between, rises after r2 (min); a < 0 flips
+  // which root is the max and which is the min.
+  const firstType: 'max' | 'min' = a > 0 ? 'max' : 'min'
+  const secondType: 'max' | 'min' = a > 0 ? 'min' : 'max'
+
+  // Fit both graphs and keep both roots comfortably inside the viewport.
+  const xMin = Math.floor(r1 - 1)
+  const xMax = Math.ceil(r2 + 1)
   const fBounds = curveBounds(coefficients, xMin, xMax)
   const dBounds = curveBounds(derivativeCoeffs, xMin, xMax, 0.4)
 
@@ -177,8 +234,8 @@ function generateCritical(id: string, rng: Rng): ProblemSlide {
         yMax: Math.max(dBounds.yMax, 0),
       },
       criticalPoints: [
-        { x: r1, type: 'max' },
-        { x: r2, type: 'min' },
+        { x: r1, type: firstType },
+        { x: r2, type: secondType },
       ],
       selectTolerance: 0.25,
     },
@@ -203,6 +260,8 @@ function generateByKind(kind: QuestionKind, id: string, rng: Rng): ProblemSlide 
   }
 }
 
+const ALL_KINDS: QuestionKind[] = ['greatest', 'zoom', 'tangent', 'critical']
+
 /**
  * Pick `count` distinct problem types and generate fresh polynomials for each.
  * Pass a `seed` to make the set reproducible (so a resumed lesson shows the
@@ -210,9 +269,33 @@ function generateByKind(kind: QuestionKind, id: string, rng: Rng): ProblemSlide 
  */
 export function generateEndingQuestions(count: number, seed?: number): ProblemSlide[] {
   const rng = rngFromSeed(seed)
-  const kinds: QuestionKind[] = ['greatest', 'zoom', 'tangent', 'critical']
-  const chosen = shuffle(kinds, rng).slice(0, count)
+  const chosen = shuffle(ALL_KINDS, rng).slice(0, count)
   return chosen.map((kind, i) => generateByKind(kind, `ending-${i}-${kind}`, rng))
+}
+
+/** A selectable Lesson 1 practice topic. */
+export type PracticeTopic = QuestionKind
+
+/** Lesson 1 practice topics in display order (label shown on the chips). */
+export const PRACTICE_TOPICS: { id: PracticeTopic; label: string }[] = [
+  { id: 'greatest', label: 'Greatest slope' },
+  { id: 'zoom', label: 'Estimate the derivative' },
+  { id: 'tangent', label: 'Secant → tangent' },
+  { id: 'critical', label: 'Critical points' },
+]
+
+let practiceSeq = 0
+
+/**
+ * Generate one Lesson 1 practice problem with a fresh random polynomial.
+ * Omit `kind` (or pass undefined) for a random "mixed" topic. Each call is
+ * unseeded (Math.random) and gets a unique id so it remounts cleanly.
+ */
+export function generatePracticeProblem(kind?: PracticeTopic): ProblemSlide {
+  const rng = rngFromSeed()
+  const chosen = kind ?? pick(ALL_KINDS, rng)
+  practiceSeq += 1
+  return generateByKind(chosen, `practice-${chosen}-${practiceSeq}`, rng)
 }
 
 // --- Lesson 3 review questions ---

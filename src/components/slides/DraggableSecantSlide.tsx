@@ -31,18 +31,11 @@ export function DraggableSecantSlide({ slide, onContinue }: Props) {
       <GraphCanvas ref={svgRef} coefficients={coefficients} viewport={viewport}>
         {(api) => {
           const segment = api.secantSegment(xA, xB, coincidentThreshold)
-          const midX = (xA + xB) / 2
-          const midScreen = api.toScreen(midX, api.evaluate(midX))
 
           return (
             <>
               {coincident ? (
-                <TangentIndicator
-                  segment={segment}
-                  pointX={midScreen.x}
-                  pointY={midScreen.y}
-                  variant="tangent"
-                />
+                <TangentIndicator segment={segment} variant="tangent" />
               ) : (
                 <SecantLine segment={segment} />
               )}

@@ -1,6 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { TabNav } from '../components/TabNav'
 import { useAuth } from '../contexts/AuthContext'
 import { LESSON_ICONS, lessonList } from '../lessons'
 import { db } from '../lib/firebase'
@@ -91,6 +92,8 @@ export default function HomePage() {
       </header>
 
       <main className="home-main">
+        <TabNav />
+
         <div className="home-intro">
           <p className="home-greeting">
             Hello, {displayName ?? user?.email ?? 'learner'}!

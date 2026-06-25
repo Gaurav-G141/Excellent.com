@@ -71,12 +71,7 @@ export function LimitSecantDemoSlide({ slide, onContinue }: Props) {
                   return (
                     <>
                       {coincident ? (
-                        <TangentIndicator
-                          segment={segment}
-                          pointX={anchorScreen.x}
-                          pointY={anchorScreen.y}
-                          variant="tangent"
-                        />
+                        <TangentIndicator segment={segment} variant="tangent" />
                       ) : (
                         <SecantLine segment={segment} />
                       )}

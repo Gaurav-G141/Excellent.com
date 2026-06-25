@@ -42,12 +42,7 @@ export function RateOfChangeArrowSlide({ slide, onContinue }: Props) {
           const segment = api.clippedTangentSegment(clampedX)
           return (
             <>
-              <TangentIndicator
-                segment={segment}
-                pointX={screen.x}
-                pointY={screen.y}
-                variant="tangent"
-              />
+              <TangentIndicator segment={segment} variant="tangent" />
               <circle cx={screen.x} cy={screen.y} r={5} className="graph-point-dot" />
               <TangentArrow
                 cx={screen.x}

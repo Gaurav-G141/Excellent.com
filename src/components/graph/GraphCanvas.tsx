@@ -397,33 +397,19 @@ function formatTick(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(1)
 }
 
-/** Dotted tangent line clipped to plot. Optional arrowhead at the curve point. */
+/** Dotted tangent line clipped to plot. */
 export function TangentIndicator({
   segment,
-  pointX,
-  pointY,
   variant = 'tangent',
-  showArrowHead = false,
 }: {
   segment: ScreenSegment
-  pointX: number
-  pointY: number
   variant?: 'default' | 'tangent'
-  showArrowHead?: boolean
 }) {
-  const { x1, y1, x2, y2, angle } = segment
-  const headLen = 8
-  const headSpread = Math.PI / 7
+  const { x1, y1, x2, y2 } = segment
 
   return (
     <g className={`graph-tangent graph-tangent--${variant}`}>
       <line x1={x1} y1={y1} x2={x2} y2={y2} className="graph-tangent-line" />
-      {showArrowHead && (
-        <polygon
-          points={`${pointX},${pointY} ${pointX - headLen * Math.cos(angle - headSpread)},${pointY - headLen * Math.sin(angle - headSpread)} ${pointX - headLen * Math.cos(angle + headSpread)},${pointY - headLen * Math.sin(angle + headSpread)}`}
-          className="graph-tangent-head"
-        />
-      )}
     </g>
   )
 }

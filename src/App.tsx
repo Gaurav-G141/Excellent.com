@@ -2,10 +2,12 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 import { firebaseConfigError } from './lib/firebase'
+import ApplicationsPage from './pages/ApplicationsPage'
 import FirebaseSetupPage from './pages/FirebaseSetupPage'
 import HomePage from './pages/HomePage'
 import LessonPage from './pages/LessonPage'
 import LoginPage from './pages/LoginPage'
+import PracticePage from './pages/PracticePage'
 import SignupPage from './pages/SignupPage'
 
 export default function App() {
@@ -24,6 +26,8 @@ export default function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/practice" element={<PracticePage />} />
+            <Route path="/applications" element={<ApplicationsPage />} />
             <Route path="/lessons/:lessonId" element={<LessonPage />} />
           </Route>
 

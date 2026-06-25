@@ -1,0 +1,6 @@
+/* The Applications stage hosts a text word-problem card rather than an
+   interactive slide, so it doesn't need the tall min-height the slides use. */
+.applications-stage {
+  min-height: auto;
+  padding: 22px 18px 26px;
+}

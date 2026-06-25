@@ -1,0 +1,44 @@
+.app-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.app-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.app-tab:hover {
+  color: var(--text-h);
+}
+
+.app-tab--active {
+  background: var(--surface);
+  color: var(--text-h);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-tab--locked {
+  color: var(--text-muted);
+}
+
+.app-tab-lock {
+  margin-left: 6px;
+  font-size: 11px;
+  opacity: 0.8;
+}
