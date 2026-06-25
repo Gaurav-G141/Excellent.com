@@ -14,7 +14,6 @@
   --surface-2: #f5f7fc;
   --border: #e2e7f0;
   --code-bg: #eef1f8;
-  --grid-line: rgba(20, 30, 60, 0.055);
 
   --accent: #4f46e5;
   --accent-hover: #4338ca;
@@ -52,11 +51,6 @@
 body {
   margin: 0;
   background-color: var(--bg);
-  /* faint blueprint plot-paper behind the app column */
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 24px 24px;
 }
 
 #root {
