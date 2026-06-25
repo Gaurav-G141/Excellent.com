@@ -4,6 +4,7 @@ import { TabNav } from '../components/TabNav'
 import { useAuth } from '../contexts/AuthContext'
 import { useCompletedLessons } from '../hooks/useCompletedLessons'
 import { APPLICATION_LESSONS } from '../utils/applications'
+import { prefetchThemes } from '../utils/applications/aiThemes'
 import type { ApplicationTopicDef, WordProblem } from '../utils/applications/types'
 import './HomePage.css'
 import './PracticePage.css'
@@ -50,6 +51,12 @@ export default function ApplicationsPage() {
   const [problem, setProblem] = useState<WordProblem | null>(null)
   const [nonce, setNonce] = useState(0)
   const [solved, setSolved] = useState(0)
+
+  // Best-effort: ask the AI to brew up extra "mad-lib" narrative themes in the
+  // background. Failures are swallowed; the static themes always cover us.
+  useEffect(() => {
+    void prefetchThemes()
+  }, [])
 
   // Generate the first problem once the unlocked pool is known, and re-seed if
   // the pool changes (e.g. a lesson is completed). Any problem whose lesson is

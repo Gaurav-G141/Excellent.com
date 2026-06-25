@@ -1,9 +1,11 @@
 /**
  * Applications — Lesson 3: Related Rates and Motion.
  *
- * Self-contained word problems. Numbers and themes are randomized on every
- * generate() so the learner rarely sees the same scenario twice. Phrasing is
- * deliberately plain (no jargon) per the Applications content guidelines.
+ * Self-contained word problems. The MATH (shapes, formulas, expected values,
+ * options, hints) is computed entirely in code. Only the NARRATIVE wrapper is a
+ * swappable "theme": plain-string slots drawn from a per-topic pool of built-in
+ * static themes plus (later) AI-generated mad-lib themes. The static themes keep
+ * behavior identical when AI is off.
  */
 
 import { formatPolynomial, pick, randInt, shuffle, uniqueId } from './helpers'
@@ -14,94 +16,224 @@ import type {
   NumberField,
   WordProblem,
 } from './types'
+import { registerStaticThemes, pickTheme } from './themeStore'
+import {
+  registerMadlibSpec,
+  cleanText,
+  cleanTextNoDigits,
+  type MadlibSpec,
+} from './madlib'
 
-/** a3-related — steady-growth shape problems answered with one number (may be π). */
+// ── a3-related — steady-growth shape problems (one number, π allowed) ─────────
+// The shape determines the formula and answer, so the THEME carries the shape.
+
+interface RelatedTheme {
+  shape: 'sphere' | 'cube' | 'square'
+  title: string
+  object: string
+}
+
+/**
+ * Words that contradict a given shape. Used to reject AI objects that don't
+ * match their shape (e.g. "a weather balloon" offered as a cube), which would
+ * otherwise render a nonsensical sentence. Each list excludes the shape's own
+ * vocabulary so legitimate objects pass.
+ */
+const SHAPE_CONFLICTS: Record<RelatedTheme['shape'], string[]> = {
+  sphere: ['cube', 'cubic', 'box', 'square', 'flat', 'panel', 'sheet', 'tile'],
+  cube: ['sphere', 'spherical', 'ball', 'balloon', 'bubble', 'round', 'droplet', 'globe', 'orb', 'square', 'panel', 'sheet', 'disc', 'disk'],
+  square: ['sphere', 'spherical', 'ball', 'balloon', 'bubble', 'round', 'globe', 'orb', 'cube', 'cubic', 'box'],
+}
+
+function objectFitsShape(object: string, shape: RelatedTheme['shape']): boolean {
+  const lower = object.toLowerCase()
+  return !SHAPE_CONFLICTS[shape].some((word) => lower.includes(word))
+}
+
+const sphereThemes: RelatedTheme[] = [
+  { shape: 'sphere', title: 'Weather balloon', object: 'a weather balloon' },
+  { shape: 'sphere', title: 'Inflating bubble', object: 'a soap bubble' },
+]
+const cubeThemes: RelatedTheme[] = [
+  { shape: 'cube', title: 'Salt crystal', object: 'a cubic salt crystal' },
+  { shape: 'cube', title: 'Ice cube', object: 'an ice cube' },
+]
+const squareThemes: RelatedTheme[] = [
+  { shape: 'square', title: 'Soap film', object: 'a square soap film' },
+  { shape: 'square', title: 'Solar panel', object: 'an expanding square solar panel' },
+]
+
+registerStaticThemes<RelatedTheme>('a3-related', [
+  ...sphereThemes,
+  ...cubeThemes,
+  ...squareThemes,
+])
+
 const relatedRates: ApplicationTopicDef = {
   id: 'a3-related',
   label: 'Related rates',
   generate(): WordProblem {
-    type ShapeVariant = {
-      shape: 'sphere' | 'cube' | 'square'
-      theme: { title: string; thing: string }
-    }
-    const variant = pick<ShapeVariant>([
-      { shape: 'sphere', theme: { title: 'Weather balloon', thing: 'a weather balloon' } },
-      { shape: 'sphere', theme: { title: 'Inflating bubble', thing: 'a soap bubble' } },
-      { shape: 'cube', theme: { title: 'Salt crystal', thing: 'a cubic salt crystal' } },
-      { shape: 'cube', theme: { title: 'Ice cube', thing: 'an ice cube' } },
-      { shape: 'square', theme: { title: 'Soap film', thing: 'a square soap film' } },
-      { shape: 'square', theme: { title: 'Solar panel', thing: 'an expanding square solar panel' } },
-    ])
-
+    const theme = pickTheme<RelatedTheme>('a3-related')
     const measure = randInt(4, 12)
     const rate = pick([0.1, 0.25, 0.5, 1])
 
-    if (variant.shape === 'sphere') {
-      const expected = 4 * Math.PI * measure * measure * rate
-      const field: NumberField = {
-        kind: 'number',
-        label: 'How fast the volume is growing right now',
-        expected,
-        placeholder: 'a number (you may type pi)',
-      }
-      return {
-        id: uniqueId('a3-related'),
-        topicId: 'a3-related',
-        title: variant.theme.title,
-        prompt: `Air is pumped steadily into ${variant.theme.thing}, keeping it a perfect sphere. Right now its radius is ${measure} cm and the radius is creeping outward at a steady ${rate} cm per second. How fast is the volume growing at this instant?`,
-        given: `A sphere of radius r has volume V = (4/3)·π·r³. At this moment r = ${measure} cm and r grows by ${rate} cm/s.`,
-        fields: [field],
-        hint: 'Connect the size to the length that\u2019s changing, then bring in the steady growth you were given.',
-      }
+    let expected: number
+    let dimension: string
+    let unit: string
+    let quantity: string
+    let formulaText: string
+    let placeholder: string | undefined
+
+    if (theme.shape === 'sphere') {
+      expected = 4 * Math.PI * measure * measure * rate
+      dimension = 'radius'
+      unit = 'cm'
+      quantity = 'volume'
+      formulaText = 'A sphere of radius r has volume V = (4/3)·π·r³.'
+      placeholder = 'a number (you may type pi)'
+    } else if (theme.shape === 'cube') {
+      expected = 3 * measure * measure * rate
+      dimension = 'edge'
+      unit = 'mm'
+      quantity = 'volume'
+      formulaText = 'A cube with edge s has volume V = s³.'
+    } else {
+      expected = 2 * measure * rate
+      dimension = 'side'
+      unit = 'cm'
+      quantity = 'area'
+      formulaText = 'A square with side s has area A = s².'
     }
 
-    if (variant.shape === 'cube') {
-      const expected = 3 * measure * measure * rate
-      const field: NumberField = {
-        kind: 'number',
-        label: 'How fast the volume is growing right now',
-        expected,
-      }
-      return {
-        id: uniqueId('a3-related'),
-        topicId: 'a3-related',
-        title: variant.theme.title,
-        prompt: `${variant.theme.thing.charAt(0).toUpperCase() + variant.theme.thing.slice(1)} keeps a perfect cube shape while it grows. Right now each edge is ${measure} mm long and every edge is lengthening at a steady ${rate} mm per second. How fast is the volume growing at this instant?`,
-        given: `A cube with edge s has volume V = s³. At this moment s = ${measure} mm and s grows by ${rate} mm/s.`,
-        fields: [field],
-        hint: 'Connect the size to the length that\u2019s changing, then bring in the steady growth you were given.',
-      }
-    }
+    const Obj = theme.object.charAt(0).toUpperCase() + theme.object.slice(1)
 
-    const expected = 2 * measure * rate
     const field: NumberField = {
       kind: 'number',
-      label: 'How fast the area is growing right now',
+      label: `How fast the ${quantity} is growing right now`,
       expected,
+      ...(placeholder !== undefined ? { placeholder } : {}),
     }
+
     return {
       id: uniqueId('a3-related'),
       topicId: 'a3-related',
-      title: variant.theme.title,
-      prompt: `${variant.theme.thing.charAt(0).toUpperCase() + variant.theme.thing.slice(1)} stays a perfect square as it stretches. Right now each side is ${measure} cm long and every side is lengthening at a steady ${rate} cm per second. How fast is the area growing at this instant?`,
-      given: `A square with side s has area A = s². At this moment s = ${measure} cm and s grows by ${rate} cm/s.`,
+      title: theme.title,
+      prompt: `${Obj} keeps a perfect ${theme.shape} shape as it grows. Right now its ${dimension} is ${measure} ${unit} and that ${dimension} grows at a steady ${rate} ${unit} per second. How fast is its ${quantity} growing at this instant?`,
+      given: `${formulaText} At this moment the ${dimension} = ${measure} ${unit} and grows by ${rate} ${unit}/s.`,
       fields: [field],
       hint: 'Connect the size to the length that\u2019s changing, then bring in the steady growth you were given.',
     }
   },
 }
 
-/** a3-accel — read "how hard it's speeding up" (s'') off a cubic position. */
+// One spec per shape so the AI can supply shape-appropriate objects. Each spec
+// injects its fixed shape in validate(); the math is chosen from that shape.
+const relatedSphereSpec: MadlibSpec<RelatedTheme> = {
+  topicId: 'a3-related',
+  instruction:
+    "Everyday objects that stay round/spherical while growing (balloons, bubbles, droplets). The object is a short noun phrase like 'a weather balloon'.",
+  slots: [
+    {
+      name: 'title',
+      description: 'A short, catchy title for the scenario.',
+      example: 'Weather balloon',
+    },
+    {
+      name: 'object',
+      description:
+        "A short noun phrase for an object that stays round/spherical while growing, like 'a weather balloon' or 'a soap bubble'.",
+      example: 'a weather balloon',
+    },
+  ],
+  examples: sphereThemes.map((t) => ({ title: t.title, object: t.object })),
+  count: 4,
+  validate: (raw) => {
+    const title = cleanText(raw.title, 40)
+    const object = cleanTextNoDigits(raw.object, 50)
+    if (title === null || object === null || !objectFitsShape(object, 'sphere')) return null
+    return { shape: 'sphere', title, object }
+  },
+}
+
+const relatedCubeSpec: MadlibSpec<RelatedTheme> = {
+  topicId: 'a3-related',
+  instruction:
+    'Everyday objects that keep a cube shape while growing (ice cubes, crystals, sponge cubes). Short noun phrase.',
+  slots: [
+    {
+      name: 'title',
+      description: 'A short, catchy title for the scenario.',
+      example: 'Ice cube',
+    },
+    {
+      name: 'object',
+      description:
+        "A short noun phrase for an object that keeps a cube shape while growing, like 'an ice cube' or 'a cubic salt crystal'.",
+      example: 'an ice cube',
+    },
+  ],
+  examples: cubeThemes.map((t) => ({ title: t.title, object: t.object })),
+  count: 4,
+  validate: (raw) => {
+    const title = cleanText(raw.title, 40)
+    const object = cleanTextNoDigits(raw.object, 50)
+    if (title === null || object === null || !objectFitsShape(object, 'cube')) return null
+    return { shape: 'cube', title, object }
+  },
+}
+
+const relatedSquareSpec: MadlibSpec<RelatedTheme> = {
+  topicId: 'a3-related',
+  instruction:
+    'Everyday flat things that stay square while expanding (solar panels, soap films, tiles). Short noun phrase.',
+  slots: [
+    {
+      name: 'title',
+      description: 'A short, catchy title for the scenario.',
+      example: 'Solar panel',
+    },
+    {
+      name: 'object',
+      description:
+        "A short noun phrase for a flat thing that stays square while expanding, like 'a square soap film' or 'an expanding square solar panel'.",
+      example: 'a square soap film',
+    },
+  ],
+  examples: squareThemes.map((t) => ({ title: t.title, object: t.object })),
+  count: 4,
+  validate: (raw) => {
+    const title = cleanText(raw.title, 40)
+    const object = cleanTextNoDigits(raw.object, 50)
+    if (title === null || object === null || !objectFitsShape(object, 'square')) return null
+    return { shape: 'square', title, object }
+  },
+}
+
+registerMadlibSpec<RelatedTheme>(relatedSphereSpec)
+registerMadlibSpec<RelatedTheme>(relatedCubeSpec)
+registerMadlibSpec<RelatedTheme>(relatedSquareSpec)
+
+// ── a3-accel — read "how hard it's speeding up" (s'') off a cubic position ────
+
+interface AccelTheme {
+  title: string
+  vehicle: string
+}
+
+const accelThemes: AccelTheme[] = [
+  { title: 'Maglev sled', vehicle: 'a maglev sled' },
+  { title: 'Glass elevator', vehicle: 'a glass elevator pod' },
+  { title: 'Linear motor stage', vehicle: 'a linear motor stage' },
+  { title: 'Rocket sled', vehicle: 'a rocket sled' },
+]
+
+registerStaticThemes<AccelTheme>('a3-accel', accelThemes)
+
 const velocityAcceleration: ApplicationTopicDef = {
   id: 'a3-accel',
   label: 'Velocity and acceleration',
   generate(): WordProblem {
-    const theme = pick([
-      { title: 'Maglev sled', vehicle: 'a maglev sled' },
-      { title: 'Glass elevator', vehicle: 'a glass elevator pod' },
-      { title: 'Linear motor stage', vehicle: 'a linear motor stage' },
-      { title: 'Rocket sled', vehicle: 'a rocket sled' },
-    ])
+    const theme = pickTheme<AccelTheme>('a3-accel')
 
     const a = pick([1, 2])
     const b = randInt(-5, 5)
@@ -129,17 +261,57 @@ const velocityAcceleration: ApplicationTopicDef = {
   },
 }
 
-/** a3-ivt — pick the reading guaranteed to occur on a monotonic swept interval. */
+const accelSpec: MadlibSpec<AccelTheme> = {
+  topicId: 'a3-accel',
+  instruction:
+    "A vehicle/object moving in a straight line along a track; 'vehicle' is a short noun phrase like 'a maglev sled'.",
+  slots: [
+    {
+      name: 'title',
+      description: 'A short, catchy title for the scenario.',
+      example: 'Maglev sled',
+    },
+    {
+      name: 'vehicle',
+      description:
+        "A short noun phrase for a vehicle/object moving in a straight line, like 'a maglev sled' or 'a glass elevator pod'.",
+      example: 'a maglev sled',
+    },
+  ],
+  examples: accelThemes.map((t) => ({ title: t.title, vehicle: t.vehicle })),
+  count: 6,
+  validate: (raw) => {
+    const title = cleanText(raw.title, 40)
+    const vehicle = cleanTextNoDigits(raw.vehicle, 45)
+    if (title === null || vehicle === null) return null
+    return { title, vehicle }
+  },
+}
+
+registerMadlibSpec<AccelTheme>(accelSpec)
+
+// ── a3-ivt — pick the reading guaranteed to occur on a monotonic swept range ──
+
+interface IvtTheme {
+  title: string
+  reading: string
+  knob: string
+}
+
+const ivtThemes: IvtTheme[] = [
+  { title: 'Room temperature', reading: 'temperature', knob: 'dial' },
+  { title: 'Drone altitude', reading: 'altitude', knob: 'position' },
+  { title: 'Tank pressure', reading: 'pressure', knob: 'valve' },
+  { title: 'Signal level', reading: 'signal level', knob: 'slider' },
+]
+
+registerStaticThemes<IvtTheme>('a3-ivt', ivtThemes)
+
 const valueThatMustOccur: ApplicationTopicDef = {
   id: 'a3-ivt',
   label: 'A value that must occur',
   generate(): WordProblem {
-    const theme = pick([
-      { title: 'Room temperature', reading: 'temperature', knob: 'dial', fname: 'T' },
-      { title: 'Drone altitude', reading: 'altitude', knob: 'position', fname: 'h' },
-      { title: 'Tank pressure', reading: 'pressure', knob: 'valve', fname: 'P' },
-      { title: 'Signal level', reading: 'signal level', knob: 'slider', fname: 'S' },
-    ])
+    const theme = pickTheme<IvtTheme>('a3-ivt')
 
     let display: string
     let lo: number
@@ -185,6 +357,41 @@ const valueThatMustOccur: ApplicationTopicDef = {
     }
   },
 }
+
+const ivtSpec: MadlibSpec<IvtTheme> = {
+  topicId: 'a3-ivt',
+  instruction:
+    "A smoothly-varying reading controlled by a knob/slider/dial; 'reading' is what is measured (temperature, altitude...), 'knob' is the control (dial, valve, slider).",
+  slots: [
+    {
+      name: 'title',
+      description: 'A short, catchy title for the scenario.',
+      example: 'Room temperature',
+    },
+    {
+      name: 'reading',
+      description:
+        "What is being measured as it varies smoothly, like 'temperature' or 'altitude'.",
+      example: 'temperature',
+    },
+    {
+      name: 'knob',
+      description: "The control that is turned/moved, like 'dial', 'valve', or 'slider'.",
+      example: 'dial',
+    },
+  ],
+  examples: ivtThemes.map((t) => ({ title: t.title, reading: t.reading, knob: t.knob })),
+  count: 6,
+  validate: (raw) => {
+    const title = cleanText(raw.title, 40)
+    const reading = cleanTextNoDigits(raw.reading, 30)
+    const knob = cleanTextNoDigits(raw.knob, 20)
+    if (title === null || reading === null || knob === null) return null
+    return { title, reading, knob }
+  },
+}
+
+registerMadlibSpec<IvtTheme>(ivtSpec)
 
 export const lesson3Applications: ApplicationLessonGroup = {
   lessonId: 'related-rates',
