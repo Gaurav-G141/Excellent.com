@@ -275,7 +275,7 @@ export default function ApplicationsPage() {
         <div className="practice-intro">
           <h2>Applications</h2>
           <p>
-            A random real-world problem each time — and we won&apos;t tell you which
+            A random real-world problem each time, and we won&apos;t tell you which
             idea it&apos;s testing. Read carefully, figure out the approach, and solve.
             Miss one and you&apos;ll get a hint, never the answer.
           </p>

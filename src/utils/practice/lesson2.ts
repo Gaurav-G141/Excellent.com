@@ -113,7 +113,7 @@ function generateChain(): ProblemSlide {
     type: 'problem',
     component: 'typeInDerivative',
     title: 'Differentiate the composite',
-    body: 'Apply the chain rule. You can leave it factored or expand it — either form is accepted.',
+    body: 'Apply the chain rule. You can leave it factored or expand it. Either form is accepted.',
     config: {
       coefficients,
       display,

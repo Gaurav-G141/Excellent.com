@@ -9,7 +9,7 @@
 export function formatFeedback(
   template: string | undefined | null,
   replacements: Record<string, string> = {},
-  fallback = 'Not quite — check your work and try again.',
+  fallback = 'Not quite. Check your work and try again.',
 ): string {
   let message = template && template.trim() ? template : fallback
   for (const [token, value] of Object.entries(replacements)) {

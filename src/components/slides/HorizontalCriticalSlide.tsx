@@ -9,9 +9,9 @@ interface Props {
 }
 
 const TYPE_MESSAGES: Record<string, string> = {
-  max: "Local maximum — the tangent is horizontal, so f\u2032(x) = 0.",
-  min: "Local minimum — the tangent is horizontal, so f\u2032(x) = 0.",
-  critical: "Critical point — the tangent is horizontal, so f\u2032(x) = 0.",
+  max: "Local maximum. The tangent is horizontal, so f\u2032(x) = 0.",
+  min: "Local minimum. The tangent is horizontal, so f\u2032(x) = 0.",
+  critical: "Critical point. The tangent is horizontal, so f\u2032(x) = 0.",
 }
 
 export function HorizontalCriticalSlide({ slide, onContinue }: Props) {

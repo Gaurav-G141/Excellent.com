@@ -67,8 +67,8 @@ export function ChainRuleSlide({ slide, onContinue }: Props) {
 
   const captions = [
     'A function inside a function: the outer power wraps the inner expression.',
-    'Step 1 — differentiate the outer power: bring the exponent down, drop the power by one, and keep the inside untouched as a factor (still to be differentiated).',
-    `Step 2 — multiply by the derivative of the inside: (${innerDisplay})\u2032 = ${innerDerivConstant ?? '?'}.`,
+    'Step 1. Differentiate the outer power: bring the exponent down, drop the power by one, and keep the inside untouched as a factor (still to be differentiated).',
+    `Step 2. Multiply by the derivative of the inside: (${innerDisplay})\u2032 = ${innerDerivConstant ?? '?'}.`,
   ]
 
   return (

@@ -52,7 +52,7 @@ export function IntermediateValueTheoremSlide({ slide, onContinue }: Props) {
       return
     }
     if (findWhereEquals(coefficients, value, lo, hi) == null) {
-      setError('Couldn’t locate a crossing in this interval — try another value or move A and B.')
+      setError('Couldn’t locate a crossing in this interval. Try another value or move A and B.')
       return
     }
     setError(null)
@@ -136,7 +136,7 @@ export function IntermediateValueTheoremSlide({ slide, onContinue }: Props) {
       {error && <p className="ivt-error">{error}</p>}
       {revealed && cValue != null && (
         <p className="slide-hint slide-hint--active">
-          A continuous curve must hit y = {k} somewhere between A and B — here at c ={' '}
+          A continuous curve must hit y = {k} somewhere between A and B, here at c ={' '}
           {cValue.toFixed(2)}.
         </p>
       )}

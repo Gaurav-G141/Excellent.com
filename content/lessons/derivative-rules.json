@@ -88,7 +88,7 @@
       "type": "problem",
       "component": "typeInDerivative",
       "title": "Differentiate the composite",
-      "body": "Apply the chain rule. You can leave it factored or expand it — either form is accepted.",
+      "body": "Apply the chain rule. You can leave it factored or expand it. Either form is accepted.",
       "config": {
         "coefficients": [4, 12, 9],
         "display": "(3x + 2)²",
@@ -106,7 +106,7 @@
       "type": "demo",
       "component": "meanValueTheorem",
       "title": "The Mean Value Theorem",
-      "body": "Place the two endpoints to draw a secant. Somewhere between them, the tangent runs exactly parallel — same slope as the secant.",
+      "body": "Place the two endpoints to draw a secant. Somewhere between them, the tangent runs exactly parallel, the same slope as the secant.",
       "config": {
         "coefficients": [2, -1.5, 0, 0.25],
         "viewport": { "xMin": -0.5, "xMax": 3.2, "yMin": -0.5, "yMax": 6 },

@@ -42,8 +42,8 @@ export function MvtMultiPartSlide({ slide, onCorrect }: Props) {
   const [wrongFeedback, setWrongFeedback] = useState<string | null>(null)
 
   const prompts = [
-    'Part 1 — slope of the secant from A to B:',
-    'Part 2 — a value x = c in (a, b) where f\u2032(c) equals that slope:',
+    'Part 1. Slope of the secant from A to B:',
+    'Part 2. A value x = c in (a, b) where f\u2032(c) equals that slope:',
   ]
   const placeholders = ['enter a number', 'enter a number']
 
@@ -80,7 +80,7 @@ export function MvtMultiPartSlide({ slide, onCorrect }: Props) {
           `What value of x would make ${derivativeDisplay} equal to ${formatNumber(secantSlope)}`,
         )
       } else {
-        setWrongFeedback(slide.feedback.wrong || 'Not quite — check your work and try again.')
+        setWrongFeedback(slide.feedback.wrong || 'Not quite. Check your work and try again.')
       }
       return
     }

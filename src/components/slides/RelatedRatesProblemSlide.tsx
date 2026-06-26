@@ -109,7 +109,7 @@ export function RelatedRatesProblemSlide({ slide, onCorrect }: Props) {
               autoComplete="off"
               autoCapitalize="off"
               spellCheck={false}
-              placeholder="enter a number — π is allowed"
+              placeholder="enter a number (π is allowed)"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               onKeyDown={(e) => {

@@ -42,6 +42,15 @@ function smallFactor(): number[] {
   return [randInt(0, 5), randInt(1, 5), randInt(1, 4)]
 }
 
+/** Positive divisors of a positive integer, smallest-first (always includes 1). */
+function positiveDivisors(n: number): number[] {
+  const divisors: number[] = []
+  for (let d = 1; d <= n; d++) {
+    if (n % d === 0) divisors.push(d)
+  }
+  return divisors
+}
+
 // ── Topic: Continuous growth (d/dx eˣ = eˣ) — NumberField ────────────────────
 interface EGrowthTheme {
   title: string
@@ -131,37 +140,39 @@ registerMadlibSpec<EGrowthTheme>({
   },
 })
 
-// Continuous-rate constants paired with a multiplier that keeps k·V an integer.
-const E_RATES: { k: number; factor: number }[] = [
-  { k: 0.05, factor: 20 },
-  { k: 0.1, factor: 10 },
-  { k: 0.2, factor: 5 },
-  { k: 0.25, factor: 4 },
-]
-
 function generateEGrowth(): WordProblem {
   const theme = pickTheme<EGrowthTheme>('a4-egrowth')
-  const { k, factor } = pick(E_RATES)
-  // growth IS the instantaneous growth k·V (V = growth·factor makes k·V = growth).
-  const growth = randInt(2, 12)
-  const V = growth * factor
-  const expected = growth
+  // Composite growth e^(g(x)) with g(x) = x² + b·x + c. Choose c so g(x0) = 0,
+  // making the value e^0 = 1 at x0, so the instantaneous rate reduces to the
+  // clean integer g'(x0) = 2·x0 + b. Reroll until that rate is a positive
+  // integer no larger than 12.
+  let b = randInt(-4, 4)
+  let x0 = randInt(-2, 3)
+  let expected = 2 * x0 + b
+  let guard = 0
+  while ((expected <= 0 || expected > 12) && guard < 200) {
+    b = randInt(-4, 4)
+    x0 = randInt(-2, 3)
+    expected = 2 * x0 + b
+    guard += 1
+  }
+  const c = -(x0 * x0 + b * x0)
 
   return {
     id: uniqueId('a4-egrowth'),
     topicId: 'a4-egrowth',
     title: theme.title,
-    prompt: `${theme.subject}: ${theme.quantity} (in ${theme.unit}) follows the rule below, with t in ${theme.timeUnit}s, and its instantaneous growth stays proportional to the current amount. Right now ${theme.quantity} is ${V} ${theme.unit}. How fast is ${theme.quantity} growing at this very moment?`,
-    given: `${theme.fnLetter}(t) = ${V}\u00b7e^(${k}t)`,
+    prompt: `${theme.subject}: ${theme.quantity} (in ${theme.unit}) follows the rule below, where x is the elapsed time in ${theme.timeUnit}s. How fast is ${theme.quantity} growing right when x = ${x0}?`,
+    given: `${theme.fnLetter}(x) = e^(${formatPolynomial([c, b, 1])})`,
     fields: [
       {
         kind: 'number',
-        label: `Instantaneous growth right now (${theme.unit} per ${theme.timeUnit})`,
+        label: `Instantaneous growth right when x = ${x0} (${theme.unit} per unit of x)`,
         expected,
-        meaning: `how fast ${theme.quantity} is growing at this instant, in ${theme.unit} per ${theme.timeUnit}`,
+        meaning: `how fast ${theme.quantity} is growing right when x = ${x0}, in ${theme.unit} for each one-unit increase in x`,
       },
     ],
-    hint: 'The instantaneous growth equals the continuous-rate constant times the current amount.',
+    hint: 'Right at that moment the inside isn’t changing the amount, so focus on how fast the inside itself is moving.',
   }
 }
 
@@ -257,11 +268,24 @@ registerMadlibSpec<BaseTheme>({
 function generateBase(): WordProblem {
   const theme = pickTheme<BaseTheme>('a4-base')
   const n = pick([2, 3])
-  const A = randInt(2, 15)
-  // Smooth base-n growth f(x) = A·nˣ ⇒ instantaneous growth at x=0 is A·ln(n).
-  const correct = round(Math.log(n) * A, 1)
-  // Distractors: forgot the ln(n) factor (A); used discrete growth ((n-1)·A).
-  const candidates = [correct, round(A, 1), round((n - 1) * A, 1)]
+  // Composite growth n^(g(x)) with g(x) = x² + b·x + c. Choose c so g(x0) = 0,
+  // making the value n^0 = 1 at x0, so the instantaneous rate is gp·ln(n) with
+  // gp = g'(x0) = 2·x0 + b. Reroll until gp is a positive integer ≤ 12.
+  let b = randInt(-4, 4)
+  let x0 = randInt(-2, 3)
+  let gp = 2 * x0 + b
+  let guard = 0
+  while ((gp <= 0 || gp > 12) && guard < 200) {
+    b = randInt(-4, 4)
+    x0 = randInt(-2, 3)
+    gp = 2 * x0 + b
+    guard += 1
+  }
+  const c = -(x0 * x0 + b * x0)
+  const exact = gp * Math.log(n)
+  const correct = round(exact, 1)
+  // Distractors: forgot the ln(n) factor (gp); used discrete growth (gp·(n−1)).
+  const candidates = [correct, round(gp, 1), round(gp * (n - 1), 1)]
   const unique: number[] = []
   for (const value of candidates) {
     if (!unique.includes(value)) unique.push(value)
@@ -272,18 +296,18 @@ function generateBase(): WordProblem {
     id: uniqueId('a4-base'),
     topicId: 'a4-base',
     title: theme.title,
-    prompt: `${theme.subject}: ${theme.quantity} grows smoothly, multiplying by ${n} over each ${theme.timeUnit}. Right now ${theme.quantity} is ${A} ${theme.unit}. Which value below is closest to how fast ${theme.quantity} is growing at this instant?`,
-    given: `Growth factor ${n} per ${theme.timeUnit}; current amount ${A} ${theme.unit}.`,
+    prompt: `${theme.subject}: ${theme.quantity} (in ${theme.unit}) follows the rule below, where x is the elapsed time in ${theme.timeUnit}s. Which value below is closest to how fast ${theme.quantity} is growing right when x = ${x0}?`,
+    given: `${theme.fnLetter}(x) = ${n}^(${formatPolynomial([c, b, 1])})`,
     fields: [
       {
         kind: 'choice',
-        label: `Closest instantaneous growth (${theme.unit} per ${theme.timeUnit})`,
+        label: `Closest instantaneous growth right when x = ${x0} (${theme.unit} per unit of x)`,
         options,
         correct,
-        meaning: `how fast ${theme.quantity} is growing at this instant, in ${theme.unit} per ${theme.timeUnit}`,
+        meaning: `how fast ${theme.quantity} is growing right when x = ${x0}, in ${theme.unit} for each one-unit increase in x`,
       },
     ],
-    hint: 'A smooth multiply-by-n growth grows at the natural log of n times the current amount.',
+    hint: 'How fast the inside is moving sets the pace, then scale it by how strongly this base reacts to its exponent.',
   }
 }
 
@@ -378,19 +402,34 @@ registerMadlibSpec<LogTheme>({
 
 function generateLog(): WordProblem {
   const theme = pickTheme<LogTheme>('a4-log')
-  const x0 = randInt(2, 8)
-  let mult = randInt(2, 9)
-  // Keep the answer distinct from the evaluation point shown in the prompt.
-  while (mult === x0) mult = randInt(2, 9)
-  const c = x0 * mult
-  const expected = c / x0 // = mult, always an integer
+  // Composite response ln(g(x)) with g(x) = x² + b·x + c. Pick the inner value
+  // g(x0) = d to be a positive divisor of |g'(x0)| = |2·x0 + b|, so the rate
+  // g'(x0)/g(x0) = gp/d is a clean integer. Choose c = d − (x0² + b·x0).
+  let b = randInt(-4, 4)
+  let x0 = randInt(-2, 3)
+  let gp = 2 * x0 + b
+  let d = 1
+  let expected = gp
+  let guard = 0
+  while (guard < 200) {
+    b = randInt(-4, 4)
+    x0 = randInt(-2, 3)
+    gp = 2 * x0 + b
+    if (gp !== 0) {
+      d = pick(positiveDivisors(Math.abs(gp)))
+      expected = gp / d
+      if (Math.abs(expected) <= 12) break
+    }
+    guard += 1
+  }
+  const c = d - (x0 * x0 + b * x0)
 
   return {
     id: uniqueId('a4-log'),
     topicId: 'a4-log',
     title: theme.title,
     prompt: `${theme.subject}: ${theme.quantity} (in ${theme.unit}) follows the rule below, where x is the ${theme.inputName}. How fast is ${theme.quantity} changing when x = ${x0}?`,
-    given: `${theme.fnLetter}(x) = ${c}\u00b7ln(x)`,
+    given: `${theme.fnLetter}(x) = ln(${formatPolynomial([c, b, 1])})`,
     fields: [
       {
         kind: 'number',
@@ -399,7 +438,7 @@ function generateLog(): WordProblem {
         meaning: `how fast ${theme.quantity} is changing when x = ${x0}, in ${theme.unit} per unit of ${theme.inputName}`,
       },
     ],
-    hint: 'For c·ln(x), the instantaneous change at x is c divided by x.',
+    hint: 'Compare how fast the inside is moving to how big the inside is at that moment.',
   }
 }
 

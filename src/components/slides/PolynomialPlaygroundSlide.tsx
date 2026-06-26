@@ -81,7 +81,7 @@ export function PolynomialPlaygroundSlide({ slide, onContinue }: Props) {
 
   const captions = [
     'Build u(x) and v(x), then press Play to derive the product rule on your own polynomials.',
-    'The product rule: (uv)\u2032 = u\u2032·v + u·v\u2032 — keep one factor, differentiate the other, and add.',
+    'The product rule: (uv)\u2032 = u\u2032·v + u·v\u2032. Keep one factor, differentiate the other, and add.',
     'Differentiate each factor on its own with the power rule.',
     'Substitute your polynomials into the rule: (uv)\u2032 = (u\u2032)(v) + (u)(v\u2032).',
     'Multiply out each product on its own and simplify.',

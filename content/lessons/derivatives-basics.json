@@ -58,7 +58,7 @@
       "type": "problem",
       "component": "secantZoomDerivative",
       "title": "Estimate the derivative",
-      "body": "Use the zoom slider to magnify the marked point. Each grid square is 1 unit — when the curve looks straight, estimate its slope.",
+      "body": "Use the zoom slider to magnify the marked point. Each grid square is 1 unit. When the curve looks straight, estimate its slope.",
       "config": {
         "coefficients": [0.52, 1.18, -0.32, 0.05],
         "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },
@@ -70,7 +70,7 @@
       },
       "feedback": {
         "correct": "",
-        "wrong": "The point of interest is at {x value to find derivative at}. Zoom in further — the curve should look almost straight. Recall that a derivative is the slope of the tangent line."
+        "wrong": "The point of interest is at {x value to find derivative at}. Zoom in further. The curve should look almost straight. Recall that a derivative is the slope of the tangent line."
       },
       "attempts": "unlimited"
     },
@@ -79,7 +79,7 @@
       "type": "demo",
       "component": "limitSecantDemo",
       "title": "The derivative as a limit",
-      "body": "Use the slider to choose point a on the curve. Then play the animation—a second point slides in from the right, and the secant slope approaches the tangent slope.",
+      "body": "Use the slider to choose point a on the curve. Then play the animation. A second point slides in from the right, and the secant slope approaches the tangent slope.",
       "config": {
         "coefficients": [0.52, 1.18, -0.32, 0.05],
         "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },
@@ -115,7 +115,7 @@
       "type": "demo",
       "component": "horizontalCritical",
       "title": "Critical points and zero slope",
-      "body": "Move the horizontal line until it touches the curve. Where it touches, the tangent is flat — so f\u2032(x), the slope of f (its derivative), equals 0.",
+      "body": "Move the horizontal line until it touches the curve. Where it touches, the tangent is flat, so f\u2032(x), the slope of f (its derivative), equals 0.",
       "config": {
         "coefficients": [2.7, 1.225, -2.345, 1.935, -0.725, 0.1],
         "viewport": { "xMin": 0, "xMax": 3, "yMin": 2.5, "yMax": 3.15 },
@@ -134,7 +134,7 @@
       "type": "problem",
       "component": "derivativeCriticalPoints",
       "title": "Find every critical point",
-      "body": "The bottom graph shows f\u2032(x). Tap every x-value where the derivative is zero — those are the critical points of f.",
+      "body": "The bottom graph shows f\u2032(x). Tap every x-value where the derivative is zero. Those are the critical points of f.",
       "config": {
         "coefficients": [2.7, 1.225, -2.345, 1.935, -0.725, 0.1],
         "viewport": { "xMin": 0, "xMax": 3, "yMin": 2.5, "yMax": 3.15 },

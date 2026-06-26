@@ -36,7 +36,7 @@ export function MultipleChoiceSlide({ slide, onCorrect }: Props) {
       setSolved(true)
     } else {
       setWrongFeedback(
-        slide.feedback.wrong || 'Not quite — try another option.',
+        slide.feedback.wrong || 'Not quite. Try another option.',
       )
     }
   }

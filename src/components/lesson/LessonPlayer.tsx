@@ -297,7 +297,7 @@ export function LessonPlayer() {
 
       {saveError && (
         <p className="lesson-save-error" role="status">
-          Your progress couldn’t be saved — check your connection.
+          Your progress couldn’t be saved. Check your connection.
         </p>
       )}
 

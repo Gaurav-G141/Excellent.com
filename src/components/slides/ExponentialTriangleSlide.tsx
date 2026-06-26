@@ -437,7 +437,7 @@ function ExpTriangleDemo({
 
       <div className="slide-copy">
         <p className="slide-hint slide-hint--active">
-          slope = f&prime;({fmt(x)}) = e&#x02e3; = <strong>{fmt(slope)}</strong> — the same as the
+          slope = f&prime;({fmt(x)}) = e&#x02e3; = <strong>{fmt(slope)}</strong>, the same as the
           point&rsquo;s height ({fmt(y)}). The tangent crosses the x-axis one unit to the left.
         </p>
       </div>
@@ -528,7 +528,7 @@ function LnReflectionDemo({
       <div className="slide-copy">
         {phase === 'ln' ? (
           <p className="slide-hint slide-hint--active">
-            Reflected across y = x: now y = ln x. The triangle flipped too — rise = 1 and run = the
+            Reflected across y = x: now y = ln x. The triangle flipped too, rise = 1 and run = the
             x-value ({fmt(a)}), so the slope is 1/x = <strong>{fmt(trueSlope('ln', a))}</strong>.
           </p>
         ) : (
@@ -594,7 +594,7 @@ export function ExponentialTriangleQuestionSlide({ slide, onCorrect }: ProblemPr
   }
 
   function rejectWrong() {
-    setWrong(slide.feedback.wrong || 'Not quite — adjust your triangle (or typed slope) and try again.')
+    setWrong(slide.feedback.wrong || 'Not quite. Adjust your triangle (or typed slope) and try again.')
   }
 
   function markCorrect() {

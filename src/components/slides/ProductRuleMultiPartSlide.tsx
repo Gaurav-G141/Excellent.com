@@ -48,7 +48,7 @@ export function ProductRuleMultiPartSlide({ slide, onCorrect }: Props) {
   const [uVPrimeWrong, setUVPrimeWrong] = useState(false)
   const [totalWrong, setTotalWrong] = useState(false)
 
-  const wrongMessage = slide.feedback.wrong || 'Not quite — check your work and try again.'
+  const wrongMessage = slide.feedback.wrong || 'Not quite. Check your work and try again.'
 
   function advance() {
     setWrongFeedback(null)
@@ -90,9 +90,9 @@ export function ProductRuleMultiPartSlide({ slide, onCorrect }: Props) {
   }
 
   const prompts = [
-    'Part (a) — differentiate each factor: build u\u2032(x) and v\u2032(x).',
-    'Part (b) — build the two product-rule terms separately: u\u2032·v and u·v\u2032.',
-    'Part (c) — add them and simplify: build the total derivative of u·v in standard form.',
+    'Part (a). Differentiate each factor: build u\u2032(x) and v\u2032(x).',
+    'Part (b). Build the two product-rule terms separately: u\u2032·v and u·v\u2032.',
+    'Part (c). Add them and simplify: build the total derivative of u·v in standard form.',
   ]
 
   const answers = [

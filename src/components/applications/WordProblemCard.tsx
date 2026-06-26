@@ -103,7 +103,7 @@ export function WordProblemCard({ problem, onSolved, onWrongAttempt }: Props) {
 
         {attempts > 0 && !solved ? (
           <p className="wp-attempts" aria-live="polite">
-            {attempts === 1 ? '1 attempt' : `${attempts} attempts`} so far — keep going.
+            {attempts === 1 ? '1 attempt' : `${attempts} attempts`} so far, keep going.
           </p>
         ) : null}
       </div>

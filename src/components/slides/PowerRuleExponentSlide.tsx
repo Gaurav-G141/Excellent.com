@@ -154,8 +154,8 @@ export function PowerRuleExponentSlide({ slide, onContinue }: Props) {
             {steps === 0
               ? 'Drag the exponent down ↓'
               : isConstant
-                ? 'The derivative of a constant is 0 — drag it down ↓'
-                : 'Keep going — drag the exponent down ↓'}
+                ? 'The derivative of a constant is 0. Drag it down ↓'
+                : 'Keep going. Drag the exponent down ↓'}
           </p>
         )}
         {done && <p className="pr-drag-hint pr-drag-hint--done">Fully differentiated.</p>}

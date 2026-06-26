@@ -223,7 +223,7 @@ function generateCritical(id: string, rng: Rng): ProblemSlide {
     type: 'problem',
     component: 'derivativeCriticalPoints',
     title: 'Find every critical point',
-    body: "The lower graph shows f\u2032(x). Tap every x-value where f\u2032(x) = 0 — those are the critical points of f.",
+    body: "The lower graph shows f\u2032(x). Tap every x-value where f\u2032(x) = 0. Those are the critical points of f.",
     config: {
       coefficients,
       viewport: { xMin, xMax, yMin: fBounds.yMin, yMax: fBounds.yMax },

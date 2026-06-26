@@ -9,7 +9,7 @@
       "type": "demo",
       "component": "expandingCircle",
       "title": "How area follows the radius",
-      "body": "Grow the circle. The new area is added as a thin rim — its width is dr and its length is the circumference, so dA = 2πr · dr.",
+      "body": "Grow the circle. The new area is added as a thin rim. Its width is dr and its length is the circumference, so dA = 2πr · dr.",
       "config": {
         "minR": 1,
         "maxR": 5,
@@ -84,7 +84,7 @@
       "type": "demo",
       "component": "intermediateValueTheorem",
       "title": "The Intermediate Value Theorem",
-      "body": "Place A and B on the curve, then enter any value between f(a) and f(b). A continuous curve must reach it — reveal the point c where it does.",
+      "body": "Place A and B on the curve, then enter any value between f(a) and f(b). A continuous curve must reach it. Reveal the point c where it does.",
       "config": {
         "coefficients": [2, 0.5, -0.5, 0.15],
         "viewport": { "xMin": -1, "xMax": 5, "yMin": -1, "yMax": 12 },

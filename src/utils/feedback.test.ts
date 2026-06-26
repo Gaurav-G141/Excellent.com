@@ -3,9 +3,9 @@ import { formatFeedback } from './feedback'
 
 describe('formatFeedback', () => {
   it('falls back when the template is missing or blank (no throw)', () => {
-    expect(formatFeedback(undefined)).toBe('Not quite — check your work and try again.')
-    expect(formatFeedback(null)).toBe('Not quite — check your work and try again.')
-    expect(formatFeedback('   ')).toBe('Not quite — check your work and try again.')
+    expect(formatFeedback(undefined)).toBe('Not quite. Check your work and try again.')
+    expect(formatFeedback(null)).toBe('Not quite. Check your work and try again.')
+    expect(formatFeedback('   ')).toBe('Not quite. Check your work and try again.')
     expect(formatFeedback('', {}, 'custom fallback')).toBe('custom fallback')
   })
 

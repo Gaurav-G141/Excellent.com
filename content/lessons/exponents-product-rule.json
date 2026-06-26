@@ -8,7 +8,7 @@
       "type": "demo",
       "component": "exponentialTriangle",
       "title": "The derivative of eˣ",
-      "body": "Drag the point along y = eˣ. Its slope triangle has a leg on the x-axis: the height drops straight down (the rise), and a run of 1 reaches the tangent's x-intercept. Since rise = height and run = 1, the slope equals the height itself — that's d/dx[eˣ] = eˣ.",
+      "body": "Drag the point along y = eˣ. Its slope triangle has a leg on the x-axis: the height drops straight down (the rise), and a run of 1 reaches the tangent's x-intercept. Since rise = height and run = 1, the slope equals the height itself. That's d/dx[eˣ] = eˣ.",
       "config": {
         "variant": "exp",
         "viewport": { "xMin": -1, "xMax": 3, "yMin": -0.5, "yMax": 4 },
@@ -32,7 +32,7 @@
       "type": "problem",
       "component": "exponentialTriangleQuestion",
       "title": "Slope of eˣ",
-      "body": "Drag the tangent's x-intercept to build the slope triangle at the marked point — its leg should sit on the x-axis with a run of 1. Then read off (or type) the slope of y = eˣ there.",
+      "body": "Drag the tangent's x-intercept to build the slope triangle at the marked point. Its leg should sit on the x-axis with a run of 1. Then read off (or type) the slope of y = eˣ there.",
       "config": {
         "variant": "exp",
         "viewport": { "xMin": -2, "xMax": 2, "yMin": -0.5, "yMax": 4 },
@@ -63,7 +63,7 @@
       "type": "problem",
       "component": "exponentialTriangleQuestion",
       "title": "Slope of ln(x)",
-      "body": "Drag the tangent's y-intercept to build the slope triangle at the marked point — its leg sits on the y-axis with a rise of 1. Then read off (or type) the slope of y = ln(x) there.",
+      "body": "Drag the tangent's y-intercept to build the slope triangle at the marked point. Its leg sits on the y-axis with a rise of 1. Then read off (or type) the slope of y = ln(x) there.",
       "config": {
         "variant": "ln",
         "viewport": { "xMin": -1, "xMax": 5, "yMin": -1.5, "yMax": 3 },
@@ -72,7 +72,7 @@
       },
       "feedback": {
         "correct": "",
-        "wrong": "Not quite — build the triangle so its rise is 1 on the y-axis (or type the slope), then check again."
+        "wrong": "Not quite. Build the triangle so its rise is 1 on the y-axis (or type the slope), then check again."
       },
       "attempts": "unlimited"
     },

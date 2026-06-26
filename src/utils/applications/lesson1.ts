@@ -480,13 +480,13 @@ function renderTurning(theme: TurningTheme): WordProblem {
     fields: [
       {
         kind: 'number',
-        label: `Time it stops rising — high point (t in ${timeUnit}s)`,
+        label: `Time it stops rising, high point (t in ${timeUnit}s)`,
         expected: p,
         meaning: `the value of t where it stops rising and reaches its high point, in ${timeUnit}s`,
       },
       {
         kind: 'number',
-        label: `Time it stops falling — low point (t in ${timeUnit}s)`,
+        label: `Time it stops falling, low point (t in ${timeUnit}s)`,
         expected: q,
         meaning: `the value of t where it stops falling and reaches its low point, in ${timeUnit}s`,
       },
@@ -498,7 +498,7 @@ function renderTurning(theme: TurningTheme): WordProblem {
 const turningSpec: MadlibSpec<TurningTheme> = {
   topicId: 'a1-turning',
   instruction:
-    'Each scenario is a quantity that rises, dips, then rises again over time — we find the high and low turning moments.',
+    'Each scenario is a quantity that rises, dips, then rises again over time. We find the high and low turning moments.',
   slots: [
     { name: 'title', description: 'Short scenario title.', example: 'Startup cash balance' },
     {

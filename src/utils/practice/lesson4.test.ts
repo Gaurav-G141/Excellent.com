@@ -8,6 +8,8 @@ const ALLOWED_COMPONENTS = new Set([
   'typeInDerivative',
 ])
 
+const MC_TOPICS = new Set(['l4-exp-chain', 'l4-log-chain'])
+
 function isNumber(v: unknown): v is number {
   return typeof v === 'number' && Number.isFinite(v)
 }
@@ -19,17 +21,16 @@ describe('lesson4Practice', () => {
     expect(lesson4Practice.topics.length).toBeGreaterThan(0)
   })
 
-  for (const topic of [
-    { id: 'l4-exp-slope' },
-    { id: 'l4-ln-slope' },
-    { id: 'l4-npower' },
-    { id: 'l4-product' },
-    { id: 'l4-product-expand' },
-  ]) {
-    it(`${topic.id} is registered`, () => {
-      expect(lesson4Practice.topics.some((t) => t.id === topic.id)).toBe(true)
-    })
-  }
+  it('has exactly the expected topic ids in order', () => {
+    expect(lesson4Practice.topics.map((t) => t.id)).toEqual([
+      'l4-exp-slope',
+      'l4-ln-slope',
+      'l4-exp-chain',
+      'l4-log-chain',
+      'l4-product',
+      'l4-product-expand',
+    ])
+  })
 
   for (const topic of lesson4Practice.topics) {
     describe(`${topic.id}`, () => {
@@ -58,22 +59,38 @@ describe('lesson4Practice', () => {
             expect(isNumber(vp.yMin)).toBe(true)
             expect(isNumber(vp.yMax)).toBe(true)
             if (config.variant === 'ln') {
-              // initialX in [2,5] so the point sits in the plot and 1/x is clean.
               expect(config.initialX).toBeGreaterThanOrEqual(2)
               expect(config.initialX).toBeLessThanOrEqual(5)
             }
           } else if (slide.component === 'multipleChoice') {
             const options = config.options as unknown[]
             expect(Array.isArray(options)).toBe(true)
-            expect(options.length).toBeGreaterThanOrEqual(3)
-            expect(options.every((o) => typeof o === 'string' && o.length > 0)).toBe(true)
+            expect(options.length).toBeGreaterThanOrEqual(4)
+            expect(options.every((o) => typeof o === 'string' && (o as string).length > 0)).toBe(
+              true,
+            )
+            // All options must be DISTINCT.
+            expect(new Set(options as string[]).size).toBe(options.length)
+
             const idx = config.correctIndex as number
             expect(Number.isInteger(idx)).toBe(true)
             expect(idx).toBeGreaterThanOrEqual(0)
             expect(idx).toBeLessThan(options.length)
-            const correct = options[idx] as string
-            // The correct option is always the ln(base)·baseˣ form.
-            expect(correct.startsWith('ln(')).toBe(true)
+
+            const correct = (options as string[])[idx]
+            // The string at correctIndex is the intended correct derivative.
+            if (topic.id === 'l4-exp-chain') {
+              // Either e^(…) with a chain factor, or numeric base with ln(b).
+              expect(correct).toMatch(/\^\(/)
+              const isEuler = correct.includes('e^(')
+              const isNumeric = /\bln\(\d+\)/.test(correct) && /\d+\^\(/.test(correct)
+              expect(isEuler || isNumeric).toBe(true)
+              // Correct answer always carries the chain factor "(g')·".
+              expect(correct.startsWith('(')).toBe(true)
+            } else if (topic.id === 'l4-log-chain') {
+              // Correct log derivative is a quotient g'/g.
+              expect(correct).toMatch(/^\(.*\)\/\(.*\)$/)
+            }
           } else if (slide.component === 'productRuleMultiPart') {
             const u = config.u as unknown[]
             const v = config.v as unknown[]
@@ -83,7 +100,6 @@ describe('lesson4Practice', () => {
             expect(v.length).toBeGreaterThan(0)
             expect(u.every(isNumber)).toBe(true)
             expect(v.every(isNumber)).toBe(true)
-            // Nonzero leading terms.
             expect(u[u.length - 1]).not.toBe(0)
             expect(v[v.length - 1]).not.toBe(0)
           } else if (slide.component === 'typeInDerivative') {
@@ -91,8 +107,14 @@ describe('lesson4Practice', () => {
             expect(Array.isArray(coefficients)).toBe(true)
             expect(coefficients.length).toBeGreaterThan(0)
             expect(coefficients.every(isNumber)).toBe(true)
-            expect(typeof config.display).toBe('string')
-            expect((config.display as string).length).toBeGreaterThan(0)
+            const display = config.display as string
+            expect(typeof display).toBe('string')
+            expect(display.length).toBeGreaterThan(0)
+            // l4-product-expand shows the FACTORED product form.
+            if (topic.id === 'l4-product-expand') {
+              expect(display).toContain('(')
+              expect(display).toContain(')')
+            }
           }
 
           expect(slide.attempts).toBe('unlimited')
@@ -101,6 +123,27 @@ describe('lesson4Practice', () => {
           expect((slide.feedback.wrong as string).length).toBeGreaterThan(0)
         }
       })
+
+      if (MC_TOPICS.has(topic.id)) {
+        it('multiple-choice options are strings, distinct, and correctIndex is valid', () => {
+          for (let i = 0; i < 50; i++) {
+            const slide = topic.generate()
+            expect(slide.component).toBe('multipleChoice')
+            const config = slide.config as Record<string, unknown>
+            const options = config.options as string[]
+
+            expect(Array.isArray(options)).toBe(true)
+            expect(options.length).toBeGreaterThanOrEqual(4)
+            expect(options.every((o) => typeof o === 'string' && o.length > 0)).toBe(true)
+            expect(new Set(options).size).toBe(options.length)
+
+            const idx = config.correctIndex as number
+            expect(Number.isInteger(idx)).toBe(true)
+            expect(idx).toBeGreaterThanOrEqual(0)
+            expect(idx).toBeLessThan(options.length)
+          }
+        })
+      }
     })
   }
 })

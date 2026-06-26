@@ -60,7 +60,7 @@ export function DraggableSecantSlide({ slide, onContinue }: Props) {
         <h2>{slide.title}</h2>
         <p>{slide.body}</p>
         {coincident && (
-          <p className="slide-hint">The points meet — the orange line is the tangent (instantaneous rate of change).</p>
+          <p className="slide-hint">The points meet. The orange line is the tangent (instantaneous rate of change).</p>
         )}
       </div>
 
