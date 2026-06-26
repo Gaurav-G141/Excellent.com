@@ -1,6 +1,6 @@
 import { forwardRef, useId, useMemo, type ReactNode } from 'react'
 import type { Viewport } from '../../types/lesson'
-import { sampleCurve, evaluatePoly, evaluateDerivative } from '../../utils/polynomial'
+import { evaluatePoly, evaluateDerivative } from '../../utils/polynomial'
 import './GraphCanvas.css'
 
 const PAD = { top: 16, right: 16, bottom: 28, left: 36 }
@@ -31,8 +31,19 @@ export interface ScreenSegment {
 }
 
 interface GraphCanvasProps {
-  coefficients: number[]
+  /**
+   * Polynomial coefficients (low-to-high). Optional: provide either this or
+   * `evaluate`. Defaults to [] so an `evaluate`-only graph can omit it.
+   */
+  coefficients?: number[]
   viewport: Viewport
+  /**
+   * Arbitrary function plotter. When provided, the curve, snapping and
+   * `GraphApi.evaluate` use this instead of the polynomial coefficients.
+   */
+  evaluate?: (x: number) => number
+  /** Optional exact derivative for `evaluate`; otherwise a finite difference is used. */
+  derivative?: (x: number) => number
   children?: (api: GraphApi) => ReactNode
   className?: string
   /** Draw grid lines every 1 unit at integer coordinates. */
@@ -41,6 +52,36 @@ interface GraphCanvasProps {
   minorGridStep?: number
   /** Show numeric tick labels on the axes (requires unitGrid). */
   showAxisLabels?: boolean
+  /**
+   * Enforce equal pixel-per-unit on both axes (square grid cells). The supplied
+   * viewport is treated as a minimum region: whichever axis is more zoomed-in is
+   * expanded symmetrically so the region stays fully visible. Off by default, so
+   * existing graphs are unaffected.
+   */
+  squareUnits?: boolean
+}
+
+/**
+ * Expand the requested viewport so both axes share the same pixels-per-unit
+ * (square cells), keeping the original region visible (never cropped).
+ */
+function squareViewport(viewport: Viewport): Viewport {
+  const plotW = GRAPH_WIDTH - PAD.left - PAD.right
+  const plotH = GRAPH_HEIGHT - PAD.top - PAD.bottom
+  const xRange = viewport.xMax - viewport.xMin
+  const yRange = viewport.yMax - viewport.yMin
+  if (xRange <= 0 || yRange <= 0) return viewport
+  const scale = Math.min(plotW / xRange, plotH / yRange)
+  const newXRange = plotW / scale
+  const newYRange = plotH / scale
+  const cx = (viewport.xMin + viewport.xMax) / 2
+  const cy = (viewport.yMin + viewport.yMax) / 2
+  return {
+    xMin: cx - newXRange / 2,
+    xMax: cx + newXRange / 2,
+    yMin: cy - newYRange / 2,
+    yMax: cy + newYRange / 2,
+  }
 }
 
 export interface GraphApi {
@@ -107,19 +148,29 @@ export function clipLineThroughPoint(
 
 export const GraphCanvas = forwardRef<SVGSVGElement, GraphCanvasProps>(function GraphCanvas(
   {
-    coefficients,
-    viewport,
+    coefficients = [],
+    viewport: viewportProp,
+    evaluate,
+    derivative,
     children,
     className,
     unitGrid = false,
     minorGridStep = 0.2,
     showAxisLabels = false,
+    squareUnits = false,
   },
   ref,
 ) {
   const clipId = useId()
   const width = GRAPH_WIDTH
   const height = GRAPH_HEIGHT
+
+  // Effective viewport drives all rendering. Identical to the prop unless
+  // squareUnits is set, so existing graphs are byte-for-byte unaffected.
+  const viewport = useMemo(
+    () => (squareUnits ? squareViewport(viewportProp) : viewportProp),
+    [squareUnits, viewportProp],
+  )
 
   const api = useMemo(() => {
     const plotW = width - PAD.left - PAD.right
@@ -143,26 +194,55 @@ export const GraphCanvas = forwardRef<SVGSVGElement, GraphCanvasProps>(function 
       return { x, y }
     }
 
-    const evaluate = (x: number) => evaluatePoly(coefficients, x)
+    // Unified evaluator: arbitrary `evaluate` when given, else the polynomial.
+    // When `evaluate` is undefined this is identical to evaluatePoly(coefficients, x).
+    const evalFn = evaluate ?? ((x: number) => evaluatePoly(coefficients, x))
+
+    // Slope used by the tangent/secant helpers: exact derivative when supplied,
+    // a central finite difference when only `evaluate` is given, otherwise the
+    // exact polynomial derivative (unchanged from before).
+    const slopeAt = (x: number): number => {
+      if (derivative) return derivative(x)
+      if (evaluate) {
+        const h = 1e-4
+        return (evalFn(x + h) - evalFn(x - h)) / (2 * h)
+      }
+      return evaluateDerivative(coefficients, x)
+    }
+
+    const apiEvaluate = (x: number) => evalFn(x)
 
     const snapToCurve = (sx: number, sy: number): GraphPoint => {
       const data = screenToData(sx, sy)
       const x = Math.max(viewport.xMin, Math.min(viewport.xMax, data.x))
-      const y = evaluate(x)
+      const y = evalFn(x)
       return { x, y }
     }
 
-    const points = sampleCurve(coefficients, viewport.xMin, viewport.xMax)
-    const pathD = points
-      .map((p, i) => {
-        const s = toScreen(p.x, p.y)
-        return `${i === 0 ? 'M' : 'L'} ${s.x.toFixed(2)} ${s.y.toFixed(2)}`
-      })
-      .join(' ')
+    // Sample the curve. Mirrors sampleCurve()'s sampling (120 points, same step)
+    // so the polynomial path is byte-identical; arbitrary functions skip any
+    // non-finite samples (e.g. ln(x<=0)) and break the path into segments.
+    const SAMPLES = 120
+    const sampleStep = (viewport.xMax - viewport.xMin) / (SAMPLES - 1)
+    const segments: string[] = []
+    let penDown = false
+    for (let i = 0; i < SAMPLES; i++) {
+      const x = viewport.xMin + i * sampleStep
+      const y = evalFn(x)
+      if (!Number.isFinite(y)) {
+        penDown = false
+        continue
+      }
+      const s = toScreen(x, y)
+      const cmd = segments.length === 0 || !penDown ? 'M' : 'L'
+      segments.push(`${cmd} ${s.x.toFixed(2)} ${s.y.toFixed(2)}`)
+      penDown = true
+    }
+    const pathD = segments.join(' ')
 
     const tangentScreenAngle = (x: number) => {
-      const y = evaluatePoly(coefficients, x)
-      const slope = evaluateDerivative(coefficients, x)
+      const y = evalFn(x)
+      const slope = slopeAt(x)
       const step = 0.02
       const p0 = toScreen(x, y)
       const p1 = toScreen(x + step, y + slope * step)
@@ -170,7 +250,7 @@ export const GraphCanvas = forwardRef<SVGSVGElement, GraphCanvasProps>(function 
     }
 
     const clippedTangentSegment = (x: number): ScreenSegment => {
-      const y = evaluatePoly(coefficients, x)
+      const y = evalFn(x)
       const angle = tangentScreenAngle(x)
       const { x: cx, y: cy } = toScreen(x, y)
       return clipLineThroughPoint(cx, cy, angle, plotLeft, plotRight, plotTop, plotBottom)
@@ -181,8 +261,8 @@ export const GraphCanvas = forwardRef<SVGSVGElement, GraphCanvasProps>(function 
         return clippedTangentSegment((x1 + x2) / 2)
       }
 
-      const p1 = toScreen(x1, evaluate(x1))
-      const p2 = toScreen(x2, evaluate(x2))
+      const p1 = toScreen(x1, evalFn(x1))
+      const p2 = toScreen(x2, evalFn(x2))
       const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x)
       return clipLineThroughPoint(p1.x, p1.y, angle, plotLeft, plotRight, plotTop, plotBottom)
     }
@@ -196,13 +276,13 @@ export const GraphCanvas = forwardRef<SVGSVGElement, GraphCanvasProps>(function 
       toScreen,
       screenToData,
       snapToCurve,
-      evaluate,
+      evaluate: apiEvaluate,
       pathD,
       tangentScreenAngle,
       clippedTangentSegment,
       secantSegment,
     }
-  }, [coefficients, viewport, width, height, clipId])
+  }, [coefficients, viewport, width, height, clipId, evaluate, derivative])
 
   const plotW = width - PAD.left - PAD.right
   const plotH = height - PAD.top - PAD.bottom

@@ -13,6 +13,8 @@ import {
   type RatingState,
 } from '../utils/applications/difficulty'
 import { rewriteProblem } from '../utils/applications/rewrite'
+import { loseStickers, maybeSpawnSticker } from '../lib/stickers/trigger'
+import { WRONG_ANSWERS_PER_STICKER_LOSS } from '../lib/stickers/config'
 import type { ApplicationTopicDef, WordProblem } from '../utils/applications/types'
 import './HomePage.css'
 import './PracticePage.css'
@@ -58,7 +60,7 @@ function candidateNextLevels(state: RatingState): number[] {
 }
 
 export default function ApplicationsPage() {
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth()
   const { completed, loading: lessonsLoading } = useCompletedLessons()
   const {
     state,
@@ -96,6 +98,9 @@ export default function ApplicationsPage() {
   const problemRef = useRef<WordProblem | null>(null)
   const levelRef = useRef(level)
   const stateRef = useRef(state)
+  // Cumulative wrong answers across problems; every Nth costs a random sticker.
+  // (Possibly temporary — remove with loseStickers / WRONG_ANSWERS_PER_STICKER_LOSS.)
+  const wrongTally = useRef(0)
 
   useEffect(() => {
     problemRef.current = problem
@@ -218,7 +223,23 @@ export default function ApplicationsPage() {
   function handleSolved(outcome: Outcome) {
     const next = applyOutcome(outcome)
     setSolved((count) => count + 1)
+    if (outcome.solved && user && problemRef.current) {
+      void maybeSpawnSticker(problemRef.current, user.uid)
+    }
     advance(next)
+  }
+
+  // Fires the instant a wrong answer is submitted. Repeated wrong answers cost
+  // stickers: the tally is cumulative across problems and spent down in whole
+  // "losses" of N wrong answers each, so the Nth wrong answer removes one right
+  // away rather than waiting for the problem to end.
+  function handleWrongAttempt() {
+    if (!user) return
+    wrongTally.current += 1
+    if (wrongTally.current >= WRONG_ANSWERS_PER_STICKER_LOSS) {
+      wrongTally.current -= WRONG_ANSWERS_PER_STICKER_LOSS
+      void loseStickers(user.uid, 1)
+    }
   }
 
   function handleSkip() {
@@ -321,6 +342,7 @@ export default function ApplicationsPage() {
                   key={nonce}
                   problem={problem}
                   onSolved={(outcome) => handleSolved(outcome)}
+                  onWrongAttempt={handleWrongAttempt}
                 />
               ) : (
                 <div className="applications-loading" role="status" aria-live="polite">

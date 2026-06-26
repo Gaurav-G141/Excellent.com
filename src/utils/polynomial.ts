@@ -71,7 +71,9 @@ export function interpolatePolynomial(points: { x: number; y: number }[]): numbe
   return coeffs
 }
 
-function polyMultiply(a: number[], b: number[]): number[] {
+/** Multiply two polynomials (low-to-high coefficient arrays). */
+export function multiplyPolynomials(a: number[], b: number[]): number[] {
+  if (a.length === 0 || b.length === 0) return []
   const result = new Array(a.length + b.length - 1).fill(0)
   for (let i = 0; i < a.length; i++) {
     for (let j = 0; j < b.length; j++) {
@@ -79,6 +81,41 @@ function polyMultiply(a: number[], b: number[]): number[] {
     }
   }
   return result
+}
+
+/**
+ * Product rule on two polynomials (low-to-high coefficient arrays). Returns the
+ * factor derivatives, the two simplified product terms, and two
+ * algebraically-equal forms of (u·v)′:
+ * - `uPrimeV` = u′·v (simplified)
+ * - `uVPrime` = u·v′ (simplified)
+ * - `sum`     = u′·v + u·v′ (the product-rule expansion)
+ * - `total`   = derivative of the expanded product u·v
+ * `sum` and `total` are kept because they are pedagogically distinct.
+ */
+export function productRuleDerivative(
+  u: number[],
+  v: number[],
+): {
+  uPrime: number[]
+  vPrime: number[]
+  uPrimeV: number[]
+  uVPrime: number[]
+  sum: number[]
+  total: number[]
+} {
+  const uPrime = derivativeCoefficients(u)
+  const vPrime = derivativeCoefficients(v)
+  const uPrimeV = multiplyPolynomials(uPrime, v)
+  const uVPrime = multiplyPolynomials(u, vPrime)
+  const sum = addPolynomials(uPrimeV, uVPrime)
+  const total = derivativeCoefficients(multiplyPolynomials(u, v))
+  return { uPrime, vPrime, uPrimeV, uVPrime, sum, total }
+}
+
+/** Private alias kept for existing callers; behavior is identical. */
+function polyMultiply(a: number[], b: number[]): number[] {
+  return multiplyPolynomials(a, b)
 }
 
 export function sampleCurve(
@@ -98,6 +135,27 @@ export function sampleCurve(
 export function addPolynomials(a: number[], b: number[]): number[] {
   const length = Math.max(a.length, b.length)
   return Array.from({ length }, (_, i) => (a[i] ?? 0) + (b[i] ?? 0))
+}
+
+/** Subtract b from a (low-to-high coefficient arrays), padding the shorter. */
+export function subtractPolynomials(a: number[], b: number[]): number[] {
+  const length = Math.max(a.length, b.length)
+  return Array.from({ length }, (_, i) => (a[i] ?? 0) - (b[i] ?? 0))
+}
+
+/** Drop trailing (high-power) zero coefficients; never returns empty ([0] if all zero). */
+export function trimPolynomial(c: number[]): number[] {
+  let end = c.length
+  while (end > 0 && c[end - 1] === 0) end--
+  return end === 0 ? [0] : c.slice(0, end)
+}
+
+/** Compare two polynomials termwise within `tol` after trimming trailing zeros. */
+export function polynomialsEqual(a: number[], b: number[], tol = 1e-9): boolean {
+  const ta = trimPolynomial(a)
+  const tb = trimPolynomial(b)
+  if (ta.length !== tb.length) return false
+  return ta.every((coeff, i) => Math.abs(coeff - tb[i]) <= tol)
 }
 
 /**
@@ -155,4 +213,54 @@ export function findWhereEquals(
     prevG = g
   }
   return null
+}
+
+const SUPERSCRIPTS: Record<string, string> = {
+  '0': '\u2070',
+  '1': '\u00b9',
+  '2': '\u00b2',
+  '3': '\u00b3',
+  '4': '\u2074',
+  '5': '\u2075',
+  '6': '\u2076',
+  '7': '\u2077',
+  '8': '\u2078',
+  '9': '\u2079',
+}
+
+/** Render an integer power as unicode superscript digits, e.g. 3 -> "³". */
+export function superscript(power: number): string {
+  return String(power)
+    .split('')
+    .map((d) => SUPERSCRIPTS[d] ?? d)
+    .join('')
+}
+
+/**
+ * Format a single term `coeff·variable^power` with a unicode superscript and
+ * no leading sign (use the polynomial formatter for signs). A coefficient of
+ * ±1 drops the digit for powers ≥ 1 (e.g. "x²", not "1x²").
+ */
+export function formatMonomial(coeff: number, power: number, variable = 'x'): string {
+  const abs = Math.abs(coeff)
+  if (power === 0) return `${abs}`
+  const coeffStr = abs === 1 ? '' : `${abs}`
+  const varStr = power === 1 ? variable : `${variable}${superscript(power)}`
+  return `${coeffStr}${varStr}`
+}
+
+/**
+ * Format a polynomial from low-to-high coefficients (index = power), e.g.
+ * [3, 0, 2] -> "2x² + 3". Zero terms are skipped; an empty polynomial is "0".
+ */
+export function formatPolynomial(coefficients: number[], variable = 'x'): string {
+  const parts: string[] = []
+  for (let power = coefficients.length - 1; power >= 0; power--) {
+    const c = coefficients[power]
+    if (c === 0) continue
+    const term = formatMonomial(c, power, variable)
+    if (parts.length === 0) parts.push(c < 0 ? `-${term}` : term)
+    else parts.push(c < 0 ? `\u2212 ${term}` : `+ ${term}`)
+  }
+  return parts.length > 0 ? parts.join(' ') : '0'
 }

@@ -1,5 +1,6 @@
 import derivativeRules from '../../content/lessons/derivative-rules.json'
 import derivativesBasics from '../../content/lessons/derivatives-basics.json'
+import exponentsProductRule from '../../content/lessons/exponents-product-rule.json'
 import relatedRates from '../../content/lessons/related-rates.json'
 import type { Lesson } from '../types/lesson'
 
@@ -7,6 +8,7 @@ export const lessons: Record<string, Lesson> = {
   'derivatives-basics': derivativesBasics as Lesson,
   'derivative-rules': derivativeRules as Lesson,
   'related-rates': relatedRates as Lesson,
+  'exponents-product-rule': exponentsProductRule as Lesson,
 }
 
 /** Course order — also the unlock order (each lesson opens the next). */
@@ -26,4 +28,5 @@ export const LESSON_ICONS: Record<string, string> = {
   'derivatives-basics': '\u2202',
   'derivative-rules': '\u0192\u2032',
   'related-rates': '\u0394',
+  'exponents-product-rule': '\u212f\u02e3',
 }

@@ -33,6 +33,17 @@ service cloud.firestore {
         && d.lessonCompleted is bool;
     }
 
+    // Mirror of src/lib/firestoreValidation.ts (isValidStickerItem).
+    function validSticker(d) {
+      return d.keys().hasOnly(['subject', 'src', 'provider', 'slotIndex', 'createdAt', 'expiresAt'])
+        && d.subject is string && d.subject.size() >= 1 && d.subject.size() <= 200
+        && d.src is string && d.src.size() >= 1 && d.src.size() <= 2000
+        && d.provider is string && d.provider in ['openai', 'pollinations']
+        && isBoundedInt(d.slotIndex, 0, 7)
+        && d.createdAt is int && d.createdAt >= 0
+        && d.expiresAt is int && d.expiresAt >= 0;
+    }
+
     match /users/{userId} {
       allow read: if isOwner(userId);
       allow write: if isOwner(userId) && validUser(request.resource.data);
@@ -46,6 +57,12 @@ service cloud.firestore {
     match /courses/{courseId} {
       allow read: if request.auth != null;
       allow write: if false;
+    }
+
+    match /stickers/{userId}/items/{itemId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validSticker(request.resource.data);
+      allow delete: if isOwner(userId);
     }
   }
 }

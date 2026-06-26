@@ -10,6 +10,8 @@ Real-world word problems covering the same concepts the app teaches, written as 
 - **Techniques:** power rule, sum rule, chain rule only for `(ax + b)^n` with `n = 2` or `3`, the second derivative for polynomial motion, and the existence ideas behind the Mean Value Theorem and Intermediate Value Theorem. **No product rule, no quotient rule.**
 - **Related rates uses only the three shapes the app implements:** sphere `V = (4/3)πr³`, square `A = s²`, cube `V = s³`.
 
+> **Lesson 4 exception (Applications tab — "Exponents & the Product Rule").** Lesson 4 extends the Applications tab to continuous growth (`d/dx e^x = e^x`), base-n growth (`d/dx n^x = ln(n)·n^x`), and the natural-log response (`d/dx [c·ln(x)] = c/x`), plus the **product rule** on two polynomial factors. To stay within the grader, **answers stay numeric or polynomial**: the exponential/log scenarios reduce to a single number (or a multiple-choice number) and the product-rule scenarios are entered as an expression in x. No symbolic `e^x`/`ln`/`1/x` answer entry is added.
+
 ## Table of Contents
 
 - [Lesson 1 — Derivatives Basics](#lesson-1--derivatives-basics)

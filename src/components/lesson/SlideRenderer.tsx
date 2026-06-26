@@ -4,6 +4,10 @@ import { DerivativeCriticalPointsSlide } from '../slides/DerivativeCriticalPoint
 import { DragMatchSlide } from '../slides/DragMatchSlide'
 import { DraggableSecantSlide } from '../slides/DraggableSecantSlide'
 import { ExpandingCircleSlide } from '../slides/ExpandingCircleSlide'
+import {
+  ExponentialTriangleQuestionSlide,
+  ExponentialTriangleSlide,
+} from '../slides/ExponentialTriangleSlide'
 import { GreatestDerivativeSlide } from '../slides/GreatestDerivativeSlide'
 import { HorizontalCriticalSlide } from '../slides/HorizontalCriticalSlide'
 import { IntermediateValueTheoremSlide } from '../slides/IntermediateValueTheoremSlide'
@@ -11,8 +15,12 @@ import { IvtProblemSlide } from '../slides/IvtProblemSlide'
 import { LimitSecantDemoSlide } from '../slides/LimitSecantDemoSlide'
 import { MeanValueTheoremSlide } from '../slides/MeanValueTheoremSlide'
 import { MotionVectorsSlide } from '../slides/MotionVectorsSlide'
+import { MultipleChoiceSlide } from '../slides/MultipleChoiceSlide'
 import { MvtMultiPartSlide } from '../slides/MvtMultiPartSlide'
+import { NPowerXAnimationSlide } from '../slides/NPowerXAnimationSlide'
+import { PolynomialPlaygroundSlide } from '../slides/PolynomialPlaygroundSlide'
 import { PowerRuleExponentSlide } from '../slides/PowerRuleExponentSlide'
+import { ProductRuleMultiPartSlide } from '../slides/ProductRuleMultiPartSlide'
 import { RateOfChangeArrowSlide } from '../slides/RateOfChangeArrowSlide'
 import { RelatedRatesProblemSlide } from '../slides/RelatedRatesProblemSlide'
 import { SecantToTangentSlide } from '../slides/SecantToTangentSlide'
@@ -109,6 +117,30 @@ export function SlideRenderer({ slide, onAdvance }: Props) {
 
   if (slide.type === 'problem' && slide.component === 'ivtProblem') {
     return <IvtProblemSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'demo' && slide.component === 'exponentialTriangle') {
+    return <ExponentialTriangleSlide slide={slide} onContinue={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'exponentialTriangleQuestion') {
+    return <ExponentialTriangleQuestionSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'demo' && slide.component === 'nPowerXAnimation') {
+    return <NPowerXAnimationSlide slide={slide} onContinue={onAdvance} />
+  }
+
+  if (slide.type === 'demo' && slide.component === 'polynomialPlayground') {
+    return <PolynomialPlaygroundSlide slide={slide} onContinue={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'productRuleMultiPart') {
+    return <ProductRuleMultiPartSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'multipleChoice') {
+    return <MultipleChoiceSlide slide={slide} onCorrect={onAdvance} />
   }
 
   return (

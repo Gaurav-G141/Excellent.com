@@ -20,6 +20,17 @@ const USER_FIELDS = [
 
 const PROGRESS_FIELDS = ['currentSlideIndex', 'lessonCompleted', 'updatedAt'] as const
 
+const STICKER_FIELDS = [
+  'subject',
+  'src',
+  'provider',
+  'slotIndex',
+  'createdAt',
+  'expiresAt',
+] as const
+
+const STICKER_PROVIDERS = ['openai', 'pollinations'] as const
+
 function hasOnlyKeys(data: Record<string, unknown>, allowed: readonly string[]): boolean {
   return Object.keys(data).every((key) => allowed.includes(key))
 }
@@ -64,5 +75,26 @@ export function isValidProgressDoc(data: Record<string, unknown>): boolean {
   if (!hasOnlyKeys(data, PROGRESS_FIELDS)) return false
   if (!isBoundedInt(data.currentSlideIndex, 0, 1000)) return false
   if (typeof data.lessonCompleted !== 'boolean') return false
+  return true
+}
+
+/**
+ * Validates a motivation-sticker item document. Mirrors `validSticker` in
+ * firestore.rules: exact keys, string bounds, provider enum, slot range, and
+ * non-negative integer epoch-ms timestamps.
+ */
+export function isValidStickerItem(data: unknown): boolean {
+  if (typeof data !== 'object' || data === null) return false
+  const d = data as Record<string, unknown>
+
+  if (!hasOnlyKeys(d, STICKER_FIELDS)) return false
+  if (typeof d.subject !== 'string' || d.subject.length < 1 || d.subject.length > 200) return false
+  if (typeof d.src !== 'string' || d.src.length < 1 || d.src.length > 2000) return false
+  if (typeof d.provider !== 'string' || !STICKER_PROVIDERS.includes(d.provider as (typeof STICKER_PROVIDERS)[number])) {
+    return false
+  }
+  if (!isBoundedInt(d.slotIndex, 0, 7)) return false
+  if (!isBoundedInt(d.createdAt, 0, Number.MAX_SAFE_INTEGER)) return false
+  if (!isBoundedInt(d.expiresAt, 0, Number.MAX_SAFE_INTEGER)) return false
   return true
 }

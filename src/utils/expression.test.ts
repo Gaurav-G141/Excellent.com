@@ -106,3 +106,16 @@ describe('numeric grading with pi', () => {
     expect(evaluateNumericExpression('abc')).toBeNull()
   })
 })
+
+describe('leading decimal point numbers', () => {
+  it('parses ".5" as 0.5 [regression]', () => {
+    expect(evaluateNumericExpression('.5')).toBeCloseTo(0.5, 9)
+    expect(matchesNumber('.5', 0.5)).toBe(true)
+    expect(matchesNumber('.25', 0.25)).toBe(true)
+    expect(matchesNumber('-.5', -0.5)).toBe(true)
+  })
+
+  it('still treats a lone dot as invalid', () => {
+    expect(evaluateNumericExpression('.')).toBeNull()
+  })
+})

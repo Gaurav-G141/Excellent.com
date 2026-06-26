@@ -23,7 +23,7 @@ function tokenize(input: string): Token[] | null {
   while (i < src.length) {
     const ch = src[i]
 
-    if (ch >= '0' && ch <= '9') {
+    if ((ch >= '0' && ch <= '9') || (ch === '.' && src[i + 1] >= '0' && src[i + 1] <= '9')) {
       let num = ''
       while (i < src.length && ((src[i] >= '0' && src[i] <= '9') || src[i] === '.')) {
         num += src[i]

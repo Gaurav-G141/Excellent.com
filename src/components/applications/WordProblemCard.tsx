@@ -10,6 +10,8 @@ interface Props {
   problem: WordProblem
   /** Called once the learner answers every field correctly. */
   onSolved: (outcome: Outcome) => void
+  /** Called on each wrong submission, the moment it happens. */
+  onWrongAttempt?: () => void
 }
 
 /**
@@ -17,7 +19,7 @@ interface Props {
  * field; a correct submission flashes and advances, a wrong one reveals a hint
  * (never the worked solution or the numeric answer).
  */
-export function WordProblemCard({ problem, onSolved }: Props) {
+export function WordProblemCard({ problem, onSolved, onWrongAttempt }: Props) {
   const [answers, setAnswers] = useState<string[]>(() => problem.fields.map(() => ''))
   const [hint, setHint] = useState<string | null>(null)
   const [solved, setSolved] = useState(false)
@@ -62,6 +64,7 @@ export function WordProblemCard({ problem, onSolved }: Props) {
     } else {
       setWrongAttempts((n) => n + 1)
       setHint(problem.hint)
+      onWrongAttempt?.()
     }
   }
 

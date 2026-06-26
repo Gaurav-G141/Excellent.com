@@ -133,6 +133,38 @@ flowchart LR
   drawings); reference-image anchoring is a future add via `&image=` once
   deployed.
 
+## 10b. Build revisions (approved 2026-06-25)
+
+These supersede the relevant parts above:
+
+- **Image provider = OpenAI primary, Pollinations fallback.** When
+  `VITE_OPENAI_API_KEY` is present, generate with `gpt-image-1`
+  (`background: 'transparent'`, `quality: 'low'`, png) for true crayon-sticker
+  cutouts, reusing the existing browser `fetch` pattern in `src/lib/ai.ts`.
+  Persist the PNG to Firebase Storage (`stickers/{uid}/{itemId}.png`) and store
+  its download URL. If the key is missing or the call/CORS fails, fall back to a
+  reproducible Pollinations URL (`flux`, `seed`). The stored doc keeps a final
+  `src` URL so the renderer is provider-agnostic.
+- **Firebase Storage is now used** (bucket already configured). Init
+  `getStorage(app)` in `src/lib/firebase.ts`; add `storage.rules` (owner-scoped
+  `stickers/{uid}/**`) and a `storage` entry in `firebase.json`.
+- **Show on every page/slide, not one tab.** `StickerLayer` mounts once in
+  `src/App.tsx` (returns null when signed out) and renders ALL of the user's
+  active stickers as a fixed background on every route/slide. No `tab` field.
+- **Scrapbook placement in the margins only.** Stickers occupy a fixed,
+  ordered list of margin slots (alternating left/right down the side gutters of
+  the centered content column), assigned by `slotIndex` in order — never over
+  the main content or center. Hidden on viewports too narrow to have margins.
+- **Size** ~100px (about 2x the 50px `.home-lesson-icon`), slight per-slot
+  rotation for a taped-scrapbook feel.
+- **TESTING:** spawn chance = 1 (a sticker after every correct answer). A single
+  `SPAWN_CHANCE` constant in `src/lib/stickers/config.ts` flips back to 0.15 for
+  production. Max active = slot count; oldest is evicted (doc + Storage file)
+  when full.
+- **Shared tunables** live in `src/lib/stickers/config.ts`
+  (`SPAWN_CHANCE`, `LIFETIME_MS`, `STICKER_SLOT_COUNT`, size) imported by both
+  the lib and the UI so slot count stays in sync.
+
 ## 10. Build checklist
 
 1. Add `stickerSubject` to `WordProblem`; build `catalog.ts` + `url.ts`.

@@ -1,0 +1,145 @@
+{
+  "id": "exponents-product-rule",
+  "title": "Exponents and the Product Rule",
+  "subject": "Calculus BC",
+  "slides": [
+    {
+      "id": "l4-slide-0-exp-triangle",
+      "type": "demo",
+      "component": "exponentialTriangle",
+      "title": "The derivative of eˣ",
+      "body": "Drag the point along y = eˣ. Its slope triangle has a leg on the x-axis: the height drops straight down (the rise), and a run of 1 reaches the tangent's x-intercept. Since rise = height and run = 1, the slope equals the height itself — that's d/dx[eˣ] = eˣ.",
+      "config": {
+        "variant": "exp",
+        "viewport": { "xMin": -1, "xMax": 3, "yMin": -0.5, "yMax": 4 },
+        "initialX": 1
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l4-slide-1-npowerx",
+      "type": "demo",
+      "component": "nPowerXAnimation",
+      "title": "Differentiating any base: d/dx[nˣ]",
+      "body": "Any exponential nˣ can be rewritten with base e. Play the animation to see the chain rule pull out a factor of ln(n).",
+      "config": {
+        "base": 2
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l4-slide-2-exp-question",
+      "type": "problem",
+      "component": "exponentialTriangleQuestion",
+      "title": "Slope of eˣ",
+      "body": "Drag the tangent's x-intercept to build the slope triangle at the marked point — its leg should sit on the x-axis with a run of 1. Then read off (or type) the slope of y = eˣ there.",
+      "config": {
+        "variant": "exp",
+        "viewport": { "xMin": -2, "xMax": 2, "yMin": -0.5, "yMax": 4 },
+        "initialX": 0,
+        "tolerance": 0.1
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "For eˣ the tangent meets the x-axis one unit to the left, so run = 1 and the slope equals the height. Adjust the intercept, or type the slope."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l4-slide-3-ln-triangle",
+      "type": "demo",
+      "component": "exponentialTriangle",
+      "title": "Reflecting to ln(x)",
+      "body": "Start on y = eˣ with its slope triangle, then reflect across y = x to get y = ln x. Watch the triangle flip: the rise becomes 1 and the run becomes the x-value, so the slope is 1/x.",
+      "config": {
+        "variant": "ln",
+        "viewport": { "xMin": -1, "xMax": 6, "yMin": -2, "yMax": 6 },
+        "initialX": 2
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l4-slide-4-ln-question",
+      "type": "problem",
+      "component": "exponentialTriangleQuestion",
+      "title": "Slope of ln(x)",
+      "body": "Drag the tangent's y-intercept to build the slope triangle at the marked point — its leg sits on the y-axis with a rise of 1. Then read off (or type) the slope of y = ln(x) there.",
+      "config": {
+        "variant": "ln",
+        "viewport": { "xMin": -1, "xMax": 5, "yMin": -1.5, "yMax": 3 },
+        "initialX": 2,
+        "tolerance": 0.1
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Not quite — build the triangle so its rise is 1 on the y-axis (or type the slope), then check again."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l4-slide-5-playground",
+      "type": "demo",
+      "component": "polynomialPlayground",
+      "title": "Polynomial playground: the product rule",
+      "body": "Build two polynomials u(x) and v(x), then play the animation to watch the product rule derive (uv)′ = u′v + uv′ on your own functions.",
+      "config": {
+        "maxDegree": 4,
+        "maxCoefficient": 20
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "l4-slide-6-product-multipart",
+      "type": "problem",
+      "component": "productRuleMultiPart",
+      "title": "Apply the product rule",
+      "body": "You are given u(x) and v(x). Work the product rule in three steps, building each polynomial.",
+      "config": {
+        "u": [1, 2],
+        "v": [3, 0, 1],
+        "uDisplay": "2x + 1",
+        "vDisplay": "x² + 3"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Differentiate each factor, then combine with (uv)′ = u′v + uv′ and simplify."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l4-slide-7-exp-closing",
+      "type": "problem",
+      "component": "multipleChoice",
+      "title": "Quick check: exponentials",
+      "body": "Use the rule for differentiating any base.",
+      "config": {
+        "prompt": "d/dx[3ˣ] =",
+        "options": ["ln(3) · 3ˣ", "3ˣ", "x · 3ˣ⁻¹", "3 · ln(x)"],
+        "correctIndex": 0
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Rewrite 3ˣ as e^(ln(3)·x); the chain rule brings down a factor of ln(3)."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "l4-slide-8-product-closing",
+      "type": "problem",
+      "component": "typeInDerivative",
+      "title": "Quick check: product rule",
+      "body": "Differentiate the product. Any equivalent form is accepted.",
+      "config": {
+        "coefficients": [-2, 5, 3],
+        "display": "(x + 2)(3x − 1)",
+        "prompt": "f′(x) =",
+        "placeholder": "type a polynomial in x"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Use (uv)′ = u′v + uv′ with u = x + 2 and v = 3x − 1, then simplify."
+      },
+      "attempts": "unlimited"
+    }
+  ]
+}

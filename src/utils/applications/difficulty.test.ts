@@ -165,9 +165,9 @@ describe('difficulty: nextRating', () => {
   it('lowers the rating on a loss (skipped)', () => {
     const next = nextRating(fresh, SKIPPED)
     expect(next.rating).toBeLessThan(fresh.rating)
-    // TEST_FIXED_STEP override: a miss moves -0.5 exactly (4 -> 3.5).
-    // Restore to `4 + K_MAX * (0 - EXPECTED)` = 1.5 when TEST_FIXED_STEP is null.
-    expect(next.rating).toBeCloseTo(3.5, 10)
+    // TEST_FIXED_STEPS override: a miss moves -0.4 exactly (4 -> 3.6).
+    // Restore to `4 + K_MAX * (0 - EXPECTED)` = 1.5 when TEST_FIXED_STEPS is null.
+    expect(next.rating).toBeCloseTo(3.6, 10)
   })
 
   it('increments games by exactly 1', () => {
@@ -187,21 +187,21 @@ describe('difficulty: nextRating', () => {
     expect(next.rating).toBeGreaterThanOrEqual(1)
   })
 
-  // TEST_FIXED_STEP override: the swing no longer decays with games — every win
-  // is +0.5 and every loss is -0.5. Restore the "early larger than late"
-  // assertions (Math.abs(early) > Math.abs(late)) when TEST_FIXED_STEP is null.
-  it('applies a fixed +0.5 win step regardless of games (TEST_FIXED_STEP)', () => {
+  // TEST_FIXED_STEPS override: the swing no longer decays with games — every win
+  // is +0.5 and every loss is -0.4 (asymmetric, biased harder). Restore the
+  // "early larger than late" assertions when TEST_FIXED_STEPS is null.
+  it('applies a fixed +0.5 win step regardless of games (TEST_FIXED_STEPS)', () => {
     const early = nextRating({ rating: 4, games: 0 }, FIRST_TRY).rating - 4
     const late = nextRating({ rating: 4, games: 100 }, FIRST_TRY).rating - 4
     expect(early).toBeCloseTo(0.5, 10)
     expect(late).toBeCloseTo(0.5, 10)
   })
 
-  it('applies a fixed -0.5 loss step regardless of games (TEST_FIXED_STEP)', () => {
+  it('applies a fixed -0.4 loss step regardless of games (TEST_FIXED_STEPS)', () => {
     const early = nextRating({ rating: 8, games: 0 }, SKIPPED).rating - 8
     const late = nextRating({ rating: 8, games: 100 }, SKIPPED).rating - 8
-    expect(early).toBeCloseTo(-0.5, 10)
-    expect(late).toBeCloseTo(-0.5, 10)
+    expect(early).toBeCloseTo(-0.4, 10)
+    expect(late).toBeCloseTo(-0.4, 10)
   })
 
   it('leaves the rating unchanged at the neutral expected score', () => {

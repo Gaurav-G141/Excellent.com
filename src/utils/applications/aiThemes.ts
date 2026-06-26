@@ -14,6 +14,7 @@ import { addAiThemes } from './themeStore'
 import './lesson1'
 import './lesson2'
 import './lesson3'
+import './lesson4'
 
 let started = false
 

@@ -63,12 +63,13 @@ function learnerVisibleText(problem: WordProblem): string {
 }
 
 describe('Applications: lesson structure', () => {
-  it('has exactly 3 lessons with the expected ids in order', () => {
-    expect(APPLICATION_LESSONS.length).toBe(3)
+  it('has exactly 4 lessons with the expected ids in order', () => {
+    expect(APPLICATION_LESSONS.length).toBe(4)
     expect(APPLICATION_LESSONS.map((g) => g.lessonId)).toEqual([
       'derivatives-basics',
       'derivative-rules',
       'related-rates',
+      'exponents-product-rule',
     ])
   })
 

@@ -20,13 +20,13 @@ const EXPECTED = 0.5
 /**
  * TESTING ONLY — REMOVE / SET BACK TO `null` TO RESTORE NORMAL PROGRESSION.
  *
- * While this is non-null, every answer moves the rating by a FIXED ±this many
- * levels (a win up, a miss down) instead of the gentle decaying K-factor, so the
- * difficulty swing is obvious during manual testing. Set to `null` to restore
- * the real Elo-style progression (and revert the matching assertions in
- * difficulty.test.ts).
+ * While this is non-null, every answer moves the rating by a FIXED amount (`up`
+ * on a win, down by `down` on a miss) instead of the gentle decaying K-factor.
+ * The steps are intentionally asymmetric (up > down) so the rating drifts toward
+ * the harder end of the learner's ability. Set to `null` to restore the real
+ * Elo-style progression (and revert the matching assertions in difficulty.test.ts).
  */
-const TEST_FIXED_STEP: number | null = 0.5
+const TEST_FIXED_STEPS: { up: number; down: number } | null = { up: 0.5, down: 0.4 }
 
 /** What happened on a single problem, used to derive a score. */
 export interface Outcome {
@@ -74,10 +74,10 @@ export function nextRating(state: RatingState, outcome: Outcome): RatingState {
   const rating = Number.isFinite(state.rating) ? state.rating : INITIAL_RATING
   const games = Number.isFinite(state.games) ? Math.max(0, state.games) : 0
   const S = scoreFromOutcome(outcome)
-  if (TEST_FIXED_STEP !== null) {
-    const direction = S > EXPECTED ? 1 : S < EXPECTED ? -1 : 0
+  if (TEST_FIXED_STEPS !== null) {
+    const delta = S > EXPECTED ? TEST_FIXED_STEPS.up : S < EXPECTED ? -TEST_FIXED_STEPS.down : 0
     return {
-      rating: clampRating(rating + direction * TEST_FIXED_STEP),
+      rating: clampRating(rating + delta),
       games: games + 1,
     }
   }

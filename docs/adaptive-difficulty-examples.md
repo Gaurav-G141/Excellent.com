@@ -174,11 +174,13 @@ the level before.
 ## Progression curve
 
 > **⚠️ Temporary testing override active.** `difficulty.ts` currently sets
-> `TEST_FIXED_STEP = 0.5`, so every answer moves the rating by a flat **±0.5**
-> (win up, miss down) regardless of games played, and the Applications tab shows
-> manual **Test level** buttons (1–15) for jumping straight to any level. The
-> curve below describes the *real* Elo progression and applies again once
-> `TEST_FIXED_STEP` is set back to `null` (and the test controls are removed).
+> `TEST_FIXED_STEPS = { up: 0.5, down: 0.4 }`, so every answer moves the rating by
+> a flat **+0.5 on a correct answer / −0.4 on a wrong one** regardless of games
+> played. The steps are deliberately asymmetric so the rating drifts toward the
+> harder end of the learner's ability. The Applications tab also shows manual
+> **Test level** buttons (1–15). The curve below describes the *real* Elo
+> progression and applies again once `TEST_FIXED_STEPS` is set back to `null`
+> (and the test controls are removed).
 
 How fast does a learner move through those levels? Everyone starts at
 `rating = 4` (level 4), and after each problem the rating moves by

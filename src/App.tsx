@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute'
+import { StickerLayer } from './components/stickers/StickerLayer'
 import { AuthProvider } from './contexts/AuthContext'
 import { firebaseConfigError } from './lib/firebase'
 import ApplicationsPage from './pages/ApplicationsPage'
@@ -18,6 +19,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <StickerLayer />
         <Routes>
           <Route element={<PublicOnlyRoute />}>
             <Route path="/login" element={<LoginPage />} />
