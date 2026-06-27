@@ -1,0 +1,103 @@
+.interests-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.interests-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.interests-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.interests-input:focus {
+  outline: none;
+  border-color: var(--accent, var(--text-muted));
+}
+
+.interests-add {
+  white-space: nowrap;
+}
+
+.interests-add-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--danger, #c0392b);
+}
+
+.interests-count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.interests-empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.interests-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.interests-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 8px 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.interests-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--surface-2, rgba(0, 0, 0, 0.06));
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.interests-chip-remove:hover {
+  color: var(--text-h);
+}
+
+.interests-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.interests-status {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.interests-status--error {
+  color: var(--danger, #c0392b);
+}

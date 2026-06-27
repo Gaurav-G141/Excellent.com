@@ -7,3 +7,27 @@
   color: var(--text-muted);
   margin: 0 0 12px;
 }
+
+.quiz-score {
+  color: var(--accent, #6c5ce7);
+}
+
+.quiz-result {
+  text-align: center;
+  padding: 8px 4px 4px;
+}
+
+.quiz-result h2 {
+  margin: 0 0 8px;
+}
+
+.quiz-result p {
+  color: var(--text-muted);
+  margin: 0 auto 16px;
+  max-width: 34ch;
+}
+
+.quiz-result-score {
+  color: var(--text) !important;
+  font-size: 1.05rem;
+}

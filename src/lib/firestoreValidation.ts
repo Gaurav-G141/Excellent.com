@@ -16,9 +16,18 @@ const USER_FIELDS = [
   'longestStreak',
   'applicationsRating',
   'applicationsGames',
+  'interests',
 ] as const
 
 const PROGRESS_FIELDS = ['currentSlideIndex', 'lessonCompleted', 'updatedAt'] as const
+
+const PRACTICE_FIELDS = ['lastPracticedAt'] as const
+
+const APPLICATIONS_ACTIVITY_FIELDS = ['lastSeenAt'] as const
+
+/** Max saved interests, and max length per interest. Mirror src/lib/interests.ts. */
+export const MAX_INTERESTS = 12
+export const MAX_INTEREST_LENGTH = 60
 
 const STICKER_FIELDS = [
   'subject',
@@ -64,7 +73,36 @@ export function isValidUserPatch(data: Record<string, unknown>): boolean {
     const date = data.lastActiveDate
     if (typeof date !== 'string' || date.length > 10) return false
   }
+  if ('interests' in data) {
+    const interests = data.interests
+    if (!Array.isArray(interests) || interests.length > MAX_INTERESTS) return false
+    for (const item of interests) {
+      if (typeof item !== 'string' || item.length < 1 || item.length > MAX_INTEREST_LENGTH) {
+        return false
+      }
+    }
+  }
   return true
+}
+
+/**
+ * Validates a practice-activity document. `lastPracticedAt` is a server
+ * timestamp (not type-checked here, like other server sentinels); only the key
+ * set is enforced. Mirrors `validPractice` in firestore.rules.
+ */
+export function isValidPracticeDoc(data: unknown): boolean {
+  if (typeof data !== 'object' || data === null) return false
+  return hasOnlyKeys(data as Record<string, unknown>, PRACTICE_FIELDS)
+}
+
+/**
+ * Validates an Applications topic-activity document. `lastSeenAt` is a server
+ * timestamp (not type-checked here, like other server sentinels); only the key
+ * set is enforced. Mirrors `validApplicationsActivity` in firestore.rules.
+ */
+export function isValidApplicationsActivityDoc(data: unknown): boolean {
+  if (typeof data !== 'object' || data === null) return false
+  return hasOnlyKeys(data as Record<string, unknown>, APPLICATIONS_ACTIVITY_FIELDS)
 }
 
 /**

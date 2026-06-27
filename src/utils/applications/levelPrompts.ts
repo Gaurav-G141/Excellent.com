@@ -73,6 +73,87 @@ export interface RewriteInput {
   basePrompt: string
   given?: string
   fields: RewriteField[]
+  /** Optional learner interests used to (lightly) theme the scene. */
+  interests?: string[]
+}
+
+/** Most interests to feed the model, and the max length of each. */
+const MAX_PROMPT_INTERESTS = 6
+const MAX_PROMPT_INTEREST_LEN = 60
+
+/**
+ * Trim, de-dupe (case-insensitively), clip, and cap the interest list for use in
+ * a prompt. Kept local (no Firebase import) so this module stays pure/testable;
+ * the stored values are already sanitized on write, this just bounds prompt size.
+ */
+function cleanInterestsForPrompt(interests?: string[]): string[] {
+  if (!Array.isArray(interests)) return []
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const raw of interests) {
+    if (typeof raw !== 'string') continue
+    const trimmed = raw.trim().replace(/\s+/g, ' ').slice(0, MAX_PROMPT_INTEREST_LEN)
+    if (trimmed.length === 0) continue
+    const key = trimmed.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(trimmed)
+    if (out.length >= MAX_PROMPT_INTERESTS) break
+  }
+  return out
+}
+
+/**
+ * TESTING ONLY — when true, every AI rewrite is REQUIRED to set its scene in one
+ * of the learner's interests (~100% personalization) instead of merely being
+ * highly encouraged to. Leave false for the natural "use a fitting interest when
+ * one fits" behavior. Remove this flag (and the forced branch in
+ * buildInterestClause) when done testing.
+ */
+export const FORCE_INTEREST_PERSONALIZATION = false
+
+/**
+ * Build the personalization instruction. Empty string when there are no usable
+ * interests.
+ *
+ * In the default (non-forced) mode personalization is HIGHLY ENCOURAGED but never
+ * forced: the model should set the scene in a naturally-fitting interest whenever
+ * one fits (picking one at random for variety when several do), but must skip it
+ * rather than shoehorn one in. It may only swap the *surface setting*, never the
+ * math/numbers/difficulty, caps it at one interest, and forbids "seductive
+ * details". When `force` is true (see FORCE_INTEREST_PERSONALIZATION) it instead
+ * REQUIRES grounding every scene in an interest, for testing the feature.
+ */
+export function buildInterestClause(
+  interests?: string[],
+  force: boolean = FORCE_INTEREST_PERSONALIZATION,
+): string {
+  const clean = cleanInterestsForPrompt(interests)
+  if (clean.length === 0) return ''
+
+  // Shared guardrails: theming may only touch the surface scene.
+  const protect =
+    'Change ONLY the surface setting (the people, places, and objects) — never the math, the numbers, the ' +
+    'GIVEN formula, the quantity asked for, the difficulty level, or any required distractors. Use at most ONE ' +
+    'interest, refer to it no more than necessary, and add NO extra flavor, backstory, or detail to play it up.'
+
+  if (force) {
+    return (
+      `PERSONALIZATION (REQUIRED): The learner is into: ${clean.join(', ')}. ` +
+      'You MUST set this exact situation in the world of ONE of these interests — pick whichever fits most ' +
+      `naturally. ${protect} ` +
+      'Keep the reference tasteful, not gratuitous, but the scene must be grounded in that interest.'
+    )
+  }
+
+  return (
+    `PERSONALIZATION (highly encouraged): The learner is into: ${clean.join(', ')}. ` +
+    'Whenever one of these can naturally host this exact situation, you are strongly encouraged to set the scene ' +
+    'in that world; if several could fit, pick one at random so problems stay varied. ' +
+    `${protect} ` +
+    'Do NOT force an interest that does not fit the situation — if none fit naturally, simply write a neutral ' +
+    'scene. Keep any reference tasteful and never let it distort the math.'
+  )
 }
 
 /** Clamp a (possibly float/out-of-range) level into 1..MAX_LEVEL. */
@@ -133,6 +214,8 @@ export function buildRewritePrompt(input: RewriteInput): string {
     ? `GIVEN (READ-ONLY — show exactly, do not change): ${input.given.trim()}`
     : 'GIVEN (READ-ONLY): (none)'
 
+  const interestClause = buildInterestClause(input.interests)
+
   return [
     SYSTEM_LINE,
     '',
@@ -140,6 +223,7 @@ export function buildRewritePrompt(input: RewriteInput): string {
     '',
     `TARGET DIFFICULTY — ${fragment}`,
     '',
+    ...(interestClause ? [interestClause, ''] : []),
     `BASE TITLE: ${input.baseTitle}`,
     `BASE PROMPT: ${input.basePrompt}`,
     '',

@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { isValidUserPatch, isValidProgressDoc } from './firestoreValidation'
+import {
+  isValidUserPatch,
+  isValidProgressDoc,
+  isValidPracticeDoc,
+  MAX_INTERESTS,
+} from './firestoreValidation'
 
 describe('isValidProgressDoc', () => {
   it('accepts the exact shape the client writes', () => {
@@ -52,5 +57,35 @@ describe('isValidUserPatch', () => {
   it('rejects malformed lastActiveDate', () => {
     expect(isValidUserPatch({ lastActiveDate: '2026-06-23T00:00:00Z' })).toBe(false)
     expect(isValidUserPatch({ lastActiveDate: 20260623 })).toBe(false)
+  })
+
+  it('accepts a valid interests list', () => {
+    expect(isValidUserPatch({ interests: ['basketball', 'space'] })).toBe(true)
+    expect(isValidUserPatch({ interests: [] })).toBe(true)
+  })
+
+  it('rejects malformed / oversized interests', () => {
+    expect(isValidUserPatch({ interests: 'basketball' })).toBe(false)
+    expect(isValidUserPatch({ interests: [123] })).toBe(false)
+    expect(isValidUserPatch({ interests: [''] })).toBe(false)
+    expect(isValidUserPatch({ interests: ['x'.repeat(61)] })).toBe(false)
+    expect(
+      isValidUserPatch({
+        interests: Array.from({ length: MAX_INTERESTS + 1 }, (_, i) => `i${i}`),
+      }),
+    ).toBe(false)
+  })
+})
+
+describe('isValidPracticeDoc', () => {
+  it('accepts the single-timestamp shape', () => {
+    expect(isValidPracticeDoc({ lastPracticedAt: 'ts' })).toBe(true)
+  })
+
+  it('rejects unknown keys and non-objects', () => {
+    expect(isValidPracticeDoc({ lastPracticedAt: 'ts', forged: 1 })).toBe(false)
+    expect(isValidPracticeDoc({})).toBe(true)
+    expect(isValidPracticeDoc(null)).toBe(false)
+    expect(isValidPracticeDoc('nope')).toBe(false)
   })
 })

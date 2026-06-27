@@ -6,6 +6,7 @@ import { firebaseConfigError } from './lib/firebase'
 import ApplicationsPage from './pages/ApplicationsPage'
 import FirebaseSetupPage from './pages/FirebaseSetupPage'
 import HomePage from './pages/HomePage'
+import InterestsPage from './pages/InterestsPage'
 import LessonPage from './pages/LessonPage'
 import LoginPage from './pages/LoginPage'
 import PracticePage from './pages/PracticePage'
@@ -18,7 +19,13 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
+    // useTransitions={false} is required: react-router wraps both its location
+    // updates and <Link> navigations in React.startTransition by default, and
+    // transition-scheduled updates do not commit in this React version (the URL
+    // changed on a tab click but the view never re-rendered). Forcing direct
+    // setState makes client-side navigation update the page again. Browser
+    // back/forward (popstate) already worked because it bypasses the transition.
+    <BrowserRouter useTransitions={false}>
       <AuthProvider>
         <StickerProvider>
           <Routes>
@@ -32,6 +39,7 @@ export default function App() {
               <Route path="/practice" element={<PracticePage />} />
               <Route path="/applications" element={<ApplicationsPage />} />
               <Route path="/scrapbook" element={<ScrapbookPage />} />
+              <Route path="/interests" element={<InterestsPage />} />
               <Route path="/lessons/:lessonId" element={<LessonPage />} />
             </Route>
 

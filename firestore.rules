@@ -14,16 +14,57 @@ service cloud.firestore {
       return v is number && v >= lo && v <= hi;
     }
 
+    // One interest entry must be a 1..60 char string.
+    function validInterestStr(v) {
+      return v is string && v.size() >= 1 && v.size() <= 60;
+    }
+
+    // Firestore rules can't iterate arbitrary-length lists, so the 12-item cap is
+    // unrolled (constant indices, guarded by size so missing slots short-circuit)
+    // to fully mirror sanitizeInterests / isValidUserPatch (each item a 1..60 char
+    // string).
+    function validInterests(list) {
+      return list is list && list.size() <= 12
+        && (list.size() <= 0 || validInterestStr(list[0]))
+        && (list.size() <= 1 || validInterestStr(list[1]))
+        && (list.size() <= 2 || validInterestStr(list[2]))
+        && (list.size() <= 3 || validInterestStr(list[3]))
+        && (list.size() <= 4 || validInterestStr(list[4]))
+        && (list.size() <= 5 || validInterestStr(list[5]))
+        && (list.size() <= 6 || validInterestStr(list[6]))
+        && (list.size() <= 7 || validInterestStr(list[7]))
+        && (list.size() <= 8 || validInterestStr(list[8]))
+        && (list.size() <= 9 || validInterestStr(list[9]))
+        && (list.size() <= 10 || validInterestStr(list[10]))
+        && (list.size() <= 11 || validInterestStr(list[11]));
+    }
+
     // Mirror of src/lib/firestoreValidation.ts (isValidUserPatch).
     function validUser(d) {
-      return d.keys().hasOnly(['displayName', 'email', 'createdAt', 'streakCount', 'lastActiveDate', 'longestStreak', 'applicationsRating', 'applicationsGames'])
+      return d.keys().hasOnly(['displayName', 'email', 'createdAt', 'streakCount', 'lastActiveDate', 'longestStreak', 'applicationsRating', 'applicationsGames', 'interests'])
         && (!('displayName' in d) || (d.displayName is string && d.displayName.size() >= 1 && d.displayName.size() <= 100))
         && (!('email' in d) || d.email is string)
         && (!('streakCount' in d) || isBoundedInt(d.streakCount, 0, 100000))
         && (!('longestStreak' in d) || isBoundedInt(d.longestStreak, 0, 100000))
         && (!('lastActiveDate' in d) || (d.lastActiveDate is string && d.lastActiveDate.size() <= 10))
         && (!('applicationsRating' in d) || isBoundedNumber(d.applicationsRating, 1, 15))
-        && (!('applicationsGames' in d) || isBoundedInt(d.applicationsGames, 0, 100000));
+        && (!('applicationsGames' in d) || isBoundedInt(d.applicationsGames, 0, 100000))
+        && (!('interests' in d) || validInterests(d.interests));
+    }
+
+    // Mirror of src/lib/firestoreValidation.ts (isValidPracticeDoc). Tracks when
+    // a practice topic was last attempted, for the spaced-repetition review panel.
+    function validPractice(d) {
+      return d.keys().hasOnly(['lastPracticedAt'])
+        && d.lastPracticedAt is timestamp;
+    }
+
+    // Mirror of src/lib/firestoreValidation.ts (isValidApplicationsActivityDoc).
+    // Tracks when an Applications topic was last served, for the recency-weighted
+    // topic picker.
+    function validApplicationsActivity(d) {
+      return d.keys().hasOnly(['lastSeenAt'])
+        && d.lastSeenAt is timestamp;
     }
 
     // Mirror of src/lib/firestoreValidation.ts (isValidProgressDoc).
@@ -52,6 +93,16 @@ service cloud.firestore {
     match /progress/{userId}/lessons/{lessonId} {
       allow read: if isOwner(userId);
       allow write: if isOwner(userId) && validProgress(request.resource.data);
+    }
+
+    match /practice/{userId}/topics/{topicId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && validPractice(request.resource.data);
+    }
+
+    match /applications/{userId}/topics/{topicId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && validApplicationsActivity(request.resource.data);
     }
 
     match /courses/{courseId} {

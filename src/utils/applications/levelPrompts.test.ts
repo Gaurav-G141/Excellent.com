@@ -5,6 +5,7 @@ import {
   SYSTEM_LINE,
   RULES_BLOCK,
   MAX_LEVEL,
+  buildInterestClause,
   buildRewritePrompt,
   numbersIn,
   REWRITE_SCHEMA,
@@ -66,6 +67,53 @@ describe('levelPrompts: LEVEL_PROMPTS table', () => {
     expect(SYSTEM_LINE.trim().length).toBeGreaterThan(0)
     expect(typeof RULES_BLOCK).toBe('string')
     expect(RULES_BLOCK.trim().length).toBeGreaterThan(0)
+  })
+})
+
+// ── buildInterestClause / personalization ────────────────────────────────────
+
+describe('levelPrompts: personalization', () => {
+  it('returns empty for no / blank / non-array interests', () => {
+    expect(buildInterestClause()).toBe('')
+    expect(buildInterestClause([])).toBe('')
+    expect(buildInterestClause(['', '   '])).toBe('')
+    expect(buildInterestClause(undefined)).toBe('')
+  })
+
+  it('lists cleaned interests and keeps strict, non-forced guardrails', () => {
+    const clause = buildInterestClause(['Basketball', '  space  travel '], false)
+    expect(clause).toContain('Basketball')
+    expect(clause).toContain('space travel')
+    // Highly encouraged, but explicitly not forced, and protects the math.
+    expect(clause.toLowerCase()).toContain('highly encouraged')
+    expect(clause.toLowerCase()).toContain('do not force')
+    expect(clause.toLowerCase()).toContain('never the math')
+    expect(clause.toLowerCase()).toContain('at most one')
+  })
+
+  it('forced mode requires an interest but still protects the math', () => {
+    const clause = buildInterestClause(['cooking'], true)
+    expect(clause).toContain('REQUIRED')
+    expect(clause).toContain('MUST')
+    expect(clause.toLowerCase()).toContain('never the math')
+    // No "ignore it" escape hatch in forced mode.
+    expect(clause.toLowerCase()).not.toContain('worse than none')
+  })
+
+  it('de-dupes case-insensitively and caps the count', () => {
+    expect(buildInterestClause(['Anime', 'anime', 'ANIME'], false)).toContain('Anime')
+    const many = Array.from({ length: 20 }, (_, i) => `hobby${i}`)
+    const clause = buildInterestClause(many, false)
+    expect(clause).toContain('hobby0')
+    expect(clause).toContain('hobby5')
+    expect(clause).not.toContain('hobby6') // capped at 6
+  })
+
+  it('is included in the full prompt only when interests are present', () => {
+    expect(buildRewritePrompt(baseInput())).not.toContain('PERSONALIZATION')
+    const out = buildRewritePrompt(baseInput({ interests: ['cooking'] }))
+    expect(out).toContain('PERSONALIZATION')
+    expect(out).toContain('cooking')
   })
 })
 

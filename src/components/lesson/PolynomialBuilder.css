@@ -31,8 +31,13 @@
 }
 
 .pb-live {
-  display: block;
-  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Reserve two lines up front so adding/removing a term (which can wrap a long
+     polynomial onto a second line) never changes the builder's height and
+     shifts the buttons under a mid-tap finger. */
+  min-height: 64px;
   padding: 8px 12px;
   border-radius: var(--radius-sm, 10px);
   background: var(--code-bg);
@@ -49,11 +54,17 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
+  /* Lock the row to a single line's height. The placeholder ("enter a
+     coefficient") is long enough to wrap at narrow widths, but a typed value is
+     short — without this, the first digit collapsed the row from two lines to
+     one, jumping every button up and cancelling rapid taps. */
+  min-height: 22px;
 }
 
 .pb-term-label {
   font-size: 12px;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .pb-term-preview {
@@ -61,6 +72,11 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--accent);
+  /* Never wrap: keep the row exactly one line tall whatever the text. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .pb-keys {

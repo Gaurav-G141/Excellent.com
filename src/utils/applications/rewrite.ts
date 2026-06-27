@@ -31,10 +31,15 @@ const MAX_ATTEMPTS = 2
 /**
  * Return a copy of `problem` with title/prompt/labels rewritten to `level`, or
  * the original problem unchanged on any failure. Answers are always preserved.
+ *
+ * `interests` (the learner's saved interests) only lightly themes the surface
+ * scene; it never affects the math, the numbers, or the difficulty, and an empty
+ * or omitted list simply produces a neutral, non-personalized rewrite.
  */
 export async function rewriteProblem(
   problem: WordProblem,
   level: number,
+  interests?: string[],
 ): Promise<WordProblem> {
   const model = getJsonModel(REWRITE_SCHEMA)
   if (!model) return problem
@@ -53,6 +58,7 @@ export async function rewriteProblem(
       basePrompt: problem.prompt,
       given: problem.given,
       fields,
+      interests,
     })
     // Numbers already present in the problem are legitimate; the validator uses
     // them to whitelist reused values while still rejecting an answer that the

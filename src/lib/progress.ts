@@ -1,4 +1,4 @@
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, serverTimestamp, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
 
 export interface LessonProgress {
@@ -31,6 +31,33 @@ export async function loadLessonProgress(
         ? updatedAt.toMillis()
         : null,
   }
+}
+
+/**
+ * Load progress for every lesson the learner has touched, keyed by lesson id.
+ * Empty on any failure or when Firestore is unconfigured. Used by the Practice
+ * tab's review panel to treat recent lesson work as "studied" for staleness.
+ */
+export async function loadAllLessonProgress(
+  uid: string,
+): Promise<Record<string, LessonProgress>> {
+  if (!db) return {}
+  const snapshot = await getDocs(collection(db, 'progress', uid, 'lessons'))
+  const out: Record<string, LessonProgress> = {}
+  snapshot.forEach((d) => {
+    const data = d.data()
+    const updatedAt = data.updatedAt
+    out[d.id] = {
+      currentSlideIndex:
+        typeof data.currentSlideIndex === 'number' ? data.currentSlideIndex : 0,
+      lessonCompleted: Boolean(data.lessonCompleted),
+      updatedAt:
+        updatedAt && typeof updatedAt.toMillis === 'function'
+          ? updatedAt.toMillis()
+          : null,
+    }
+  })
+  return out
 }
 
 export async function saveLessonProgress(

@@ -8,11 +8,26 @@
   justify-content: center;
   z-index: 100;
   animation: feedback-fade 0.18s ease-out;
+  /* The hint is non-blocking: the dimmed backdrop must NOT swallow clicks meant
+     for the tabs or the rest of the page (that made the first tab tap after a
+     wrong answer only dismiss the hint instead of navigating). Only the sheet
+     itself is interactive; dismissal is via its button. */
+  pointer-events: none;
+}
+
+.feedback-sheet,
+.feedback-overlay > * {
+  pointer-events: auto;
 }
 
 .feedback-sheet {
   width: 100%;
   max-width: 480px;
+  /* Bottom-anchored, and capped so a long hint scrolls internally instead of
+     growing tall enough to overlap the tabs/header on short or zoomed viewports
+     (the only interactive part of this overlay must stay near the bottom). */
+  max-height: 70vh;
+  overflow-y: auto;
   background: var(--surface);
   border-radius: 20px 20px 0 0;
   padding: 24px 20px 32px;

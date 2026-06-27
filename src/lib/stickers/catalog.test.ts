@@ -42,6 +42,48 @@ const TOPIC_POOLS: Record<string, readonly string[]> = {
 // Mirrors GENERIC_SUBJECTS in catalog.ts.
 const GENERIC_SUBJECTS = ['gold star', 'trophy', 'hot air balloon', 'smiling sun']
 
+describe('resolveSubject: matched interest wins over the catalog', () => {
+  it('draws a learner interest that appears in the themed problem', () => {
+    const subject = resolveSubject(
+      makeProblem({ title: 'A ladybug on a leaf', topicId: 'a2-power' }),
+      ['ladybugs', 'chess'],
+    )
+    // Singularized from "ladybugs", and beats both the keyword and topic pool.
+    expect(subject).toBe('ladybug')
+  })
+
+  it('matches an interest found only in the prompt body', () => {
+    const subject = resolveSubject(
+      makeProblem({ title: 'A quiet afternoon', prompt: 'Mia plays the violin.', topicId: 'a2-sum' }),
+      ['violin'],
+    )
+    expect(subject).toBe('violin')
+  })
+
+  it('keeps "ss" words intact when singularizing', () => {
+    expect(
+      resolveSubject(makeProblem({ title: 'A game of chess' }), ['chess']),
+    ).toBe('chess')
+  })
+
+  it('ignores interests that do not appear, falling back to the catalog', () => {
+    const subject = resolveSubject(
+      makeProblem({ title: 'Giant pizza party', topicId: 'a2-power' }),
+      ['ladybugs'],
+    )
+    expect(subject).toBe('pizza')
+  })
+
+  it('ignores too-short interests to avoid spurious substring hits', () => {
+    // "go" (2 chars) appears inside "dragon" but must be ignored.
+    const subject = resolveSubject(
+      makeProblem({ title: 'A dragon hoard', topicId: 'a2-power' }),
+      ['go'],
+    )
+    expect(TOPIC_POOLS['a2-power']).toContain(subject)
+  })
+})
+
 describe('resolveSubject: title-keyword mapping wins', () => {
   // Representative *real* titles drawn from the lesson topic files. Each maps to
   // a deterministic subject via the first matching keyword rule (order matters).

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Scrapbook } from '../components/stickers/Scrapbook'
 import { TabNav } from '../components/TabNav'
 import { useAuth } from '../contexts/AuthContext'
@@ -11,9 +12,14 @@ export default function ScrapbookPage() {
     <div className="home-page">
       <header className="home-header">
         <h1>Excellent</h1>
-        <button type="button" className="home-sign-out" onClick={() => signOut()}>
-          Sign out
-        </button>
+        <div className="home-header-actions">
+          <Link to="/interests" className="home-interests">
+            Interests
+          </Link>
+          <button type="button" className="home-sign-out" onClick={() => signOut()}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <main className="home-main">

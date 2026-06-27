@@ -1,0 +1,72 @@
+{
+  "id": "paper-box",
+  "title": "The Biggest Paper Box",
+  "subject": "Calculus · Real world",
+  "slides": [
+    {
+      "id": "pb-slide-0-explore",
+      "type": "demo",
+      "component": "paperBoxExplorer",
+      "title": "Fold a box from a sheet of paper",
+      "body": "Take a real 8.5 × 11 sheet. Cut an equal square from each corner, fold the four sides up, and you get an open box. Different corner cuts give different boxes — set a cut, fold it, and watch the volume.",
+      "config": {
+        "width": 8.5,
+        "length": 11,
+        "unit": "in",
+        "initialCut": 1
+      },
+      "ctaLabel": "Continue"
+    },
+    {
+      "id": "pb-slide-1-derive",
+      "type": "problem",
+      "component": "boxVolumeDerive",
+      "title": "Write the volume as a formula",
+      "body": "You felt the volume rise and fall as the cut changed. To pin down the best cut exactly, first capture the volume as a function of the cut x.",
+      "config": {
+        "width": 8.5,
+        "length": 11,
+        "unit": "in"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Not quite. After cutting x from each corner, the base is (8.5 − 2x) by (11 − 2x) and the height is x. Multiply V = x · (8.5 − 2x) · (11 − 2x) out."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "pb-slide-2-optimize",
+      "type": "problem",
+      "component": "boxOptimize",
+      "title": "Find the best cut with calculus",
+      "body": "At the biggest box, the volume stops rising — its slope is zero. So differentiate V(x), find where the slope is zero, and read off the maximum volume.",
+      "config": {
+        "width": 8.5,
+        "length": 11,
+        "unit": "in"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Not yet. Differentiate each term of V(x) with the power rule."
+      },
+      "attempts": "unlimited"
+    },
+    {
+      "id": "pb-slide-3-transfer",
+      "type": "problem",
+      "component": "boxTransfer",
+      "title": "Now try a different sheet",
+      "body": "Here is a fresh 12 × 12 sheet. Use the same method — derivative, set it to zero, plug back in — to find the biggest box you can fold from it.",
+      "config": {
+        "width": 12,
+        "length": 12,
+        "unit": "in"
+      },
+      "feedback": {
+        "correct": "",
+        "wrong": "Differentiate V(x), set V′(x) = 0, and keep the root that fits a real box."
+      },
+      "attempts": "unlimited"
+    }
+  ]
+}

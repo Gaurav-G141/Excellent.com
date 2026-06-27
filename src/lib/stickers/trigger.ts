@@ -25,9 +25,17 @@ import type { StickerItem } from './types'
 /** Serializes spawns/removals within a tab so slot assignment is race-free. */
 let spawnQueue: Promise<void> = Promise.resolve()
 
-/** Maybe earn a sticker for `uid` after solving `problem`. Never throws. */
-export function maybeSpawnSticker(problem: WordProblem, uid: string): Promise<void> {
-  const run = spawnQueue.then(() => spawnOne(problem, uid))
+/**
+ * Maybe earn a sticker for `uid` after solving `problem`. `interests` (the
+ * learner's saved interests) lets the sticker match an interest-themed scene.
+ * Never throws.
+ */
+export function maybeSpawnSticker(
+  problem: WordProblem,
+  uid: string,
+  interests?: string[],
+): Promise<void> {
+  const run = spawnQueue.then(() => spawnOne(problem, uid, interests))
   // Keep the queue alive regardless of this run's outcome (spawnOne never
   // rejects, but guard defensively so one failure can't wedge the chain).
   spawnQueue = run.catch(() => {})
@@ -60,10 +68,14 @@ async function removeMany(uid: string, count: number): Promise<void> {
   }
 }
 
-async function spawnOne(problem: WordProblem, uid: string): Promise<void> {
+async function spawnOne(
+  problem: WordProblem,
+  uid: string,
+  interests?: string[],
+): Promise<void> {
   if (Math.random() >= SPAWN_CHANCE) return
 
-  const subject = resolveSubject(problem)
+  const subject = resolveSubject(problem, interests)
   const id = crypto.randomUUID()
 
   // Generate first: this is the slow, failure-prone step (network upload). Only

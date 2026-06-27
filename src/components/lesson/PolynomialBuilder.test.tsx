@@ -54,6 +54,28 @@ describe('PolynomialBuilder (controlled)', () => {
     expect(onChange).toHaveBeenCalledWith([-5])
   })
 
+  it('has no decimal key unless allowDecimal is set', () => {
+    const { rerender } = render(<PolynomialBuilder value={[]} onChange={vi.fn()} />)
+    expect(screen.queryByRole('button', { name: 'decimal point' })).toBeNull()
+    rerender(<PolynomialBuilder value={[]} onChange={vi.fn()} allowDecimal />)
+    expect(screen.getByRole('button', { name: 'decimal point' })).toBeTruthy()
+  })
+
+  it('builds a decimal coefficient like 93.5·x when allowDecimal is set', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<PolynomialBuilder value={[]} onChange={onChange} allowDecimal maxCoefficient={200} />)
+
+    await user.click(screen.getByRole('button', { name: 'digit 9' }))
+    await user.click(screen.getByRole('button', { name: 'digit 3' }))
+    await user.click(screen.getByRole('button', { name: 'decimal point' }))
+    await user.click(screen.getByRole('button', { name: 'digit 5' }))
+    await user.click(screen.getByRole('button', { name: 'increase power' }))
+    await user.click(screen.getByRole('button', { name: /add term/i }))
+
+    expect(onChange).toHaveBeenCalledWith([0, 93.5])
+  })
+
   it('clears the polynomial', async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()

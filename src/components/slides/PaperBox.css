@@ -1,0 +1,315 @@
+/* Paper box lesson — shared styles for the explorer, derive, and optimize slides. */
+
+.pb-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 300px;
+}
+
+.pb-svg,
+.pb-iso {
+  width: 100%;
+  height: auto;
+  max-width: 320px;
+  display: block;
+}
+
+/* Crossfade between the flat-paper layer and the folded-box layer. The single
+   SVG keeps a constant viewBox, so the stage never collapses or blanks. */
+.pb-layer {
+  transition: opacity 0.3s ease;
+}
+
+/* --- Top-down paper (idle / cutting) --- */
+
+.pb-paper {
+  fill: #fffdf6;
+  stroke: #d7d2c4;
+  stroke-width: 1.5;
+}
+
+/* college-ruled blue horizontal lines */
+.pb-rule {
+  stroke: #aec6e4;
+  stroke-width: 0.7;
+}
+
+/* red/pink left-margin line */
+.pb-margin-line {
+  stroke: #e7a6b0;
+  stroke-width: 1;
+}
+
+.pb-corner-preview {
+  fill: var(--accent-bg);
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 3;
+}
+
+.pb-corner-cut {
+  fill: var(--bg);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+/* dashed guide for an upcoming cut */
+.pb-cut-guide {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 4 4;
+  opacity: 0.5;
+}
+
+/* solid line already cut by the scissors */
+.pb-cut-line {
+  stroke: var(--tangent-arrow);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.pb-scissor {
+  font-size: 24px;
+}
+
+.pb-dim {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+}
+
+.pb-dim-text {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+/* --- Isometric box --- */
+
+.pb-floor {
+  fill: #f0ece0;
+  stroke: #cdbf9b;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.pb-wall {
+  stroke: #b59a63;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.pb-wall--back {
+  fill: #efe7d2;
+}
+
+.pb-wall--front {
+  fill: #e3d4ad;
+}
+
+.pb-dim-label {
+  fill: var(--text-h);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pb-dim-label--center {
+  text-anchor: middle;
+}
+
+/* --- Readouts & controls --- */
+
+.pb-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  width: 100%;
+}
+
+.pb-readout-volume {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.pb-readout-sub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pb-best {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--secant-line);
+  font-weight: 600;
+}
+
+.pb-hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* --- Given formula block, reused by derive/optimize slides --- */
+
+.pb-given {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-h);
+  text-align: center;
+}
+
+.pb-given-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* --- Multi-step prompts (derive / optimize) --- */
+
+.pb-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pb-step {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.pb-step--active {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.pb-step--done {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.pb-step-prompt {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.pb-check {
+  color: var(--secant-line);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.pb-step-answer {
+  margin: 4px 0 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.pb-ideal {
+  margin: 4px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--secant-line) 40%, transparent);
+  background: color-mix(in srgb, var(--secant-line) 10%, transparent);
+}
+
+.pb-ideal p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-h);
+}
+
+.pb-ideal-title {
+  font-weight: 700;
+  margin-bottom: 4px !important;
+  color: var(--secant-line);
+}
+
+.pb-textarea {
+  width: 100%;
+  min-height: 78px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-h);
+  font: inherit;
+  resize: vertical;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.pb-textarea:focus {
+  outline: none;
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.pb-mc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pb-mc-option {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-h);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.pb-mc-option:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.pb-mc-option--correct {
+  border-color: var(--secant-line);
+  background: rgba(15, 148, 136, 0.12);
+}
+
+.pb-mc-option:disabled {
+  cursor: default;
+}
+
+.pb-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}

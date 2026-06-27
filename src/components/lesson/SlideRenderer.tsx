@@ -1,4 +1,7 @@
 import type { Slide } from '../../types/lesson'
+import { BoxOptimizeSlide } from '../slides/BoxOptimizeSlide'
+import { BoxTransferSlide } from '../slides/BoxTransferSlide'
+import { BoxVolumeDeriveSlide } from '../slides/BoxVolumeDeriveSlide'
 import { ChainRuleSlide } from '../slides/ChainRuleSlide'
 import { DerivativeCriticalPointsSlide } from '../slides/DerivativeCriticalPointsSlide'
 import { DragMatchSlide } from '../slides/DragMatchSlide'
@@ -18,6 +21,7 @@ import { MotionVectorsSlide } from '../slides/MotionVectorsSlide'
 import { MultipleChoiceSlide } from '../slides/MultipleChoiceSlide'
 import { MvtMultiPartSlide } from '../slides/MvtMultiPartSlide'
 import { NPowerXAnimationSlide } from '../slides/NPowerXAnimationSlide'
+import { PaperBoxExplorerSlide } from '../slides/PaperBoxExplorerSlide'
 import { PolynomialDerivativeSlide } from '../slides/PolynomialDerivativeSlide'
 import { PolynomialPlaygroundSlide } from '../slides/PolynomialPlaygroundSlide'
 import { PowerRuleExponentSlide } from '../slides/PowerRuleExponentSlide'
@@ -146,6 +150,22 @@ export function SlideRenderer({ slide, onAdvance }: Props) {
 
   if (slide.type === 'problem' && slide.component === 'multipleChoice') {
     return <MultipleChoiceSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'demo' && slide.component === 'paperBoxExplorer') {
+    return <PaperBoxExplorerSlide slide={slide} onContinue={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'boxVolumeDerive') {
+    return <BoxVolumeDeriveSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'boxOptimize') {
+    return <BoxOptimizeSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'boxTransfer') {
+    return <BoxTransferSlide slide={slide} onCorrect={onAdvance} />
   }
 
   return (

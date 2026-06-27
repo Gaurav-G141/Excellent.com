@@ -3,7 +3,13 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { TabNav } from '../components/TabNav'
 import { useAuth } from '../contexts/AuthContext'
-import { LESSON_ICONS, lessonList } from '../lessons'
+import {
+  isAlwaysOpen,
+  LESSON_ICONS,
+  lessonList,
+  lessons,
+  recommendedPrerequisiteId,
+} from '../lessons'
 import { db } from '../lib/firebase'
 import { isUnlockedByPrereq } from '../lib/lessonAccess'
 import { loadLessonProgress } from '../lib/progress'
@@ -86,9 +92,14 @@ export default function HomePage() {
     <div className="home-page">
       <header className="home-header">
         <h1>Excellent</h1>
-        <button type="button" className="home-sign-out" onClick={() => signOut()}>
-          Sign out
-        </button>
+        <div className="home-header-actions">
+          <Link to="/interests" className="home-interests">
+            Interests
+          </Link>
+          <button type="button" className="home-sign-out" onClick={() => signOut()}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <main className="home-main">
@@ -117,13 +128,25 @@ export default function HomePage() {
 
         {loaded &&
           lessonList.map((lesson, index) => {
-          const prev = index > 0 ? lessonList[index - 1] : null
-          const unlocked = isUnlockedByPrereq(
-            prev !== null,
-            prev ? statuses[prev.id]?.completed === true : false,
-            statuses[lesson.id]?.completed === true,
-            statuses[lesson.id] !== undefined,
-          )
+          const alwaysOpen = isAlwaysOpen(lesson.id)
+          // Always-open lessons ignore the positional unlock chain entirely.
+          const prev = !alwaysOpen && index > 0 ? lessonList[index - 1] : null
+          const unlocked =
+            alwaysOpen ||
+            isUnlockedByPrereq(
+              prev !== null,
+              prev ? statuses[prev.id]?.completed === true : false,
+              statuses[lesson.id]?.completed === true,
+              statuses[lesson.id] !== undefined,
+            )
+
+          // Non-blocking suggestion shown on always-open cards until the
+          // recommended lesson has been finished.
+          const recommendedId = alwaysOpen ? recommendedPrerequisiteId(lesson.id) : null
+          const recommended =
+            recommendedId && statuses[recommendedId]?.completed !== true
+              ? lessons[recommendedId]
+              : null
 
           if (!unlocked) {
             return (
@@ -161,6 +184,11 @@ export default function HomePage() {
                   {lesson.subject} · {lesson.slides.length} slides
                 </p>
                 <p className="home-lesson-status">{studiedLabel(statuses[lesson.id])}</p>
+                {recommended && (
+                  <p className="home-lesson-status home-lesson-status--recommended">
+                    Recommended first: {recommended.title}
+                  </p>
+                )}
               </div>
             </Link>
           )

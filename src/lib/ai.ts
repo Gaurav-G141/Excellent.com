@@ -55,6 +55,9 @@ export const Schema = {
   string(): JsonSchema {
     return { type: 'string' }
   },
+  boolean(): JsonSchema {
+    return { type: 'boolean' }
+  },
   array(opts: { items: JsonSchema }): JsonSchema {
     return { type: 'array', items: opts.items }
   },
@@ -75,13 +78,24 @@ export interface JsonModel {
   ) => Promise<{ response: { text: () => string } }>
 }
 
+/** Per-model tuning. `temperature` defaults to 1.1 (diverse creative output);
+ *  classification/moderation callers should pass 0 for deterministic answers. */
+export interface JsonModelOptions {
+  temperature?: number
+}
+
 /**
  * Build a JSON-structured model bound to `responseSchema`, or null if no API key
  * is configured. The returned `generateContent` throws on any HTTP/parse failure
  * so callers fall back; it never silently returns garbage.
  */
-export function getJsonModel(responseSchema: JsonSchema): JsonModel | null {
+export function getJsonModel(
+  responseSchema: JsonSchema,
+  options?: JsonModelOptions,
+): JsonModel | null {
   if (!aiConfigured) return null
+
+  const temperature = options?.temperature ?? 1.1
 
   return {
     async generateContent(prompt: string) {
@@ -102,8 +116,9 @@ export function getJsonModel(responseSchema: JsonSchema): JsonModel | null {
         },
         body: JSON.stringify({
           model: MODEL,
-          // High temperature: we WANT diverse, surprising real-world settings.
-          temperature: 1.1,
+          // Default high temperature gives diverse, surprising real-world
+          // settings; moderation/classification callers override with 0.
+          temperature,
           messages: [{ role: 'user', content: prompt }],
           response_format: {
             type: 'json_schema',

@@ -5,7 +5,6 @@ import { DEFAULT_LESSON_ID, lessons, prerequisiteLessonId } from '../../lessons'
 import { evaluatePrereqAccess } from '../../lib/lessonAccess'
 import { loadLessonProgress, saveLessonProgress } from '../../lib/progress'
 import { recordDailyActivity } from '../../lib/streak'
-import type { ProblemSlide } from '../../types/lesson'
 import { generateQuiz, hasQuiz } from '../../utils/quiz'
 import { LessonQuiz } from './LessonQuiz'
 import { ProgressBar } from './ProgressBar'
@@ -34,7 +33,6 @@ export function LessonPlayer() {
   const [slideIndex, setSlideIndex] = useState(0)
   const [completed, setCompleted] = useState(false)
   const [inQuiz, setInQuiz] = useState(false)
-  const [quizQuestions, setQuizQuestions] = useState<ProblemSlide[]>([])
   const [hydrated, setHydrated] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const activityRecorded = useRef(false)
@@ -149,7 +147,6 @@ export function LessonPlayer() {
         // Finished the lesson content. Gate completion behind the mastery quiz;
         // if a lesson has no quiz, complete immediately (legacy behavior).
         if (lessonHasQuiz) {
-          setQuizQuestions(generateQuiz(lesson.id))
           setInQuiz(true)
           return index
         }
@@ -161,7 +158,7 @@ export function LessonPlayer() {
       persist(next, false)
       return next
     })
-  }, [persist, total, user, lessonHasQuiz, lesson.id])
+  }, [persist, total, user, lessonHasQuiz])
 
   const handleQuizPass = useCallback(() => {
     setInQuiz(false)
@@ -294,7 +291,7 @@ export function LessonPlayer() {
         )}
 
         <main className="lesson-slide">
-          <LessonQuiz questions={quizQuestions} onPass={handleQuizPass} />
+          <LessonQuiz generate={() => generateQuiz(lesson.id)} onPass={handleQuizPass} />
         </main>
       </div>
     )

@@ -34,6 +34,36 @@
   margin-left: 1px;
 }
 
+.home-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-interests {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 8px 14px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-h);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.home-interests:hover {
+  background: var(--surface-2);
+  border-color: var(--text-muted);
+}
+
 .home-sign-out {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -200,4 +230,9 @@
 
 .home-lesson-status--locked {
   color: var(--text-muted) !important;
+}
+
+.home-lesson-status--recommended {
+  color: var(--text-muted) !important;
+  font-size: 13px;
 }

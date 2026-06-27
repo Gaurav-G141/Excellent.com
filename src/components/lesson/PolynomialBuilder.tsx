@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { formatPolynomial, trimPolynomial } from '../../utils/polynomial'
+import { formatPolynomial, superscript, trimPolynomial } from '../../utils/polynomial'
 import './PolynomialBuilder.css'
 
 /**
@@ -27,6 +27,8 @@ export interface PolynomialBuilderProps {
   ariaLabel?: string
   /** Visual status — 'wrong' lights the builder red to flag an incorrect answer. */
   status?: 'default' | 'wrong'
+  /** Allow a decimal point in coefficients (e.g. 93.5). Off by default. */
+  allowDecimal?: boolean
 }
 
 const DIGITS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const
@@ -39,6 +41,7 @@ export function PolynomialBuilder({
   label,
   ariaLabel,
   status = 'default',
+  allowDecimal = false,
 }: PolynomialBuilderProps) {
   const [coeffStr, setCoeffStr] = useState('')
   const [sign, setSign] = useState<1 | -1>(1)
@@ -46,14 +49,24 @@ export function PolynomialBuilder({
 
   const liveDisplay = formatPolynomial(trimPolynomial(value))
 
-  const enteredCoeff = sign * (coeffStr === '' ? 0 : Number.parseInt(coeffStr, 10))
-  const hasTerm = coeffStr !== ''
-  const previewDisplay = hasTerm ? formatPolynomial(addTermToCoeffs([], enteredCoeff, power)) : null
+  const magnitude = coeffStr === '' || coeffStr === '.' ? 0 : Number.parseFloat(coeffStr)
+  const enteredCoeff = sign * (Number.isFinite(magnitude) ? magnitude : 0)
+  const hasTerm = coeffStr !== '' && coeffStr !== '.'
+  // Preview from the raw typed string so an in-progress decimal (e.g. "93.")
+  // shows its trailing point instead of being dropped by numeric formatting.
+  const previewVar = power === 0 ? '' : power === 1 ? 'x' : `x${superscript(power)}`
+  const previewCoeff = coeffStr === '1' && power > 0 ? '' : coeffStr
+  const previewDisplay = hasTerm ? `${sign === -1 ? '-' : ''}${previewCoeff}${previewVar}` : null
 
   function appendDigit(digit: string) {
     const next = coeffStr === '0' && digit === '0' ? '0' : `${coeffStr}${digit}`
-    if (Number.parseInt(next, 10) > maxCoefficient) return
+    if (Number.parseFloat(next) > maxCoefficient) return
     setCoeffStr(next)
+  }
+
+  function appendDot() {
+    if (!allowDecimal || coeffStr.includes('.')) return
+    setCoeffStr((prev) => (prev === '' ? '0.' : `${prev}.`))
   }
 
   function backspaceDigit() {
@@ -132,6 +145,17 @@ export function PolynomialBuilder({
         >
           ±
         </button>
+        {allowDecimal && (
+          <button
+            type="button"
+            className="pb-key"
+            aria-label="decimal point"
+            onClick={appendDot}
+            disabled={coeffStr.includes('.')}
+          >
+            .
+          </button>
+        )}
         <button
           type="button"
           className="pb-key"

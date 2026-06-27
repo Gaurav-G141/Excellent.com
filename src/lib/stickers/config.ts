@@ -10,8 +10,9 @@ export const SPAWN_CHANCE = 1
 export const LIFETIME_MS = 2 * 24 * 60 * 60 * 1000
 
 /**
- * Wrong answers in the Applications tab that cost the learner one random sticker.
- * The tally is cumulative across problems. (Possibly temporary — see trigger.ts.)
+ * Consecutive "misses" in the Applications tab — wrong submissions or skips —
+ * that cost the learner one random sticker. Counted as a streak: a correct answer
+ * resets it. (Possibly temporary — see ApplicationsPage.tsx / trigger.ts.)
  */
 export const WRONG_ANSWERS_PER_STICKER_LOSS = 3
 

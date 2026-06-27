@@ -1,18 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { WordProblemCard } from '../components/applications/WordProblemCard'
 import { TabNav } from '../components/TabNav'
 import { useAuth } from '../contexts/AuthContext'
 import { useApplicationsLevel } from '../hooks/useApplicationsLevel'
 import { useCompletedLessons } from '../hooks/useCompletedLessons'
+import { useInterests } from '../hooks/useInterests'
 import { APPLICATION_LESSONS } from '../utils/applications'
 import { prefetchThemes } from '../utils/applications/aiThemes'
 import {
   levelFromRating,
+  MAX_LEVEL,
   nextRating,
   type Outcome,
   type RatingState,
 } from '../utils/applications/difficulty'
 import { rewriteProblem } from '../utils/applications/rewrite'
+import { ProblemBuffer } from '../utils/applications/problemBuffer'
+import { pickWeightedTopic, type TopicRecency } from '../utils/applications/topicPicker'
+import {
+  loadApplicationsActivity,
+  recordApplicationsSeen,
+} from '../lib/applicationsActivity'
 import { loseStickers, maybeSpawnSticker } from '../lib/stickers/trigger'
 import { WRONG_ANSWERS_PER_STICKER_LOSS } from '../lib/stickers/config'
 import type { ApplicationTopicDef, WordProblem } from '../utils/applications/types'
@@ -31,12 +40,12 @@ const LESSON_FOR_TOPIC = new Map<string, string>(
 const WIN_OUTCOME: Outcome = { solved: true, wrongAttempts: 0, skipped: false }
 const LOSS_OUTCOME: Outcome = { solved: false, wrongAttempts: 0, skipped: true }
 
-/** Draw a problem from a uniformly random topic so the concept stays hidden. */
-function randomProblem(topics: ApplicationTopicDef[]): WordProblem | null {
-  if (topics.length === 0) return null
-  const topic = topics[Math.floor(Math.random() * topics.length)]
-  return topic.generate()
-}
+/**
+ * How many ready-to-serve problems to keep buffered per warmed level. Two each
+ * at the current level, the level below, and the level above means a learner
+ * almost never waits — including across consecutive skips at the same level.
+ */
+const BUFFER_DEPTH = 2
 
 /** Defense-in-depth: a problem only counts as unlocked if its lesson is done. */
 function isUnlocked(
@@ -59,9 +68,32 @@ function candidateNextLevels(state: RatingState): number[] {
   return up === down ? [up] : [up, down]
 }
 
+/**
+ * Every level worth keeping warm right now. We always include the learner's
+ * current level and its immediate neighbours (one below, one above) so the
+ * "2 at level, 2 below, 2 above" backup is literally always on hand. We also
+ * add wherever the next answer could actually land — which can exceed ±1 early
+ * on when rating steps are large — so those are warm too. De-duplicated,
+ * clamped to the playable band, and order-stable.
+ */
+function warmLevels(state: RatingState): number[] {
+  const out: number[] = []
+  const add = (lvl: number) => {
+    const clamped = Math.max(1, Math.min(MAX_LEVEL, lvl))
+    if (!out.includes(clamped)) out.push(clamped)
+  }
+  const current = levelFromRating(state.rating)
+  add(current)
+  add(current - 1)
+  add(current + 1)
+  for (const lvl of candidateNextLevels(state)) add(lvl)
+  return out
+}
+
 export default function ApplicationsPage() {
   const { signOut, user } = useAuth()
   const { completed, loading: lessonsLoading } = useCompletedLessons()
+  const { interests } = useInterests()
   const {
     state,
     level,
@@ -89,18 +121,52 @@ export default function ApplicationsPage() {
   // Guards the visible problem: a stale showProblem result is dropped so a slow
   // rewrite for an abandoned problem can never overwrite the live one.
   const displayToken = useRef(0)
-  // Prewarmed, already-rewritten problems keyed by the level they were built for.
-  const bufferByLevel = useRef<Map<number, WordProblem>>(new Map())
-  // Levels with a prefetch in flight (avoid firing duplicates for one level).
-  const inFlight = useRef<Set<number>>(new Set())
-  // Bumped to invalidate all in-flight prefetches (pool reset / manual jump).
-  const bufferGen = useRef(0)
   const problemRef = useRef<WordProblem | null>(null)
   const levelRef = useRef(level)
   const stateRef = useRef(state)
-  // Cumulative wrong answers across problems; every Nth costs a random sticker.
+  // Latest unlocked pool / completed set, read by the buffer's pick & accept so
+  // it always reflects current progress without recreating the buffer.
+  const unlockedTopicsRef = useRef(unlockedTopics)
+  const completedRef = useRef(completed)
+  // Latest learner interests, read live by the rewrite calls so newly-saved
+  // interests theme upcoming problems without recreating the buffer.
+  const interestsRef = useRef(interests)
+  // Consecutive "misses" — wrong submissions or skips — since the last correct
+  // solve. Every WRONG_ANSWERS_PER_STICKER_LOSS in a row costs one random sticker;
+  // a correct answer resets the streak.
   // (Possibly temporary — remove with loseStickers / WRONG_ANSWERS_PER_STICKER_LOSS.)
-  const wrongTally = useRef(0)
+  const missStreak = useRef(0)
+
+  // When each topic was last served (epoch ms), seeded from Firestore on mount.
+  // Drives the recency-weighted picker so recently-seen concepts are
+  // deprioritized and fully recover (back to uniform) after about a day.
+  const recencyRef = useRef<TopicRecency>({})
+
+  // Draw a problem from a recency-weighted topic so the concept stays hidden AND
+  // recent topics resurface less. Marking the pick immediately spreads variety
+  // across a single prefetch burst; the actual "seen" time is refined (and
+  // persisted) when the problem is displayed (see the effect below).
+  const pickProblem = useCallback((topics: ApplicationTopicDef[]): WordProblem | null => {
+    const topic = pickWeightedTopic(topics, recencyRef.current, Date.now())
+    if (!topic) return null
+    recencyRef.current = { ...recencyRef.current, [topic.id]: Date.now() }
+    return topic.generate()
+  }, [])
+
+  // The deep prewarm buffer: keeps BUFFER_DEPTH (2) ready-to-serve problems on
+  // hand per warmed level, generating only the shortfall. Created once; all of
+  // its inputs are read live from refs so it never needs recreating.
+  const bufferRef = useRef<ProblemBuffer<WordProblem> | null>(null)
+  if (bufferRef.current === null) {
+    bufferRef.current = new ProblemBuffer<WordProblem>({
+      depth: BUFFER_DEPTH,
+      pick: () => pickProblem(unlockedTopicsRef.current),
+      prepare: (base, lvl) => rewriteProblem(base, lvl, interestsRef.current),
+      accept: (p) => isUnlocked(p, completedRef.current),
+      isLive: () => mounted.current,
+    })
+  }
+  const buffer = bufferRef.current
 
   useEffect(() => {
     problemRef.current = problem
@@ -115,11 +181,49 @@ export default function ApplicationsPage() {
   }, [state])
 
   useEffect(() => {
+    unlockedTopicsRef.current = unlockedTopics
+  }, [unlockedTopics])
+
+  useEffect(() => {
+    completedRef.current = completed
+  }, [completed])
+
+  useEffect(() => {
+    interestsRef.current = interests
+  }, [interests])
+
+  useEffect(() => {
     mounted.current = true
     return () => {
       mounted.current = false
     }
   }, [])
+
+  // Seed recency from Firestore so "haven't been seen in a while" persists across
+  // sessions. Any picks made before this resolves keep their fresher in-session
+  // marks (those win over the loaded values).
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    void loadApplicationsActivity(user.uid)
+      .then((activity) => {
+        if (cancelled) return
+        recencyRef.current = { ...activity, ...recencyRef.current }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [user])
+
+  // Persist (and refine) the served time whenever a problem is actually shown.
+  // Human-paced, so one small best-effort write per displayed problem.
+  useEffect(() => {
+    if (!problem || !user) return
+    const { topicId } = problem
+    recencyRef.current = { ...recencyRef.current, [topicId]: Date.now() }
+    void recordApplicationsSeen(user.uid, topicId).catch(() => {})
+  }, [problem, user])
 
   // Show a freshly rewritten problem, displaying a loading state (not the base
   // phrasing) until the rewrite resolves. Used only on a prefetch miss.
@@ -132,7 +236,7 @@ export default function ApplicationsPage() {
       }
       // Clear first so the UI shows "preparing" instead of the previous problem.
       setProblem(null)
-      void rewriteProblem(base, lvl).then((rewritten) => {
+      void rewriteProblem(base, lvl, interestsRef.current).then((rewritten) => {
         if (!mounted.current || displayToken.current !== token) return
         setProblem(isUnlocked(rewritten, comp) ? rewritten : null)
         setNonce((n) => n + 1)
@@ -149,34 +253,14 @@ export default function ApplicationsPage() {
     setNonce((n) => n + 1)
   }, [])
 
-  // Prefetch + rewrite one problem for `lvl` into the buffer (no-op if one is
-  // already cached or in flight for that level).
-  const prefetchLevel = useCallback(
-    (topics: ApplicationTopicDef[], lvl: number, comp: Set<string>) => {
-      if (topics.length === 0) return
-      if (bufferByLevel.current.has(lvl) || inFlight.current.has(lvl)) return
-      const base = randomProblem(topics)
-      if (!base) return
-      const gen = bufferGen.current
-      inFlight.current.add(lvl)
-      void rewriteProblem(base, lvl)
-        .then((rewritten) => {
-          if (!mounted.current || bufferGen.current !== gen) return
-          if (isUnlocked(rewritten, comp)) bufferByLevel.current.set(lvl, rewritten)
-        })
-        .finally(() => {
-          inFlight.current.delete(lvl)
-        })
-    },
-    [],
-  )
-
-  // Warm both levels the rating could move to after the next answer.
+  // Keep the current level and both levels the rating could move to warmed to
+  // BUFFER_DEPTH (2 each). The buffer only ever prepares the shortfall, so a
+  // level that already has enough on hand or in flight generates nothing.
   const prefetchNext = useCallback(
-    (from: RatingState, topics: ApplicationTopicDef[], comp: Set<string>) => {
-      for (const lvl of candidateNextLevels(from)) prefetchLevel(topics, lvl, comp)
+    (from: RatingState) => {
+      buffer.topUp(warmLevels(from))
     },
-    [prefetchLevel],
+    [buffer],
   )
 
   // Best-effort: ask the AI to brew up extra "mad-lib" narrative themes in the
@@ -191,9 +275,7 @@ export default function ApplicationsPage() {
   useEffect(() => {
     if (unlockedTopics.length === 0) {
       displayToken.current++
-      bufferGen.current++
-      bufferByLevel.current.clear()
-      inFlight.current.clear()
+      buffer.reset()
       setProblem(null)
       return
     }
@@ -201,48 +283,55 @@ export default function ApplicationsPage() {
     // at their real level instead of the initial default.
     if (levelLoading) return
     if (!isUnlocked(problemRef.current, completed)) {
-      showProblem(randomProblem(unlockedTopics), levelRef.current, completed)
+      showProblem(pickProblem(unlockedTopics), levelRef.current, completed)
     }
-    prefetchNext(stateRef.current, unlockedTopics, completed)
-  }, [unlockedTopics, completed, levelLoading, showProblem, prefetchNext])
+    prefetchNext(stateRef.current)
+  }, [unlockedTopics, completed, levelLoading, showProblem, prefetchNext, buffer, pickProblem])
 
   // Move to the problem for the just-updated level: instant if it was prewarmed,
-  // otherwise fetch one (with a loading state). Then warm the next two levels.
+  // otherwise fetch one (with a loading state). Then re-warm current ± levels.
   function advance(nextState: RatingState) {
     const lvl = levelFromRating(nextState.rating)
-    const cached = bufferByLevel.current.get(lvl) ?? null
-    if (isUnlocked(cached, completed)) {
-      bufferByLevel.current.delete(lvl)
-      displayReady(cached)
+    const ready = buffer.take(lvl)
+    if (ready) {
+      displayReady(ready)
     } else {
-      showProblem(randomProblem(unlockedTopics), lvl, completed)
+      showProblem(pickProblem(unlockedTopics), lvl, completed)
     }
-    prefetchNext(nextState, unlockedTopics, completed)
+    prefetchNext(nextState)
   }
 
   function handleSolved(outcome: Outcome) {
     const next = applyOutcome(outcome)
     setSolved((count) => count + 1)
     if (outcome.solved && user && problemRef.current) {
-      void maybeSpawnSticker(problemRef.current, user.uid)
+      void maybeSpawnSticker(problemRef.current, user.uid, interestsRef.current)
     }
+    // A correct answer wipes the miss streak.
+    if (outcome.solved) missStreak.current = 0
     advance(next)
   }
 
-  // Fires the instant a wrong answer is submitted. Repeated wrong answers cost
-  // stickers: the tally is cumulative across problems and spent down in whole
-  // "losses" of N wrong answers each, so the Nth wrong answer removes one right
-  // away rather than waiting for the problem to end.
-  function handleWrongAttempt() {
+  // Counts one "miss" — a wrong submission or a skip — toward the sticker penalty.
+  // Every WRONG_ANSWERS_PER_STICKER_LOSS misses in a row removes one random
+  // sticker right away and resets the streak; a correct answer also resets it
+  // (see handleSolved).
+  function registerMiss() {
     if (!user) return
-    wrongTally.current += 1
-    if (wrongTally.current >= WRONG_ANSWERS_PER_STICKER_LOSS) {
-      wrongTally.current -= WRONG_ANSWERS_PER_STICKER_LOSS
+    missStreak.current += 1
+    if (missStreak.current >= WRONG_ANSWERS_PER_STICKER_LOSS) {
+      missStreak.current = 0
       void loseStickers(user.uid, 1)
     }
   }
 
+  // Fires the instant a wrong answer is submitted.
+  function handleWrongAttempt() {
+    registerMiss()
+  }
+
   function handleSkip() {
+    registerMiss()
     const next = applyOutcome({ solved: false, wrongAttempts: 0, skipped: true })
     advance(next)
   }
@@ -253,20 +342,23 @@ export default function ApplicationsPage() {
   function handleSetLevel(target: number) {
     const next = setLevelForTesting(target)
     // Drop buffers warmed for the old trajectory; this jump is off-path.
-    bufferGen.current++
-    bufferByLevel.current.clear()
-    inFlight.current.clear()
-    showProblem(randomProblem(unlockedTopics), levelFromRating(next.rating), completed)
-    prefetchNext(next, unlockedTopics, completed)
+    buffer.reset()
+    showProblem(pickProblem(unlockedTopics), levelFromRating(next.rating), completed)
+    prefetchNext(next)
   }
 
   return (
     <div className="home-page">
       <header className="home-header">
         <h1>Excellent</h1>
-        <button type="button" className="home-sign-out" onClick={() => signOut()}>
-          Sign out
-        </button>
+        <div className="home-header-actions">
+          <Link to="/interests" className="home-interests">
+            Interests
+          </Link>
+          <button type="button" className="home-sign-out" onClick={() => signOut()}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <main className="home-main">
