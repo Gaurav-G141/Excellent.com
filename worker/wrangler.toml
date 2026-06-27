@@ -1,0 +1,19 @@
+name = "excellent-openai-proxy"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+# The Firebase project id (from ../.firebaserc). Firebase ID tokens are verified
+# against this as both their audience and issuer.
+FIREBASE_PROJECT_ID = "abcd-23b92"
+
+# Comma-separated browser origins allowed to call this proxy (CORS). Include your
+# Firebase Hosting domains and any local origin you test the production build on.
+ALLOWED_ORIGINS = "https://abcd-23b92.web.app,https://abcd-23b92.firebaseapp.com,http://localhost:5173,http://localhost:4173"
+
+# Optional: restrict which OpenAI models can be requested through the proxy.
+# Leave empty to allow any. Keep in sync with VITE_OPENAI_MODEL in the app.
+OPENAI_MODEL_ALLOWLIST = "gpt-4o-mini,gpt-4.1,gpt-4.1-mini,gpt-4o"
+
+# OPENAI_API_KEY is a SECRET — do NOT put it here. Set it once with:
+#   npx wrangler secret put OPENAI_API_KEY

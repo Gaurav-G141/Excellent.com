@@ -90,6 +90,17 @@
   margin: 12px 0;
 }
 
+/* Size each builder from the row width, not its own text. Without this the
+   flex items size to content, so the "Next term" preview collapsing from
+   "enter a coefficient" to a short value made the whole calculator shrink and
+   its buttons reflow under the cursor mid-tap. */
+.pp-builders .pb {
+  flex: 1 1 0;
+  min-width: 240px;
+  max-width: 360px;
+  box-sizing: border-box;
+}
+
 /* n^x animation + multiple choice */
 
 .npx-stage {

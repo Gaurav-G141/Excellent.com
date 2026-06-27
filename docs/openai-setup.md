@@ -36,29 +36,64 @@ Any model that supports **Structured Outputs** (JSON Schema) works; that's how w
 guarantee the response shape. If you pick a model that doesn't, calls will fail
 and the app falls back to base phrasing.
 
-## ⚠️ Important: the key is exposed in the browser bundle
+## ⚠️ Important: the key is exposed in the browser bundle (direct mode)
 
 This is a client-side Vite app, so **every `VITE_*` value is compiled into the
-public JavaScript** that ships to users. Anyone visiting the site can read
-`VITE_OPENAI_API_KEY` from the bundle and run up your bill.
+public JavaScript** that ships to users. In direct mode, anyone visiting the site
+can read `VITE_OPENAI_API_KEY` from the bundle and run up your bill. Direct mode
+is therefore for **local dev / trusted demos only**.
 
-- **Local dev / trusted demo:** putting the raw key in `.env` is fine.
-- **Public deployment:** do **not** ship the raw key. Stand up a tiny server-side
-  proxy that holds the key and forwards requests to OpenAI, then point the app at
-  it:
+## Deploying publicly: proxy mode (Cloudflare Worker)
 
-  ```bash
-  # the app sends requests here instead of api.openai.com; the proxy adds the key
-  VITE_OPENAI_BASE_URL=https://your-proxy.example.com/v1
-  VITE_OPENAI_API_KEY=<a token your proxy checks, not your real OpenAI key>
-  ```
+For a public deploy, do **not** ship the raw key. The repo includes a Cloudflare
+Worker proxy in [`worker/`](../worker/README.md) that holds the real key as a
+secret and authenticates each request with the signed-in user's **Firebase ID
+token** (only your logged-in students can spend the key). The browser bundle then
+contains no usable secret.
 
-  The app calls `POST {VITE_OPENAI_BASE_URL}/chat/completions` with an
-  `Authorization: Bearer <VITE_OPENAI_API_KEY>` header, so a proxy only needs to
-  validate that token, attach the real OpenAI key, and forward the body.
+How the app picks a mode (see `src/lib/ai.ts`):
 
-I can build that proxy (e.g. a Firebase Cloud Function, since the project already
-uses Firebase) whenever you're ready to deploy publicly — just ask.
+- `VITE_OPENAI_API_KEY` set -> **direct mode** (Bearer is the raw key).
+- key empty and `VITE_OPENAI_BASE_URL` set -> **proxy mode** (Bearer is the
+  user's Firebase ID token; the Worker verifies it and adds the real key).
+
+### Steps
+
+1. **Deploy the Worker** (one time): follow [`worker/README.md`](../worker/README.md).
+   In short: `cd worker && npm install && npx wrangler login`, set the secret with
+   `npx wrangler secret put OPENAI_API_KEY`, confirm `ALLOWED_ORIGINS` /
+   `FIREBASE_PROJECT_ID` in `worker/wrangler.toml`, then `npm run deploy`. Note the
+   printed `https://...workers.dev` URL.
+
+2. **Point the production build at it.** Copy `.env.production.example` to
+   `.env.production.local` (git-ignored) and set:
+
+   ```bash
+   VITE_OPENAI_API_KEY=
+   VITE_OPENAI_BASE_URL=https://excellent-openai-proxy.<subdomain>.workers.dev/v1
+   ```
+
+   The empty key is important: Vite also loads your dev `.env` during a production
+   build, so this blank value overrides it and keeps the dev key out of the
+   bundle.
+
+3. **Build and deploy hosting** (this never publishes the key):
+
+   ```bash
+   npm run deploy:web   # = npm run build && firebase deploy --only hosting
+   ```
+
+4. **Verify no key leaked:** search the built bundle and confirm only the proxy
+   URL is present:
+
+   ```bash
+   grep -r "sk-" dist/assets || echo "no raw key in bundle"
+   grep -ro "workers.dev" dist/assets | head -1
+   ```
+
+If the Worker is ever unreachable or the user isn't signed in, the app falls back
+to base problem phrasing (the same graceful degradation as having no key at all),
+so nothing breaks.
 
 ## Safety / cost notes
 

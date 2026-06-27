@@ -1,0 +1,5 @@
+node_modules
+.wrangler
+# Local secrets for `wrangler dev` (never commit). Real secrets live in
+# Cloudflare via `wrangler secret put`.
+.dev.vars

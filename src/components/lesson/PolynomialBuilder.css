@@ -7,6 +7,11 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm, 10px);
   background: var(--surface);
+  /* Fill the container so the builder's width never tracks its own (changing)
+     text content. In a side-by-side flex row, `.pp-builders .pb` overrides the
+     flex-basis to share the row instead. */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .pb--wrong {
