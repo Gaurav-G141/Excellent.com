@@ -53,14 +53,13 @@
     {
       "id": "l2-slide-3-sum-type-in",
       "type": "problem",
-      "component": "typeInDerivative",
+      "component": "polynomialDerivative",
       "title": "Differentiate the sum",
-      "body": "Use the power rule on each term, then add. Any equivalent form is accepted.",
+      "body": "Use the power rule on each term, then add. Build the derivative in standard form.",
       "config": {
         "coefficients": [0, 3, 1],
         "display": "x² + 3x",
-        "prompt": "f′(x) =",
-        "placeholder": "type a polynomial in x"
+        "prompt": "f′(x) ="
       },
       "feedback": {
         "correct": "",
@@ -86,14 +85,13 @@
     {
       "id": "l2-slide-5-chain-type-in",
       "type": "problem",
-      "component": "typeInDerivative",
+      "component": "polynomialDerivative",
       "title": "Differentiate the composite",
-      "body": "Apply the chain rule. You can leave it factored or expand it. Either form is accepted.",
+      "body": "Apply the chain rule, then build the expanded derivative in standard form.",
       "config": {
         "coefficients": [4, 12, 9],
         "display": "(3x + 2)²",
-        "prompt": "f′(x) =",
-        "placeholder": "factored or expanded is fine"
+        "prompt": "f′(x) ="
       },
       "feedback": {
         "correct": "",
@@ -141,14 +139,13 @@
     {
       "id": "l2-slide-8-combining",
       "type": "problem",
-      "component": "typeInDerivative",
+      "component": "polynomialDerivative",
       "title": "Combine the rules",
-      "body": "This one needs the chain rule, the power rule, and the sum rule together. Any equivalent form is accepted.",
+      "body": "This one needs the chain rule, the power rule, and the sum rule together. Build the full derivative in standard form.",
       "config": {
         "coefficients": [1, 4, 4, 3],
         "display": "(2x + 1)² + 3x³",
-        "prompt": "f′(x) =",
-        "placeholder": "type a polynomial in x"
+        "prompt": "f′(x) ="
       },
       "feedback": {
         "correct": "",

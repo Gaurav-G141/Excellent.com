@@ -23,7 +23,7 @@ function buildPollinationsUrl(prompt: string): string {
  * Generate a sticker image for `subject`. Returns a keyless Pollinations URL.
  *
  * The image's pastel note color is derived from `itemId` (the same derivation
- * StickerLayer uses to paint the note), so the prompt can ask the drawing to
+ * the Scrapbook uses to paint the note), so the prompt can ask the drawing to
  * contrast with — and stay transparent against — its note. `uid` is accepted for
  * call-site compatibility but unused now that images aren't persisted to Storage.
  */

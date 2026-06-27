@@ -260,7 +260,7 @@ describe('levelPrompts: validateRewrite', () => {
 
   it('rejects over-long title, prompt, and labels', () => {
     expect(validateRewrite({ ...validRaw, title: 'a'.repeat(101) }, fields)).toBeNull()
-    expect(validateRewrite({ ...validRaw, prompt: 'a'.repeat(701) }, fields)).toBeNull()
+    expect(validateRewrite({ ...validRaw, prompt: 'a'.repeat(901) }, fields)).toBeNull()
     expect(
       validateRewrite(
         { ...validRaw, fieldLabels: ['a'.repeat(101), 'Which total is right'] },

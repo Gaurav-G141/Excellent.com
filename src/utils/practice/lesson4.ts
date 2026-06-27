@@ -254,14 +254,13 @@ function generateProductExpand(): ProblemSlide {
   return {
     id: uniqueId('l4-product-expand'),
     type: 'problem',
-    component: 'typeInDerivative',
+    component: 'polynomialDerivative',
     title: 'Expand, then differentiate',
-    body: 'Expand the product into a polynomial, then differentiate. Any equivalent form is accepted.',
+    body: 'Expand the product into a polynomial, then build the derivative in standard form.',
     config: {
       coefficients,
       display,
       prompt: 'f\u2032(x) =',
-      placeholder: 'type a polynomial in x',
     },
     feedback: {
       correct: '',

@@ -146,13 +146,15 @@ function generateEGrowth(): WordProblem {
   // making the value e^0 = 1 at x0, so the instantaneous rate reduces to the
   // clean integer g'(x0) = 2·x0 + b. Reroll until that rate is a positive
   // integer no larger than 12.
+  // x0 is an elapsed time, so it must be non-negative for the scenario to make
+  // sense (no "x = -1 years").
   let b = randInt(-4, 4)
-  let x0 = randInt(-2, 3)
+  let x0 = randInt(0, 3)
   let expected = 2 * x0 + b
   let guard = 0
   while ((expected <= 0 || expected > 12) && guard < 200) {
     b = randInt(-4, 4)
-    x0 = randInt(-2, 3)
+    x0 = randInt(0, 3)
     expected = 2 * x0 + b
     guard += 1
   }
@@ -271,13 +273,14 @@ function generateBase(): WordProblem {
   // Composite growth n^(g(x)) with g(x) = x² + b·x + c. Choose c so g(x0) = 0,
   // making the value n^0 = 1 at x0, so the instantaneous rate is gp·ln(n) with
   // gp = g'(x0) = 2·x0 + b. Reroll until gp is a positive integer ≤ 12.
+  // x0 is an elapsed time, so keep it non-negative ("x = -1 years" makes no sense).
   let b = randInt(-4, 4)
-  let x0 = randInt(-2, 3)
+  let x0 = randInt(0, 3)
   let gp = 2 * x0 + b
   let guard = 0
   while ((gp <= 0 || gp > 12) && guard < 200) {
     b = randInt(-4, 4)
-    x0 = randInt(-2, 3)
+    x0 = randInt(0, 3)
     gp = 2 * x0 + b
     guard += 1
   }
@@ -405,15 +408,17 @@ function generateLog(): WordProblem {
   // Composite response ln(g(x)) with g(x) = x² + b·x + c. Pick the inner value
   // g(x0) = d to be a positive divisor of |g'(x0)| = |2·x0 + b|, so the rate
   // g'(x0)/g(x0) = gp/d is a clean integer. Choose c = d − (x0² + b·x0).
+  // x is a physical input (power/light/spending/energy level), so x0 must be
+  // non-negative for the scenario to make sense.
   let b = randInt(-4, 4)
-  let x0 = randInt(-2, 3)
+  let x0 = randInt(0, 3)
   let gp = 2 * x0 + b
   let d = 1
   let expected = gp
   let guard = 0
   while (guard < 200) {
     b = randInt(-4, 4)
-    x0 = randInt(-2, 3)
+    x0 = randInt(0, 3)
     gp = 2 * x0 + b
     if (gp !== 0) {
       d = pick(positiveDivisors(Math.abs(gp)))

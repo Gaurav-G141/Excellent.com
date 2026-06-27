@@ -8,7 +8,7 @@
  * behavior identical when AI is off.
  */
 
-import { formatPolynomial, pick, randInt, shuffle, uniqueId } from './helpers'
+import { formatPolynomial, pick, randInt, round, shuffle, uniqueId } from './helpers'
 import type {
   ApplicationLessonGroup,
   ApplicationTopicDef,
@@ -86,7 +86,7 @@ const relatedRates: ApplicationTopicDef = {
     let growthUnit: string
 
     if (theme.shape === 'sphere') {
-      expected = 4 * Math.PI * measure * measure * rate
+      expected = round(4 * Math.PI * measure * measure * rate, 4)
       dimension = 'radius'
       unit = 'cm'
       quantity = 'volume'
@@ -94,14 +94,14 @@ const relatedRates: ApplicationTopicDef = {
       placeholder = 'a number (you may type pi)'
       growthUnit = 'cubic cm per second'
     } else if (theme.shape === 'cube') {
-      expected = 3 * measure * measure * rate
+      expected = round(3 * measure * measure * rate, 4)
       dimension = 'edge'
       unit = 'mm'
       quantity = 'volume'
       formulaText = 'A cube with edge s has volume V = s³.'
       growthUnit = 'cubic mm per second'
     } else {
-      expected = 2 * measure * rate
+      expected = round(2 * measure * rate, 4)
       dimension = 'side'
       unit = 'cm'
       quantity = 'area'
@@ -240,8 +240,11 @@ const velocityAcceleration: ApplicationTopicDef = {
   generate(): WordProblem {
     const theme = pickTheme<AccelTheme>('a3-accel')
 
+    // Keep every coefficient non-negative so the position s(t) is non-negative
+    // and increasing for t > 0 (a sensible "distance travelled"), and so the
+    // object is genuinely gaining speed at t0 (acceleration 6·a·t0 + 2·b > 0).
     const a = pick([1, 2])
-    const b = randInt(-5, 5)
+    const b = randInt(0, 5)
     const c = randInt(0, 4)
     const t0 = randInt(1, 3)
 
@@ -250,16 +253,16 @@ const velocityAcceleration: ApplicationTopicDef = {
 
     const field: NumberField = {
       kind: 'number',
-      label: `How hard it\u2019s speeding up at t = ${t0} (m/s\u00b2)`,
+      label: `Rate its speed is increasing at t = ${t0} (m/s\u00b2)`,
       expected,
-      meaning: `how hard ${theme.vehicle} is speeding up at t = ${t0} seconds, in metres per second, per second`,
+      meaning: `how quickly ${theme.vehicle} is gaining speed at t = ${t0} seconds, in metres per second each second`,
     }
 
     return {
       id: uniqueId('a3-accel'),
       topicId: 'a3-accel',
       title: theme.title,
-      prompt: `The distance ${theme.vehicle} has travelled after t seconds is s(t) = ${positionDisplay} metres. How hard is it speeding up at t = ${t0} seconds?`,
+      prompt: `The distance ${theme.vehicle} has travelled after t seconds is s(t) = ${positionDisplay} metres. How quickly is it gaining speed at t = ${t0} seconds?`,
       given: `s(t) = ${positionDisplay}  (metres, with t in seconds).`,
       fields: [field],
       hint: 'First find how its speed is changing, then read that off at the given moment.',

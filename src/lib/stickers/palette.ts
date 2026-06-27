@@ -3,7 +3,7 @@
  *
  * The color is derived deterministically from the sticker id so two places agree
  * without any extra persisted field:
- *   - StickerLayer paints the note in `bg`, and
+ *   - the Scrapbook paints the note in `bg`, and
  *   - the image prompt tells the model to AVOID `avoid` so the drawing contrasts
  *     pleasantly with its note (basic complementary color theory).
  */

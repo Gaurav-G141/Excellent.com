@@ -15,8 +15,8 @@ export const LIFETIME_MS = 2 * 24 * 60 * 60 * 1000
  */
 export const WRONG_ANSWERS_PER_STICKER_LOSS = 3
 
-/** Number of margin slots a sticker can occupy at once. */
-export const STICKER_SLOT_COUNT = 8
+/** Number of scrapbook slots a sticker can occupy at once. */
+export const STICKER_SLOT_COUNT = 12
 
 /** Rendered edge length of a sticker, in CSS pixels. */
 export const STICKER_SIZE_PX = 100

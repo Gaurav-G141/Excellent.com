@@ -126,14 +126,13 @@
     {
       "id": "l4-slide-8-product-closing",
       "type": "problem",
-      "component": "typeInDerivative",
+      "component": "polynomialDerivative",
       "title": "Quick check: product rule",
-      "body": "Differentiate the product. Any equivalent form is accepted.",
+      "body": "Expand the product, then build the derivative in standard form.",
       "config": {
         "coefficients": [-2, 5, 3],
         "display": "(x + 2)(3x − 1)",
-        "prompt": "f′(x) =",
-        "placeholder": "type a polynomial in x"
+        "prompt": "f′(x) ="
       },
       "feedback": {
         "correct": "",

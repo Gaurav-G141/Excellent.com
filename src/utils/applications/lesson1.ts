@@ -221,7 +221,7 @@ function renderAvgInst(theme: AvgInstTheme): WordProblem {
     id: uniqueId('a1-avg-inst'),
     topicId: 'a1-avg-inst',
     title: theme.title,
-    prompt: `${subject} records ${quantityNoun} (in ${unit}) after t ${timeUnit}s. The total after t ${timeUnit}s is given below. Consider the window from t = ${p} to t = ${q}.`,
+    prompt: `${subject} records ${quantityNoun} (in ${unit}) after t ${timeUnit}s. The total after t ${timeUnit}s is given below. Over the window from t = ${p} to t = ${q}, how fast did ${quantityNoun} change on average, and how fast was it changing right at t = ${q}?`,
     given: `f(t) = ${formatPolynomial(coeffs, 't')}`,
     fields: [
       {

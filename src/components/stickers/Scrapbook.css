@@ -1,18 +1,16 @@
-.sticker-layer {
-  position: fixed;
-  inset: 0;
-  /* Positive so stickers paint above the page's background box. They live only
-     in the side gutters (outside the centered content column) and are
-     pointer-events:none, so they never cover or block the main content. */
-  z-index: 1;
-  pointer-events: none;
-  overflow: hidden;
-  animation: sticker-layer-fade-in 600ms ease-out both;
+.scrapbook-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 28px 20px;
+  justify-items: center;
+  align-items: start;
+  padding: 16px 4px 48px;
+  animation: scrapbook-fade-in 500ms ease-out both;
 }
 
-.sticker-layer__item {
-  position: fixed;
-  pointer-events: none;
+.scrapbook-cell {
+  width: 120px;
+  height: 120px;
 }
 
 /* ── Sticky note ──────────────────────────────────────────────────────────── */
@@ -116,6 +114,36 @@
   fill: #ef9ab0;
 }
 
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+.scrapbook-empty {
+  text-align: center;
+  max-width: 420px;
+  margin: 32px auto;
+  padding: 32px 24px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+
+.scrapbook-empty__icon {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.scrapbook-empty h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  color: var(--text-h);
+}
+
+.scrapbook-empty p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 @keyframes sticker-scribble-draw {
   0% {
     stroke-dashoffset: 120;
@@ -164,7 +192,7 @@
   }
 }
 
-@keyframes sticker-layer-fade-in {
+@keyframes scrapbook-fade-in {
   from {
     opacity: 0;
   }
@@ -173,15 +201,8 @@
   }
 }
 
-/* Below ~900px the margins are too thin to hold stickers beside the column. */
-@media (max-width: 900px) {
-  .sticker-layer {
-    display: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .sticker-layer,
+  .scrapbook-board,
   .sticker-note,
   .sticker-note__img {
     animation: none;

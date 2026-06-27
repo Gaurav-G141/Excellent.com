@@ -18,6 +18,7 @@ import { MotionVectorsSlide } from '../slides/MotionVectorsSlide'
 import { MultipleChoiceSlide } from '../slides/MultipleChoiceSlide'
 import { MvtMultiPartSlide } from '../slides/MvtMultiPartSlide'
 import { NPowerXAnimationSlide } from '../slides/NPowerXAnimationSlide'
+import { PolynomialDerivativeSlide } from '../slides/PolynomialDerivativeSlide'
 import { PolynomialPlaygroundSlide } from '../slides/PolynomialPlaygroundSlide'
 import { PowerRuleExponentSlide } from '../slides/PowerRuleExponentSlide'
 import { ProductRuleMultiPartSlide } from '../slides/ProductRuleMultiPartSlide'
@@ -81,6 +82,10 @@ export function SlideRenderer({ slide, onAdvance }: Props) {
 
   if (slide.type === 'problem' && slide.component === 'typeInDerivative') {
     return <TypeInDerivativeSlide slide={slide} onCorrect={onAdvance} />
+  }
+
+  if (slide.type === 'problem' && slide.component === 'polynomialDerivative') {
+    return <PolynomialDerivativeSlide slide={slide} onCorrect={onAdvance} />
   }
 
   if (slide.type === 'demo' && slide.component === 'chainRule') {

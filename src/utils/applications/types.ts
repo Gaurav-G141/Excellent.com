@@ -40,6 +40,11 @@ export interface ExpressionField {
   tolerance?: number
   placeholder?: string
   /**
+   * When true, the answer is assembled with the polynomial playground calculator
+   * (standard form only) instead of a free-text box. Grading is unchanged.
+   */
+  builder?: boolean
+  /**
    * Plain-English description of WHAT this blank asks for, including its unit,
    * so an AI rewrite can keep the ask intact. Never contains the numeric answer
    * or math jargon.

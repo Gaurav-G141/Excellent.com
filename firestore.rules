@@ -39,7 +39,7 @@ service cloud.firestore {
         && d.subject is string && d.subject.size() >= 1 && d.subject.size() <= 200
         && d.src is string && d.src.size() >= 1 && d.src.size() <= 2000
         && d.provider is string && d.provider in ['openai', 'pollinations']
-        && isBoundedInt(d.slotIndex, 0, 7)
+        && isBoundedInt(d.slotIndex, 0, 11)
         && d.createdAt is int && d.createdAt >= 0
         && d.expiresAt is int && d.expiresAt >= 0;
     }

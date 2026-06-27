@@ -93,7 +93,7 @@ export function isValidStickerItem(data: unknown): boolean {
   if (typeof d.provider !== 'string' || !STICKER_PROVIDERS.includes(d.provider as (typeof STICKER_PROVIDERS)[number])) {
     return false
   }
-  if (!isBoundedInt(d.slotIndex, 0, 7)) return false
+  if (!isBoundedInt(d.slotIndex, 0, 11)) return false
   if (!isBoundedInt(d.createdAt, 0, Number.MAX_SAFE_INTEGER)) return false
   if (!isBoundedInt(d.expiresAt, 0, Number.MAX_SAFE_INTEGER)) return false
   return true

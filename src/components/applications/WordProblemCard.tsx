@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AppField, WordProblem } from '../../utils/applications/types'
 import type { Outcome } from '../../utils/applications/difficulty'
 import { gradeField } from '../../utils/applications/grade'
+import { trimPolynomial } from '../../utils/polynomial'
+import { PolynomialBuilder } from '../lesson/PolynomialBuilder'
 import { CorrectFlash } from '../lesson/CorrectFlash'
 import { FeedbackPopup } from '../lesson/FeedbackPopup'
 import './WordProblemCard.css'
@@ -153,6 +155,15 @@ function FieldInput({ field, value, disabled, onChange }: FieldInputProps) {
     )
   }
 
+  if (field.kind === 'expression' && field.builder) {
+    return (
+      <fieldset className="wp-field wp-field--builder" disabled={disabled}>
+        <legend className="wp-label">{field.label}</legend>
+        <BuilderField value={value} onChange={onChange} />
+      </fieldset>
+    )
+  }
+
   return (
     <label className="wp-field">
       <span className="wp-label">{field.label}</span>
@@ -168,5 +179,59 @@ function FieldInput({ field, value, disabled, onChange }: FieldInputProps) {
         spellCheck={false}
       />
     </label>
+  )
+}
+
+/**
+ * Serialize playground coefficients to a parser-safe string (uses `^`, never the
+ * display-only unicode superscripts) so the existing polynomial grader accepts
+ * it. Returns '' when empty so the field reads as unanswered.
+ */
+function coeffsToInput(coeffs: number[]): string {
+  const trimmed = trimPolynomial(coeffs)
+  if (trimmed.length === 0) return ''
+  let out = ''
+  for (let power = trimmed.length - 1; power >= 0; power--) {
+    const c = trimmed[power]
+    if (c === 0) continue
+    const abs = Math.abs(c)
+    const term = power === 0 ? `${abs}` : power === 1 ? `${abs}*x` : `${abs}*x^${power}`
+    if (out === '') out = c < 0 ? `-${term}` : term
+    else out += c < 0 ? ` - ${term}` : ` + ${term}`
+  }
+  return out
+}
+
+/**
+ * Polynomial playground input for an expression field. Holds the assembled
+ * coefficients locally and reports them upward as a graded string. Remounts with
+ * the card (keyed per problem), so state resets between problems.
+ */
+function BuilderField({
+  value,
+  onChange,
+}: {
+  value: string | undefined
+  onChange: (value: string) => void
+}) {
+  const [coeffs, setCoeffs] = useState<number[]>([])
+
+  // If the parent cleared the answer (e.g. fresh problem in the same mount),
+  // mirror that back into the builder.
+  useEffect(() => {
+    if ((value ?? '') === '' && trimPolynomial(coeffs).length > 0) setCoeffs([])
+  }, [value, coeffs])
+
+  return (
+    <PolynomialBuilder
+      value={coeffs}
+      onChange={(next) => {
+        setCoeffs(next)
+        onChange(coeffsToInput(next))
+      }}
+      maxDegree={8}
+      maxCoefficient={999}
+      ariaLabel="Polynomial answer builder"
+    />
   )
 }

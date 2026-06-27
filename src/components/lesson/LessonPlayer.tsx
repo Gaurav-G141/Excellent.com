@@ -5,11 +5,9 @@ import { DEFAULT_LESSON_ID, lessons, prerequisiteLessonId } from '../../lessons'
 import { evaluatePrereqAccess } from '../../lib/lessonAccess'
 import { loadLessonProgress, saveLessonProgress } from '../../lib/progress'
 import { recordDailyActivity } from '../../lib/streak'
-import {
-  generateEndingQuestions,
-  generateLesson3Questions,
-} from '../../utils/generateQuestion'
-import { hashStringToSeed } from '../../utils/random'
+import type { ProblemSlide } from '../../types/lesson'
+import { generateQuiz, hasQuiz } from '../../utils/quiz'
+import { LessonQuiz } from './LessonQuiz'
 import { ProgressBar } from './ProgressBar'
 import { SlideRenderer } from './SlideRenderer'
 import './LessonPlayer.css'
@@ -25,26 +23,18 @@ export function LessonPlayer() {
     () => lessons[lessonId ?? DEFAULT_LESSON_ID] ?? lessons[DEFAULT_LESSON_ID],
     [lessonId],
   )
-  const coreCount = lesson.slides.length
-
-  // Seed the random questions per (user, lesson) so a resumed slide index lands
-  // on the SAME question content it did before, rather than a freshly randomized one.
-  const endingQuestions = useMemo(() => {
-    const spec = lesson.randomQuestions
-    if (!spec) return []
-    const seed = user ? hashStringToSeed(`${user.uid}:${lesson.id}`) : undefined
-    return spec.kind === 'relatedRates'
-      ? generateLesson3Questions(spec.count, seed)
-      : generateEndingQuestions(spec.count, seed)
-  }, [lesson, user])
-  const slides = useMemo(
-    () => [...lesson.slides, ...endingQuestions],
-    [lesson, endingQuestions],
-  )
+  const slides = lesson.slides
   const total = slides.length
+
+  // Every lesson ends with a short mastery quiz the learner must pass 100% to
+  // complete the lesson (and unlock the next). Questions are regenerated fresh
+  // for each attempt.
+  const lessonHasQuiz = hasQuiz(lesson.id)
 
   const [slideIndex, setSlideIndex] = useState(0)
   const [completed, setCompleted] = useState(false)
+  const [inQuiz, setInQuiz] = useState(false)
+  const [quizQuestions, setQuizQuestions] = useState<ProblemSlide[]>([])
   const [hydrated, setHydrated] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const activityRecorded = useRef(false)
@@ -94,6 +84,7 @@ export function LessonPlayer() {
     let active = true
     setHydrated(false)
     setCompleted(false)
+    setInQuiz(false)
     setSlideIndex(0)
     activityRecorded.current = false
     everCompleted.current = false
@@ -155,6 +146,13 @@ export function LessonPlayer() {
     }
     setSlideIndex((index) => {
       if (index >= total - 1) {
+        // Finished the lesson content. Gate completion behind the mastery quiz;
+        // if a lesson has no quiz, complete immediately (legacy behavior).
+        if (lessonHasQuiz) {
+          setQuizQuestions(generateQuiz(lesson.id))
+          setInQuiz(true)
+          return index
+        }
         setCompleted(true)
         persist(index, true)
         return index
@@ -163,7 +161,13 @@ export function LessonPlayer() {
       persist(next, false)
       return next
     })
-  }, [persist, total, user])
+  }, [persist, total, user, lessonHasQuiz, lesson.id])
+
+  const handleQuizPass = useCallback(() => {
+    setInQuiz(false)
+    setCompleted(true)
+    persist(total - 1, true)
+  }, [persist, total])
 
   const goBack = useCallback(() => {
     setSlideIndex((index) => {
@@ -176,6 +180,7 @@ export function LessonPlayer() {
 
   const restart = useCallback(() => {
     setCompleted(false)
+    setInQuiz(false)
     setSlideIndex(0)
     persist(0, false)
   }, [persist])
@@ -272,8 +277,30 @@ export function LessonPlayer() {
     )
   }
 
+  if (inQuiz) {
+    return (
+      <div className="lesson-player">
+        <header className="lesson-header">
+          <span className="lesson-title">{lesson.title} · Quiz</span>
+          <Link to="/" className="lesson-close" aria-label="Exit lesson">
+            ✕
+          </Link>
+        </header>
+
+        {saveError && (
+          <p className="lesson-save-error" role="status">
+            Your progress couldn’t be saved. Check your connection.
+          </p>
+        )}
+
+        <main className="lesson-slide">
+          <LessonQuiz questions={quizQuestions} onPass={handleQuizPass} />
+        </main>
+      </div>
+    )
+  }
+
   const slide = slides[slideIndex]
-  const inFinal = endingQuestions.length > 0 && slideIndex >= coreCount
 
   return (
     <div className="lesson-player">
@@ -298,12 +325,6 @@ export function LessonPlayer() {
       {saveError && (
         <p className="lesson-save-error" role="status">
           Your progress couldn’t be saved. Check your connection.
-        </p>
-      )}
-
-      {inFinal && (
-        <p className="lesson-section-tag">
-          Final question {slideIndex - coreCount + 1} of {endingQuestions.length}
         </p>
       )}
 

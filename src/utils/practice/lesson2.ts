@@ -74,14 +74,13 @@ function generateSum(): ProblemSlide {
   return {
     id: uniqueId('l2-sum'),
     type: 'problem',
-    component: 'typeInDerivative',
+    component: 'polynomialDerivative',
     title: 'Differentiate the sum',
-    body: 'Use the power rule on each term, then add. Any equivalent form is accepted.',
+    body: 'Use the power rule on each term, then add. Build the derivative in standard form.',
     config: {
       coefficients,
       display: formatPolynomial(coefficients),
       prompt: 'f\u2032(x) =',
-      placeholder: 'type a polynomial in x',
     },
     feedback: {
       correct: '',
@@ -111,14 +110,13 @@ function generateChain(): ProblemSlide {
   return {
     id: uniqueId('l2-chain'),
     type: 'problem',
-    component: 'typeInDerivative',
+    component: 'polynomialDerivative',
     title: 'Differentiate the composite',
-    body: 'Apply the chain rule. You can leave it factored or expand it. Either form is accepted.',
+    body: 'Apply the chain rule, then build the expanded derivative in standard form.',
     config: {
       coefficients,
       display,
       prompt: 'f\u2032(x) =',
-      placeholder: 'factored or expanded is fine',
     },
     feedback: {
       correct: '',
@@ -289,14 +287,13 @@ function generateCombine(): ProblemSlide {
   return {
     id: uniqueId('l2-combine'),
     type: 'problem',
-    component: 'typeInDerivative',
+    component: 'polynomialDerivative',
     title: 'Combine the rules',
-    body: 'This one needs the chain rule, the power rule, and the sum rule together. Any equivalent form is accepted.',
+    body: 'This one needs the chain rule, the power rule, and the sum rule together. Build the full derivative in standard form.',
     config: {
       coefficients,
       display,
       prompt: 'f\u2032(x) =',
-      placeholder: 'type a polynomial in x',
     },
     feedback: {
       correct: '',

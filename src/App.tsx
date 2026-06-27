@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute'
-import { StickerLayer } from './components/stickers/StickerLayer'
 import { AuthProvider } from './contexts/AuthContext'
+import { StickerProvider } from './contexts/StickerContext'
 import { firebaseConfigError } from './lib/firebase'
 import ApplicationsPage from './pages/ApplicationsPage'
 import FirebaseSetupPage from './pages/FirebaseSetupPage'
@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage'
 import LessonPage from './pages/LessonPage'
 import LoginPage from './pages/LoginPage'
 import PracticePage from './pages/PracticePage'
+import ScrapbookPage from './pages/ScrapbookPage'
 import SignupPage from './pages/SignupPage'
 
 export default function App() {
@@ -19,22 +20,24 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <StickerLayer />
-        <Routes>
-          <Route element={<PublicOnlyRoute />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-          </Route>
+        <StickerProvider>
+          <Routes>
+            <Route element={<PublicOnlyRoute />}>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+            </Route>
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/practice" element={<PracticePage />} />
-            <Route path="/applications" element={<ApplicationsPage />} />
-            <Route path="/lessons/:lessonId" element={<LessonPage />} />
-          </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/practice" element={<PracticePage />} />
+              <Route path="/applications" element={<ApplicationsPage />} />
+              <Route path="/scrapbook" element={<ScrapbookPage />} />
+              <Route path="/lessons/:lessonId" element={<LessonPage />} />
+            </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </StickerProvider>
       </AuthProvider>
     </BrowserRouter>
   )

@@ -5,7 +5,7 @@ const ALLOWED_COMPONENTS = new Set([
   'exponentialTriangleQuestion',
   'multipleChoice',
   'productRuleMultiPart',
-  'typeInDerivative',
+  'polynomialDerivative',
 ])
 
 const MC_TOPICS = new Set(['l4-exp-chain', 'l4-log-chain'])
@@ -102,7 +102,7 @@ describe('lesson4Practice', () => {
             expect(v.every(isNumber)).toBe(true)
             expect(u[u.length - 1]).not.toBe(0)
             expect(v[v.length - 1]).not.toBe(0)
-          } else if (slide.component === 'typeInDerivative') {
+          } else if (slide.component === 'polynomialDerivative') {
             const coefficients = config.coefficients as unknown[]
             expect(Array.isArray(coefficients)).toBe(true)
             expect(coefficients.length).toBeGreaterThan(0)

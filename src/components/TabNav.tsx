@@ -8,7 +8,7 @@ function tabClass({ isActive }: { isActive: boolean }, locked: boolean): string 
   return `app-tab${isActive ? ' app-tab--active' : ''}${locked ? ' app-tab--locked' : ''}`
 }
 
-/** Top-level navigation between the Lessons, Practice, and Applications tabs. */
+/** Top-level navigation between the Lessons, Practice, Applications, and Scrapbook tabs. */
 export function TabNav() {
   const { completed, loading } = useCompletedLessons()
 
@@ -46,6 +46,9 @@ export function TabNav() {
             🔒
           </span>
         )}
+      </NavLink>
+      <NavLink to="/scrapbook" className={(state) => tabClass(state, false)}>
+        Scrapbook
       </NavLink>
     </nav>
   )

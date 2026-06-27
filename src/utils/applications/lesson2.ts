@@ -311,6 +311,7 @@ function generateSum(): WordProblem {
         kind: 'expression',
         label: 'Amount each extra unit adds at level x (expression in x)',
         trueCoefficients,
+        builder: true,
         placeholder: 'polynomial in x',
         meaning: `how much each extra ${theme.perXNoun} adds to ${theme.quantity} at level x, in ${theme.unit} per ${theme.perXNoun}, written as an expression in x`,
       },
@@ -429,6 +430,7 @@ function generateChain(): WordProblem {
         kind: 'expression',
         label: 'How fast it changes (expression in x)',
         trueCoefficients,
+        builder: true,
         placeholder: 'polynomial in x',
         meaning: `how fast ${theme.quantity} changes as x changes, written as an expression in x`,
       },
@@ -538,7 +540,7 @@ function generateMvt(): WordProblem {
     id: uniqueId('a2-mvt'),
     topicId: 'a2-mvt',
     title: theme.title,
-    prompt: `${theme.subject}: ${theme.quantity} (in ${theme.unit}) after x seconds follows the rule below, tracked between x = ${p} and x = ${q} seconds.`,
+    prompt: `${theme.subject}: ${theme.quantity} (in ${theme.unit}) after x seconds follows the rule below, tracked between x = ${p} and x = ${q} seconds. How fast did ${theme.quantity} change on average over that stretch, and at which single moment x was it changing at exactly that average pace?`,
     given: `${theme.fnLetter}(x) = ${formatMonomial(a, 2)}   on   [${p}, ${q}]`,
     fields: [
       {
@@ -613,7 +615,7 @@ registerStaticThemes<CombineTheme>('a2-combine', combineThemes)
 registerMadlibSpec<CombineTheme>({
   topicId: 'a2-combine',
   instruction:
-    'A total output at throttle x is the sum of two stages; we ask how fast the total changes with x.',
+    'A total output controlled by a setting x is the sum of two contributions; we ask how fast the total changes with x.',
   slots: [
     { name: 'title', description: 'Short scenario title', example: 'Spaceship power' },
     { name: 'fnLetter', description: 'Single capital letter naming the function', example: 'P' },
@@ -684,13 +686,14 @@ function generateCombine(): WordProblem {
     id: uniqueId('a2-combine'),
     topicId: 'a2-combine',
     title: theme.title,
-    prompt: `${theme.subject}: ${theme.quantity} (in ${theme.unit}) at throttle x comes from ${theme.stageOne} plus ${theme.stageTwo}, shown below. Write how fast the total changes as x changes.`,
+    prompt: `${theme.subject}: ${theme.quantity} (in ${theme.unit}) combines ${theme.stageOne} and ${theme.stageTwo}, which both depend on the control setting x as shown below. Write how fast the total changes as the setting x increases.`,
     given: `${theme.fnLetter}(x) = (${formatMonomial(a, 1)} + ${b})${superscript(n)} + ${formatMonomial(c, m)}`,
     fields: [
       {
         kind: 'expression',
         label: 'How fast the total changes (expression in x)',
         trueCoefficients,
+        builder: true,
         placeholder: 'polynomial in x',
         meaning: `how fast ${theme.quantity} changes as x changes, written as an expression in x`,
       },

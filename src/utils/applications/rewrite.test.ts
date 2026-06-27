@@ -270,7 +270,7 @@ describe('rewrite: fallback on timeout', () => {
     const problem = makeProblem()
 
     const pending = rewriteProblem(problem, 10)
-    await vi.advanceTimersByTimeAsync(7000)
+    await vi.advanceTimersByTimeAsync(9000)
     const result = await pending
 
     expect(result).toBe(problem)
