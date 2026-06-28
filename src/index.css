@@ -74,9 +74,13 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
   background-color: var(--bg);
+  /* Kill the rubber-band / overscroll glow so you can't drag past the content
+     and reveal empty desk above the top or below the bottom of the card. */
+  overscroll-behavior: none;
 }
 
 /* Paper grain — a low-opacity printed-newsprint texture over the whole viewport.

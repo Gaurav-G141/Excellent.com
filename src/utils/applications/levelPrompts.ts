@@ -133,12 +133,14 @@ export const FORCE_INTEREST_PERSONALIZATION = false
  * interests.
  *
  * In the default (non-forced) mode personalization is HIGHLY ENCOURAGED but never
- * forced: the model should set the scene in a naturally-fitting interest whenever
- * one fits (picking one at random for variety when several do), but must skip it
- * rather than shoehorn one in. It may only swap the *surface setting*, never the
- * math/numbers/difficulty, caps it at one interest, and forbids "seductive
- * details". When `force` is true (see FORCE_INTEREST_PERSONALIZATION) it instead
- * REQUIRES grounding every scene in an interest, for testing the feature.
+ * forced: when an interest can host the situation, the model should make that
+ * interest the GENUINE setting of the whole problem (not a one-time name-drop),
+ * picking one at random for variety when several fit, but skip it rather than
+ * shoehorn one in. It may only reskin the *surface setting*, never the
+ * math/numbers/difficulty, caps it at one interest, and may not invent new
+ * numbers/facts to play it up. When `force` is true (see
+ * FORCE_INTEREST_PERSONALIZATION) it instead REQUIRES grounding every scene in an
+ * interest, for testing the feature.
  */
 export function buildInterestClause(
   interests?: string[],
@@ -147,28 +149,33 @@ export function buildInterestClause(
   const clean = cleanInterestsForPrompt(interests)
   if (clean.length === 0) return ''
 
-  // Shared guardrails: theming may only touch the surface scene.
+  // Shared guardrails: theming reskins the scene but never the math, and it must
+  // integrate through the situation already there — not by adding new numbers.
   const protect =
-    'Change ONLY the surface setting (the people, places, and objects) — never the math, the numbers, the ' +
+    'Theme ONLY the surface setting (the people, places, and objects) — never the math, the numbers, the ' +
     'GIVEN formula, the quantity asked for, the difficulty level, or any required distractors. Use at most ONE ' +
-    'interest, refer to it no more than necessary, and add NO extra flavor, backstory, or detail to play it up.'
+    'interest, and weave it in through the situation that is already there rather than by inventing new numbers, ' +
+    'facts, or backstory to play it up.'
 
   if (force) {
     return (
       `PERSONALIZATION (REQUIRED): The learner is into: ${clean.join(', ')}. ` +
       'You MUST set this exact situation in the world of ONE of these interests — pick whichever fits most ' +
-      `naturally. ${protect} ` +
+      'naturally — so the whole problem genuinely takes place there and reads as being ABOUT that interest, not ' +
+      `a generic problem with its name dropped in. ${protect} ` +
       'Keep the reference tasteful, not gratuitous, but the scene must be grounded in that interest.'
     )
   }
 
   return (
     `PERSONALIZATION (highly encouraged): The learner is into: ${clean.join(', ')}. ` +
-    'Whenever one of these can naturally host this exact situation, you are strongly encouraged to set the scene ' +
-    'in that world; if several could fit, pick one at random so problems stay varied. ' +
+    'Whenever one of these can host this exact situation, you are strongly encouraged to make it the GENUINE ' +
+    'setting of the whole problem: the place it happens, the people in it, and what they are doing should all ' +
+    'come from that world, so the problem truly reads as being ABOUT that interest rather than a generic ' +
+    'problem that just name-drops it once. If several could fit, pick one at random so problems stay varied. ' +
     `${protect} ` +
-    'Do NOT force an interest that does not fit the situation — if none fit naturally, simply write a neutral ' +
-    'scene. Keep any reference tasteful and never let it distort the math.'
+    'Do NOT force an interest that cannot naturally hold this exact situation — if none fit, simply write a ' +
+    'neutral scene. Keep the theme tasteful and never let it distort the math.'
   )
 }
 
