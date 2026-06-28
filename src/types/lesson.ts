@@ -258,10 +258,20 @@ export interface IvtProblemConfig {
   viewport: Viewport
   ax: number
   bx: number
-  functionDisplay: string
+  /**
+   * Optional human-readable f(x). Omitted for endpoints-only IVT problems so the
+   * learner reasons purely from f(a) and f(b) (the equation can mislead because
+   * the full curve may cross a distractor value).
+   */
+  functionDisplay?: string
   /** Value strictly between f(a) and f(b) — the one the IVT guarantees. */
   guaranteedValue: number
   /** Values outside [f(a), f(b)] used as multiple-choice distractors. */
   distractors: number[]
   cTolerance?: number
+  /**
+   * Hide the plotted polynomial curve so only the A/B endpoints are shown.
+   * Additive and optional; defaults to false (curve shown) everywhere else.
+   */
+  hideCurve?: boolean
 }

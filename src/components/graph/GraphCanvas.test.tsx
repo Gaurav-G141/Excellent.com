@@ -72,6 +72,25 @@ describe('GraphCanvas evaluate path', () => {
     expect(Number.isFinite(seg.angle)).toBe(true)
   })
 
+  it('renders the curve by default and omits it when hideCurve is set', () => {
+    const viewport: Viewport = { xMin: -1, xMax: 5, yMin: -1, yMax: 6 }
+    const coefficients = [0, 0, 0.25]
+
+    // Default behaviour (regression guard): the curve path IS rendered.
+    const shown = render(<GraphCanvas coefficients={coefficients} viewport={viewport} />)
+    const shownPath = shown.container.querySelector('.graph-curve')
+    expect(shownPath).not.toBeNull()
+    expect(shownPath?.getAttribute('d')).not.toBe('')
+
+    // With hideCurve, the curve path is gone but axes/grid still render.
+    const hidden = render(
+      <GraphCanvas coefficients={coefficients} viewport={viewport} hideCurve unitGrid />,
+    )
+    expect(hidden.container.querySelector('.graph-curve')).toBeNull()
+    expect(hidden.container.querySelector('.graph-axis')).not.toBeNull()
+    expect(hidden.container.querySelector('.graph-grid')).not.toBeNull()
+  })
+
   it('exact derivative prop is used for the tangent when supplied', () => {
     let captured: GraphApi | null = null
     render(

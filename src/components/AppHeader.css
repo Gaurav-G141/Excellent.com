@@ -1,0 +1,17 @@
+/*
+ * The header reuses the pill styles from HomePage.css (.home-interests /
+ * .home-sign-out / .home-header-actions). These rules only add what's specific
+ * to the tool buttons and to keeping the row tidy on narrow phones.
+ */
+
+.home-header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  row-gap: 8px;
+}
+
+/* The tool buttons reuse .home-interests for the pill look; this is just a hook
+ * for future overrides and keeps intent explicit. */
+.home-tool {
+  font-family: var(--font-mono);
+}

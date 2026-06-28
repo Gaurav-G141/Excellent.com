@@ -1,0 +1,99 @@
+.quad-eq {
+  margin: 0 0 16px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.quad-fields {
+  display: flex;
+  gap: 10px;
+}
+
+.quad-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quad-field-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.quad-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-h);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  text-align: center;
+}
+
+.quad-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.quad-solve {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 16px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.quad-solve:hover {
+  background: var(--accent-hover);
+}
+
+.quad-error {
+  margin: 14px 0 0;
+  color: var(--error);
+  font-size: 13px;
+}
+
+.quad-result {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.quad-roots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quad-roots li {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.quad-note {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}

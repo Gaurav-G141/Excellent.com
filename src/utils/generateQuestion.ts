@@ -125,7 +125,12 @@ function buildQuadratic(rng: Rng) {
   // float error. The secant→tangent slide renders that raw value as the fixed
   // point's label, so this avoids artifacts like "(2, 2.9999999996)". (0.2/0.3
   // are NOT exact binary fractions and would reintroduce the artifact.)
-  const a = pick([0.25, 0.5, 0.125, 0.75], rng) * pick([1, -1], rng)
+  // Curvature is capped at |a| <= 0.25 so the secant the learner reads is a good
+  // estimate of the true derivative. For a quadratic the secant slope over an
+  // offset h is exactly m + a*h. The zoom slide draws its secant over
+  // h = referenceX - targetX = 0.4, so |secant - derivative| = |a*h| <= 0.25*0.4
+  // = 0.1 — well inside the 0.15 tolerance — for every allowed |a|.
+  const a = pick([0.25, 0.125], rng) * pick([1, -1], rng)
   // Slopes are multiples of 0.5 so the answer is enterable within tolerance 0.15;
   // f'(targetX) is forced to exactly this value below.
   const m = pick([-2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2], rng)
@@ -146,7 +151,7 @@ function generateZoom(id: string, rng: Rng): ProblemSlide {
     type: 'problem',
     component: 'secantZoomDerivative',
     title: 'Estimate the derivative',
-    body: 'Zoom in on the marked point. When the curve looks straight, estimate its slope.',
+    body: "Zoom in on the marked point until the curve looks like a straight line, then estimate the slope of that line. Give your best estimate of the derivative — it's fine if it's not exact.",
     config: {
       coefficients,
       viewport: { xMin, xMax, yMin, yMax },
@@ -175,7 +180,7 @@ function generateTangent(id: string, rng: Rng): ProblemSlide {
     type: 'problem',
     component: 'secantToTangent',
     title: 'Approach the fixed point',
-    body: 'Drag point P toward the fixed point. When the two points are very close, the secant slope approximates the derivative.',
+    body: "Drag point P toward the fixed point until the secant looks like a straight line through the curve, then estimate the slope of that line. Give your best estimate of the derivative — it's fine if it's not exact.",
     config: {
       coefficients,
       viewport: { xMin, xMax, yMin, yMax },

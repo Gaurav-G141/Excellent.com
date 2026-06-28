@@ -145,6 +145,61 @@ describe('polynomialsEqual', () => {
   })
 })
 
+describe('decimal-coefficient robustness (no float artifacts)', () => {
+  it('multiplies 2-decimal coefficients to clean values', () => {
+    // 0.1 * 0.2 is 0.020000000000000004 in raw IEEE-754; we expect a clean 0.02.
+    expect(multiplyPolynomials([0.1], [0.2])).toEqual([0.02])
+    // 1.1*3.3 = 3.63 (raw 3.6300000000000003), 2.2*3.3 = 7.26 (raw 7.260000000000001)
+    expect(multiplyPolynomials([1.1, 2.2], [3.3])).toEqual([3.63, 7.26])
+  })
+
+  it('adds 2-decimal coefficients to clean values', () => {
+    // 0.1 + 0.2 is the canonical float trap (0.30000000000000004).
+    expect(addPolynomials([0.1], [0.2])).toEqual([0.3])
+    expect(subtractPolynomials([0.3], [0.1])).toEqual([0.2])
+  })
+
+  it('differentiates 2-decimal coefficients cleanly', () => {
+    // d/dx[0.1x + 0.2x²] = 0.1 + 0.4x
+    expect(derivativeCoefficients([0, 0.1, 0.2])).toEqual([0.1, 0.4])
+  })
+
+  it('keeps productRuleDerivative.sum exactly equal to .total for decimals', () => {
+    // u = 1.5x + 2.5, v = x² + 0.5
+    const { sum, total } = productRuleDerivative([2.5, 1.5], [0.5, 0, 1])
+    expect(polynomialsEqual(sum, total)).toBe(true)
+  })
+
+  it('grades mathematically-equal decimal results as equal at the default (strict) tolerance', () => {
+    // A learner who built 0.3x would match a computed 0.1+0.2 coefficient.
+    expect(polynomialsEqual([0, 0.3], addPolynomials([0, 0.1], [0, 0.2]))).toBe(true)
+  })
+
+  it('stress test: random 2-decimal factors in [-100,100] never mismatch in grading', () => {
+    const rnd2 = () => Math.round((Math.random() * 200 - 100) * 100) / 100
+    const randomPoly = () => {
+      const degree = Math.floor(Math.random() * 5) // 0..4
+      return Array.from({ length: degree + 1 }, rnd2)
+    }
+
+    for (let trial = 0; trial < 3000; trial++) {
+      const u = randomPoly()
+      const v = randomPoly()
+      const { sum, total } = productRuleDerivative(u, v)
+
+      // The two pedagogically-distinct derivations must agree under the strict
+      // grading tolerance — a float tail would otherwise reject a correct answer.
+      expect(polynomialsEqual(sum, total)).toBe(true)
+
+      // Every emitted coefficient is artifact-free: an exact product of two
+      // 2-decimal numbers has at most 4 decimal places, so c·10⁴ is an integer.
+      for (const c of sum) {
+        expect(Math.abs(c * 1e4 - Math.round(c * 1e4))).toBeLessThan(1e-3)
+      }
+    }
+  })
+})
+
 describe('formatPolynomial', () => {
   it('formats highest-power-first with skipped zero terms', () => {
     expect(formatPolynomial([3, 0, 2])).toBe('2x\u00b2 + 3')
@@ -168,5 +223,14 @@ describe('formatPolynomial', () => {
 
   it('supports a custom variable', () => {
     expect(formatPolynomial([1, 2], 't')).toBe('2t + 1')
+  })
+
+  it('emits decimal coefficients cleanly (no long float tails)', () => {
+    // A float-tail constant collapses to a clean integer; a genuine decimal
+    // keeps up to two places.
+    expect(formatPolynomial([2.0000000001, 0, 1.5])).toBe('1.5x\u00b2 + 2')
+    // Rounds to two decimals when emitting.
+    expect(formatPolynomial([0, 3.456])).toBe('3.46x')
+    expect(formatPolynomial([12.34])).toBe('12.34')
   })
 })

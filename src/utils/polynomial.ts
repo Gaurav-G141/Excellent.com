@@ -1,13 +1,26 @@
 /** Evaluate polynomial sum(c[i] * x^i) for i = 0..n */
 import type { CriticalPointConfig } from '../types/lesson'
 
+/**
+ * Snap a coefficient to a clean value, killing floating-point artifacts (e.g.
+ * 0.1 * 0.2 = 0.020000000000000004) that arise when arithmetic is done on
+ * decimal inputs. We round to nine decimal places: the calculator only accepts
+ * ≤2-decimal inputs, so every exact product/derivative/sum the lessons can
+ * produce has at most four decimal places — far coarser than 1e-9 — making this
+ * rounding lossless for real values while still erasing the tiny binary tails.
+ */
+function roundCoeff(n: number): number {
+  if (!Number.isFinite(n)) return n
+  return Math.round(n * 1e9) / 1e9
+}
+
 export function evaluatePoly(coefficients: number[], x: number): number {
   return coefficients.reduce((sum, coeff, power) => sum + coeff * x ** power, 0)
 }
 
 /** Derivative coefficients: c[i] * i for i >= 1 */
 export function derivativeCoefficients(coefficients: number[]): number[] {
-  return coefficients.slice(1).map((coeff, index) => coeff * (index + 1))
+  return coefficients.slice(1).map((coeff, index) => roundCoeff(coeff * (index + 1)))
 }
 
 export function evaluateDerivative(coefficients: number[], x: number): number {
@@ -80,7 +93,7 @@ export function multiplyPolynomials(a: number[], b: number[]): number[] {
       result[i + j] += a[i] * b[j]
     }
   }
-  return result
+  return result.map(roundCoeff)
 }
 
 /**
@@ -134,13 +147,13 @@ export function sampleCurve(
 /** Sum two polynomials (low-to-high coefficient arrays). */
 export function addPolynomials(a: number[], b: number[]): number[] {
   const length = Math.max(a.length, b.length)
-  return Array.from({ length }, (_, i) => (a[i] ?? 0) + (b[i] ?? 0))
+  return Array.from({ length }, (_, i) => roundCoeff((a[i] ?? 0) + (b[i] ?? 0)))
 }
 
 /** Subtract b from a (low-to-high coefficient arrays), padding the shorter. */
 export function subtractPolynomials(a: number[], b: number[]): number[] {
   const length = Math.max(a.length, b.length)
-  return Array.from({ length }, (_, i) => (a[i] ?? 0) - (b[i] ?? 0))
+  return Array.from({ length }, (_, i) => roundCoeff((a[i] ?? 0) - (b[i] ?? 0)))
 }
 
 /** Drop trailing (high-power) zero coefficients; never returns empty ([0] if all zero). */
@@ -242,9 +255,12 @@ export function superscript(power: number): string {
  * ±1 drops the digit for powers ≥ 1 (e.g. "x²", not "1x²").
  */
 export function formatMonomial(coeff: number, power: number, variable = 'x'): string {
-  const abs = Math.abs(coeff)
-  if (power === 0) return `${abs}`
-  const coeffStr = abs === 1 ? '' : `${abs}`
+  // Emit at most two decimals with no trailing zeros (3 -> "3", 3.5 -> "3.5",
+  // 12.34 -> "12.34") so a float tail like 2.0000000001 never leaks into the UI.
+  const abs = Number(Math.abs(coeff).toFixed(2))
+  const absStr = `${abs}`
+  if (power === 0) return absStr
+  const coeffStr = abs === 1 ? '' : absStr
   const varStr = power === 1 ? variable : `${variable}${superscript(power)}`
   return `${coeffStr}${varStr}`
 }

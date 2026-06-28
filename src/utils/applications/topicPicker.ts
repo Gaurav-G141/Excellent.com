@@ -8,7 +8,10 @@
  * and side-effect free so it's trivially testable; the page owns the recency map.
  */
 
-import type { ApplicationTopicDef } from './types'
+/** The picker only reads a topic's id, so it works for any id-bearing topic. */
+interface IdentifiedTopic {
+  id: string
+}
 
 /** How long after a topic is served until its weight fully recovers to 1. */
 export const RECOVERY_MS = 24 * 60 * 60 * 1000
@@ -39,12 +42,12 @@ export function topicWeight(lastSeen: number | undefined, now: number): number {
  * Pick a topic, favoring ones not served recently. Returns null for an empty
  * pool. `rng` (default Math.random) yields [0, 1) and is injectable for tests.
  */
-export function pickWeightedTopic(
-  topics: ApplicationTopicDef[],
+export function pickWeightedTopic<T extends IdentifiedTopic>(
+  topics: T[],
   recency: TopicRecency,
   now: number,
   rng: () => number = Math.random,
-): ApplicationTopicDef | null {
+): T | null {
   if (topics.length === 0) return null
   if (topics.length === 1) return topics[0]
 

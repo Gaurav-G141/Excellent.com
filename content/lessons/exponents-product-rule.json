@@ -84,7 +84,7 @@
       "body": "Build two polynomials u(x) and v(x), then play the animation to watch the product rule derive (uv)′ = u′v + uv′ on your own functions.",
       "config": {
         "maxDegree": 4,
-        "maxCoefficient": 20
+        "maxCoefficient": 100
       },
       "ctaLabel": "Continue"
     },
@@ -102,7 +102,7 @@
       },
       "feedback": {
         "correct": "",
-        "wrong": "Differentiate each factor, then combine with (uv)′ = u′v + uv′ and simplify."
+        "wrong": "Add up the u'v and uv' terms you calculated earlier"
       },
       "attempts": "unlimited"
     },

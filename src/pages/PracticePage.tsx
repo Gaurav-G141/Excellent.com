@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { AppHeader } from '../components/AppHeader'
 import { SlideRenderer } from '../components/lesson/SlideRenderer'
 import { TabNav } from '../components/TabNav'
 import { useAuth } from '../contexts/AuthContext'
@@ -13,6 +13,7 @@ import { loadApplicationsActivity } from '../lib/applicationsActivity'
 import { loadAllLessonProgress } from '../lib/progress'
 import type { ProblemSlide } from '../types/lesson'
 import { APPLICATION_LESSONS } from '../utils/applications'
+import { SCENARIO_LESSONS } from '../utils/applications/scenarios'
 import { PRACTICE_LESSONS, type PracticeLessonGroup } from '../utils/practice'
 import { buildReviewItems, isDue, lastPracticedLabel } from '../utils/practice/review'
 import '../components/lesson/LessonPlayer.css'
@@ -31,9 +32,13 @@ interface GeneratedProblem {
   topicId: string
 }
 
-/** Maps every Applications topic id to the lesson it belongs to. */
+/**
+ * Maps every Applications topic id to the lesson it belongs to. Covers both the
+ * current multi-step scenario topics and the legacy single-shot topics so older
+ * recorded activity still feeds the "Worth reviewing" staleness check.
+ */
 const APP_TOPIC_TO_LESSON = new Map<string, string>(
-  APPLICATION_LESSONS.flatMap((group) =>
+  [...SCENARIO_LESSONS, ...APPLICATION_LESSONS].flatMap((group) =>
     group.topics.map((topic) => [topic.id, group.lessonId] as const),
   ),
 )
@@ -47,7 +52,7 @@ function generateFor(group: PracticeLessonGroup, topicId: string | null): Genera
 }
 
 export default function PracticePage() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const { completed, loading } = useCompletedLessons()
 
   // A practice group only unlocks once its lesson has been completed.
@@ -180,17 +185,7 @@ export default function PracticePage() {
 
   return (
     <div className="home-page">
-      <header className="home-header">
-        <h1>Excellent</h1>
-        <div className="home-header-actions">
-          <Link to="/interests" className="home-interests">
-            Interests
-          </Link>
-          <button type="button" className="home-sign-out" onClick={() => signOut()}>
-            Sign out
-          </button>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="home-main">
         <TabNav />

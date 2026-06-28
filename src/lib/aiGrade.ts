@@ -16,6 +16,15 @@ export interface FreeResponseVerdict {
   feedback: string
 }
 
+/**
+ * How demanding the grader should be. `standard` (the default) preserves the
+ * original lenient "grade for the idea" behavior used by lessons; `lenient`
+ * accepts even very informal beginner phrasing; `strict` requires a precise,
+ * complete articulation (e.g. naming the underlying rate of change) and is used
+ * by the Applications tab at high difficulty.
+ */
+export type GradeRigor = 'lenient' | 'standard' | 'strict'
+
 export interface GradeFreeResponseArgs {
   /** The question the learner is answering. */
   question: string
@@ -23,6 +32,8 @@ export interface GradeFreeResponseArgs {
   rubric: string
   /** The learner's raw answer text. */
   answer: string
+  /** Grading strictness; omitted/`standard` keeps the original behavior. */
+  rigor?: GradeRigor
 }
 
 /**
@@ -33,23 +44,43 @@ export async function gradeFreeResponse({
   question,
   rubric,
   answer,
+  rigor,
 }: GradeFreeResponseArgs): Promise<FreeResponseVerdict | null> {
   const schema = Schema.object({
     properties: { verdict: Schema.string(), feedback: Schema.string() },
   })
-  const model = getJsonModel(schema)
+  // Grading wants a steady, reproducible verdict, not creative variety, so run
+  // the model cold rather than at the default high (scene-generation) temperature.
+  const model = getJsonModel(schema, { temperature: 0.2 })
   if (!model) return null
+
+  // `standard`/undefined keeps the original wording verbatim (lessons rely on it).
+  const ideaLine =
+    rigor === 'strict'
+      ? 'Grade for the IDEA and whether it is framed correctly — not for completeness of every detail or exact notation.'
+      : 'Grade for the IDEA, not exact wording or notation. Informal phrasing is fine.'
+  const rigorLine =
+    rigor === 'lenient'
+      ? 'The learner is a beginner: accept the core idea even when phrased very informally or in everyday words, as long as they capture the essential point.'
+      : rigor === 'strict'
+        ? 'The learner is advanced, so weigh precision over a vague gist. Accept the answer if it correctly identifies the key relationship AND frames it in terms of how the quantity is changing (its rate of change / derivative), in either everyday or technical language. Do NOT require exact numbers, constants, a full formula, or every detail in the rubric. Mark it incorrect ONLY if it is vague or hand-wavy, or never connects to how the quantity changes (e.g. it merely restates the surface situation without addressing the rate of change).'
+        : ''
+  const verdictLine =
+    rigor === 'strict'
+      ? '- "verdict": exactly "correct" if the answer correctly identifies the relationship and frames it in terms of how the quantity is changing (its rate of change), otherwise "incorrect".'
+      : '- "verdict": exactly "correct" if the student captures the key idea, otherwise "incorrect".'
 
   const prompt = [
     'You are a friendly, encouraging calculus tutor grading a short free-response answer.',
-    'Grade for the IDEA, not exact wording or notation. Informal phrasing is fine.',
+    ideaLine,
+    ...(rigorLine ? [rigorLine] : []),
     '',
     `Question: ${question}`,
     `A correct answer should convey: ${rubric}`,
     `Student answer: """${answer}"""`,
     '',
     'Reply as JSON with:',
-    '- "verdict": exactly "correct" if the student captures the key idea, otherwise "incorrect".',
+    verdictLine,
     '- "feedback": one or two short, warm sentences. If incorrect, nudge toward the idea WITHOUT stating the full answer.',
   ].join('\n')
 

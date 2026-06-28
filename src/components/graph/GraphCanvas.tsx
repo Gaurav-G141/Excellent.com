@@ -59,6 +59,12 @@ interface GraphCanvasProps {
    * existing graphs are unaffected.
    */
   squareUnits?: boolean
+  /**
+   * Hide the plotted function curve (the `.graph-curve` path). Axes, grid and
+   * any `children` decorations still render. Additive and optional; defaults to
+   * false so every existing graph keeps drawing its curve unchanged.
+   */
+  hideCurve?: boolean
 }
 
 /**
@@ -158,6 +164,7 @@ export const GraphCanvas = forwardRef<SVGSVGElement, GraphCanvasProps>(function 
     minorGridStep = 0.2,
     showAxisLabels = false,
     squareUnits = false,
+    hideCurve = false,
   },
   ref,
 ) {
@@ -431,7 +438,9 @@ export const GraphCanvas = forwardRef<SVGSVGElement, GraphCanvasProps>(function 
       />
 
       {/* curve */}
-      <path d={api.pathD} className="graph-curve" fill="none" clipPath={`url(#${clipId})`} />
+      {!hideCurve && (
+        <path d={api.pathD} className="graph-curve" fill="none" clipPath={`url(#${clipId})`} />
+      )}
 
       <g clipPath={`url(#${clipId})`}>{children?.(api)}</g>
     </svg>

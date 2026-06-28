@@ -43,7 +43,7 @@ export function MvtMultiPartSlide({ slide, onCorrect }: Props) {
 
   const prompts = [
     'Part 1. Slope of the secant from A to B:',
-    'Part 2. A value x = c in (a, b) where f\u2032(c) equals that slope:',
+    `Part 2. A value x = c in (a, b) where f\u2032(c) equals that slope. You cannot enter ${formatNumber(lo)} or ${formatNumber(hi)}:`,
   ]
   const placeholders = ['enter a number', 'enter a number']
 

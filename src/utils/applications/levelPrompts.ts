@@ -24,7 +24,23 @@ export const SYSTEM_LINE =
   'You turn a real-world math word problem into a specific target difficulty by rewriting ONLY its wording. ' +
   'You never change the math, never alter or drop any number, never reveal or solve the answer, and never ' +
   'change which quantity is being asked for. Your rewrite must read as a natural, sensible real-world situation ' +
-  'that always poses one concrete question. Output JSON only.'
+  'that always poses one concrete question. Within those hard limits, write like a vivid, inventive storyteller: ' +
+  'vary your settings, sentence rhythm, and voice so problems never feel templated. Output JSON only.'
+
+/**
+ * Style guidance appended after the hard RULES. It deliberately ENCOURAGES
+ * narrative variety (fresh settings, different sentence structures, vivid
+ * framing) so rewrites stop reading formulaic — but it re-states, and never
+ * relaxes, the hard guarantees that keep grading correct. Tuning the wording
+ * here is safe; the safety constraints are enforced by RULES_BLOCK and
+ * validateRewrite / validateScenarioRewrite regardless of this text.
+ */
+export const STYLE_BLOCK = [
+  'STYLE (vary this freely — it must NEVER change the math):',
+  '- Change the framing every time. Open differently, vary the sentence rhythm and the narrative voice, and avoid any fixed "A <thing> does <X>. How <Y>?" template. Two rewrites of the same base problem should feel like different writers wrote them.',
+  '- Invent a fresh, specific, vivid real-world context — a named person, a particular place, a concrete moment — that naturally fits the situation. Specific and surprising beats generic and flat.',
+  '- This freedom applies ONLY to the surface story. You must still: reproduce every number exactly, keep the GIVEN formula unchanged, keep referring to the same subject(s) by the same words, ask for the SAME quantity, never name the calculus, never reveal or hint at any answer, and still end on exactly one concrete question.',
+].join('\n')
 
 /** Constant guardrails appended to every rewrite prompt. */
 export const RULES_BLOCK = [
@@ -170,9 +186,9 @@ export const IMPLIED_BAND_MIN = 7
 /** Lowest level told as a story whose labels must be minimal/non-revealing. */
 export const STORY_BAND_MIN = 13
 
-type Band = 'explicit' | 'implied' | 'story'
+export type Band = 'explicit' | 'implied' | 'story'
 
-function bandFor(level: number): Band {
+export function bandFor(level: number): Band {
   if (level >= STORY_BAND_MIN) return 'story'
   if (level >= IMPLIED_BAND_MIN) return 'implied'
   return 'explicit'
@@ -220,6 +236,8 @@ export function buildRewritePrompt(input: RewriteInput): string {
     SYSTEM_LINE,
     '',
     RULES_BLOCK,
+    '',
+    STYLE_BLOCK,
     '',
     `TARGET DIFFICULTY — ${fragment}`,
     '',
@@ -297,7 +315,7 @@ const NUM_EPS = 1e-9
  */
 const EXTRA_BANNED = ['rate of change', 'instantaneous']
 
-function hasExtraJargon(text: string): boolean {
+export function hasExtraJargon(text: string): boolean {
   const lower = text.toLowerCase()
   return EXTRA_BANNED.some((b) => lower.includes(b))
 }
@@ -310,7 +328,7 @@ function hasExtraJargon(text: string): boolean {
  */
 const HIGH_BAND_BANNED = ['how fast', 'how quickly', 'how rapidly']
 
-function hasHighBandGiveaway(text: string): boolean {
+export function hasHighBandGiveaway(text: string): boolean {
   const lower = text.toLowerCase()
   return HIGH_BAND_BANNED.some((b) => lower.includes(b))
 }

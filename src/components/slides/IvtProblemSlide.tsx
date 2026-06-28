@@ -22,7 +22,7 @@ function shuffle<T>(values: T[]): T[] {
 
 export function IvtProblemSlide({ slide, onCorrect }: Props) {
   const config = slide.config as unknown as IvtProblemConfig
-  const { coefficients, viewport, ax, bx, functionDisplay, guaranteedValue, distractors } = config
+  const { coefficients, viewport, ax, bx, guaranteedValue, distractors } = config
 
   const lo = Math.min(ax, bx)
   const hi = Math.max(ax, bx)
@@ -61,14 +61,17 @@ export function IvtProblemSlide({ slide, onCorrect }: Props) {
         </div>
 
         <div className="mvt-given">
-          <span>
-            f(x) = <strong>{functionDisplay}</strong>
-          </span>
           <span>f(a) = {fa.toFixed(1)}</span>
           <span>f(b) = {fb.toFixed(1)}</span>
         </div>
 
-        <GraphCanvas coefficients={coefficients} viewport={viewport} unitGrid showAxisLabels>
+        <GraphCanvas
+          coefficients={coefficients}
+          viewport={viewport}
+          unitGrid
+          showAxisLabels
+          hideCurve
+        >
           {(api) => {
             const aS = api.toScreen(lo, fa)
             const bS = api.toScreen(hi, fb)

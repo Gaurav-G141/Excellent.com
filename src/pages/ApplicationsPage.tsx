@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { WordProblemCard } from '../components/applications/WordProblemCard'
+import { AppHeader } from '../components/AppHeader'
+import { ScenarioProblemCard } from '../components/applications/ScenarioProblemCard'
 import { TabNav } from '../components/TabNav'
 import { useAuth } from '../contexts/AuthContext'
 import { useApplicationsLevel } from '../hooks/useApplicationsLevel'
 import { useCompletedLessons } from '../hooks/useCompletedLessons'
 import { useInterests } from '../hooks/useInterests'
-import { APPLICATION_LESSONS } from '../utils/applications'
 import { prefetchThemes } from '../utils/applications/aiThemes'
 import {
   levelFromRating,
@@ -15,23 +14,30 @@ import {
   type Outcome,
   type RatingState,
 } from '../utils/applications/difficulty'
-import { rewriteProblem } from '../utils/applications/rewrite'
+import { rewriteScenario } from '../utils/applications/scenarioRewrite'
 import { ProblemBuffer } from '../utils/applications/problemBuffer'
 import { pickWeightedTopic, type TopicRecency } from '../utils/applications/topicPicker'
+import {
+  APPLICATIONS_UNLOCK_LESSON,
+  SCENARIO_LESSONS,
+} from '../utils/applications/scenarios'
+import type {
+  ScenarioProblem,
+  ScenarioTopicDef,
+} from '../utils/applications/scenarioTypes'
 import {
   loadApplicationsActivity,
   recordApplicationsSeen,
 } from '../lib/applicationsActivity'
 import { loseStickers, maybeSpawnSticker } from '../lib/stickers/trigger'
 import { WRONG_ANSWERS_PER_STICKER_LOSS } from '../lib/stickers/config'
-import type { ApplicationTopicDef, WordProblem } from '../utils/applications/types'
 import './HomePage.css'
 import './PracticePage.css'
 import './ApplicationsPage.css'
 
 /** Maps every topic id to the lesson that must be completed to unlock it. */
 const LESSON_FOR_TOPIC = new Map<string, string>(
-  APPLICATION_LESSONS.flatMap((group) =>
+  SCENARIO_LESSONS.flatMap((group) =>
     group.topics.map((topic) => [topic.id, group.lessonId] as const),
   ),
 )
@@ -49,9 +55,9 @@ const BUFFER_DEPTH = 2
 
 /** Defense-in-depth: a problem only counts as unlocked if its lesson is done. */
 function isUnlocked(
-  problem: WordProblem | null,
+  problem: ScenarioProblem | null,
   completed: Set<string>,
-): problem is WordProblem {
+): problem is ScenarioProblem {
   if (!problem) return false
   const lessonId = LESSON_FOR_TOPIC.get(problem.topicId)
   return lessonId !== undefined && completed.has(lessonId)
@@ -91,7 +97,7 @@ function warmLevels(state: RatingState): number[] {
 }
 
 export default function ApplicationsPage() {
-  const { signOut, user } = useAuth()
+  const { user } = useAuth()
   const { completed, loading: lessonsLoading } = useCompletedLessons()
   const { interests } = useInterests()
   const {
@@ -103,17 +109,23 @@ export default function ApplicationsPage() {
   } = useApplicationsLevel()
   const loading = lessonsLoading || levelLoading
 
+  // The page-level gate: Applications stay locked until "Rules of Derivatives"
+  // is completed. This is the same check TabNav uses, so the tab lock and the
+  // page lock always agree. (unlockedTopics still filters the actual pool below
+  // for defense-in-depth.)
+  const applicationsUnlocked = completed.has(APPLICATIONS_UNLOCK_LESSON)
+
   // Only topics from completed lessons enter the pool. The learner still never
   // picks one, so completing more lessons quietly widens the mix of problems.
   const unlockedTopics = useMemo(
     () =>
-      APPLICATION_LESSONS.filter((group) => completed.has(group.lessonId)).flatMap(
+      SCENARIO_LESSONS.filter((group) => completed.has(group.lessonId)).flatMap(
         (group) => group.topics,
       ),
     [completed],
   )
 
-  const [problem, setProblem] = useState<WordProblem | null>(null)
+  const [problem, setProblem] = useState<ScenarioProblem | null>(null)
   const [nonce, setNonce] = useState(0)
   const [solved, setSolved] = useState(0)
 
@@ -121,7 +133,7 @@ export default function ApplicationsPage() {
   // Guards the visible problem: a stale showProblem result is dropped so a slow
   // rewrite for an abandoned problem can never overwrite the live one.
   const displayToken = useRef(0)
-  const problemRef = useRef<WordProblem | null>(null)
+  const problemRef = useRef<ScenarioProblem | null>(null)
   const levelRef = useRef(level)
   const stateRef = useRef(state)
   // Latest unlocked pool / completed set, read by the buffer's pick & accept so
@@ -146,7 +158,7 @@ export default function ApplicationsPage() {
   // recent topics resurface less. Marking the pick immediately spreads variety
   // across a single prefetch burst; the actual "seen" time is refined (and
   // persisted) when the problem is displayed (see the effect below).
-  const pickProblem = useCallback((topics: ApplicationTopicDef[]): WordProblem | null => {
+  const pickProblem = useCallback((topics: ScenarioTopicDef[]): ScenarioProblem | null => {
     const topic = pickWeightedTopic(topics, recencyRef.current, Date.now())
     if (!topic) return null
     recencyRef.current = { ...recencyRef.current, [topic.id]: Date.now() }
@@ -156,12 +168,12 @@ export default function ApplicationsPage() {
   // The deep prewarm buffer: keeps BUFFER_DEPTH (2) ready-to-serve problems on
   // hand per warmed level, generating only the shortfall. Created once; all of
   // its inputs are read live from refs so it never needs recreating.
-  const bufferRef = useRef<ProblemBuffer<WordProblem> | null>(null)
+  const bufferRef = useRef<ProblemBuffer<ScenarioProblem> | null>(null)
   if (bufferRef.current === null) {
-    bufferRef.current = new ProblemBuffer<WordProblem>({
+    bufferRef.current = new ProblemBuffer<ScenarioProblem>({
       depth: BUFFER_DEPTH,
       pick: () => pickProblem(unlockedTopicsRef.current),
-      prepare: (base, lvl) => rewriteProblem(base, lvl, interestsRef.current),
+      prepare: (base, lvl) => rewriteScenario(base, lvl, interestsRef.current),
       accept: (p) => isUnlocked(p, completedRef.current),
       isLive: () => mounted.current,
     })
@@ -228,7 +240,7 @@ export default function ApplicationsPage() {
   // Show a freshly rewritten problem, displaying a loading state (not the base
   // phrasing) until the rewrite resolves. Used only on a prefetch miss.
   const showProblem = useCallback(
-    (base: WordProblem | null, lvl: number, comp: Set<string>) => {
+    (base: ScenarioProblem | null, lvl: number, comp: Set<string>) => {
       const token = ++displayToken.current
       if (!base) {
         setProblem(null)
@@ -236,7 +248,7 @@ export default function ApplicationsPage() {
       }
       // Clear first so the UI shows "preparing" instead of the previous problem.
       setProblem(null)
-      void rewriteProblem(base, lvl, interestsRef.current).then((rewritten) => {
+      void rewriteScenario(base, lvl, interestsRef.current).then((rewritten) => {
         if (!mounted.current || displayToken.current !== token) return
         setProblem(isUnlocked(rewritten, comp) ? rewritten : null)
         setNonce((n) => n + 1)
@@ -247,7 +259,7 @@ export default function ApplicationsPage() {
 
   // Display an already-prepared problem instantly, cancelling any in-flight
   // showProblem so a slow fetch can't clobber this one.
-  const displayReady = useCallback((p: WordProblem) => {
+  const displayReady = useCallback((p: ScenarioProblem) => {
     displayToken.current++
     setProblem(p)
     setNonce((n) => n + 1)
@@ -349,17 +361,7 @@ export default function ApplicationsPage() {
 
   return (
     <div className="home-page">
-      <header className="home-header">
-        <h1>Excellent</h1>
-        <div className="home-header-actions">
-          <Link to="/interests" className="home-interests">
-            Interests
-          </Link>
-          <button type="button" className="home-sign-out" onClick={() => signOut()}>
-            Sign out
-          </button>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="home-main">
         <TabNav />
@@ -375,15 +377,15 @@ export default function ApplicationsPage() {
 
         {loading ? (
           <p className="slide-hint">Loading your progress…</p>
-        ) : unlockedTopics.length === 0 ? (
+        ) : !applicationsUnlocked ? (
           <div className="practice-locked">
             <div className="practice-locked-icon" aria-hidden="true">
               🔒
             </div>
             <h3>Applications are locked</h3>
             <p>
-              Finish a lesson to unlock real-world problems for its concepts. Head to
-              the <strong>Lessons</strong> tab to get started.
+              Finish <strong>Rules of Derivatives</strong> to unlock real-world
+              problems. Head to the <strong>Lessons</strong> tab to get there.
             </p>
           </div>
         ) : (
@@ -430,9 +432,10 @@ export default function ApplicationsPage() {
 
             <div className="practice-stage applications-stage">
               {problem && isUnlocked(problem, completed) ? (
-                <WordProblemCard
+                <ScenarioProblemCard
                   key={nonce}
                   problem={problem}
+                  level={level}
                   onSolved={(outcome) => handleSolved(outcome)}
                   onWrongAttempt={handleWrongAttempt}
                 />

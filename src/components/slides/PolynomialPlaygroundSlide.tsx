@@ -23,7 +23,7 @@ const MAX_STEP = 5
 
 export function PolynomialPlaygroundSlide({ slide, onContinue }: Props) {
   const config = slide.config as unknown as PolynomialPlaygroundConfig
-  const { maxDegree = 4, maxCoefficient = 20 } = config
+  const { maxDegree = 4, maxCoefficient = 100 } = config
 
   const [u, setU] = useState<number[]>([])
   const [v, setV] = useState<number[]>([])
@@ -61,9 +61,12 @@ export function PolynomialPlaygroundSlide({ slide, onContinue }: Props) {
     return () => window.clearTimeout(timer)
   }, [playing, step])
 
+  // Reveal the first stage (the rule itself) synchronously so there's no dead
+  // beat after pressing Play; the effect above then advances the rest at the
+  // interval, all the way to MAX_STEP.
   const play = useCallback(() => {
     if (!ready) return
-    setStep(0)
+    setStep(1)
     setPlaying(true)
   }, [ready])
 

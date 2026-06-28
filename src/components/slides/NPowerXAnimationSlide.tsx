@@ -30,25 +30,27 @@ export function NPowerXAnimationSlide({ slide, onContinue }: Props) {
   const [playing, setPlaying] = useState(false)
   const [runId, setRunId] = useState(0)
 
-  // Each play run reveals the remaining steps one beat at a time until the
-  // punchline (LAST_STEP) is on screen, then stops.
+  // A play run reveals step 1 immediately (see `play`); this effect then beats
+  // out the remaining steps one at a time until the punchline (LAST_STEP) is on
+  // screen, then stops.
   useEffect(() => {
     if (!playing) return
-    const t1 = window.setTimeout(() => setStep(1), STEP_MS)
-    const t2 = window.setTimeout(() => setStep(2), STEP_MS * 2)
+    const t2 = window.setTimeout(() => setStep(2), STEP_MS)
     const t3 = window.setTimeout(() => {
       setStep(LAST_STEP)
       setPlaying(false)
-    }, STEP_MS * 3)
+    }, STEP_MS * 2)
     return () => {
-      window.clearTimeout(t1)
       window.clearTimeout(t2)
       window.clearTimeout(t3)
     }
   }, [playing, runId])
 
+  // Show the first rewrite (step 1) synchronously so pressing Play has no dead
+  // beat; the effect above schedules steps 2 and 3 at the interval. Bumping
+  // runId re-arms the timers cleanly on every replay.
   const play = useCallback(() => {
-    setStep(0)
+    setStep(1)
     setPlaying(true)
     setRunId((r) => r + 1)
   }, [])

@@ -61,7 +61,16 @@ export function SecantToTangentSlide({ slide, onCorrect }: Props) {
     const entered = Number.parseFloat(slopeInput)
     if (Number.isNaN(entered)) return
 
-    if (Math.abs(entered - correctSlope) <= tolerance) {
+    // Grade against the slope of the drawn secant (fixed point → P), which is
+    // what the learner reads off the graph. Fall back to the analytic derivative
+    // only in the degenerate case where P sits exactly on the fixed point.
+    const dx = variableX - targetX
+    const gradedSlope =
+      Math.abs(dx) < 1e-6
+        ? correctSlope
+        : (evaluatePoly(coefficients, variableX) - targetY) / dx
+
+    if (Math.abs(entered - gradedSlope) <= tolerance) {
       setSolved(true)
       setFlashCorrect(true)
       setWrongFeedback(null)

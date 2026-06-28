@@ -17,6 +17,22 @@ afterEach(() => {
 })
 
 describe('NPowerXAnimationSlide (L4)', () => {
+  it('reveals the first step immediately on Play (no initial delay)', () => {
+    vi.useFakeTimers()
+    const { container } = render(<NPowerXAnimationSlide slide={slide} onContinue={() => {}} />)
+
+    // Before pressing Play: only the base function, no revealed steps.
+    expect(container.querySelector('.cr-fade')).toBeNull()
+    expect(container.querySelector('.npx-result')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /play/i }))
+
+    // WITHOUT advancing any timers, the first rewrite step is already on screen…
+    expect(container.querySelector('.cr-fade')).not.toBeNull()
+    // …but the later steps (incl. the punchline) have not appeared yet.
+    expect(container.querySelector('.npx-result')).toBeNull()
+  })
+
   it('Play advances through the steps to the ln(n)·n^x punchline', () => {
     vi.useFakeTimers()
     const { container } = render(<NPowerXAnimationSlide slide={slide} onContinue={() => {}} />)

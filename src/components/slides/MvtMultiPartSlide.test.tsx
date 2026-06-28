@@ -24,4 +24,18 @@ describe('MvtMultiPartSlide (L2S7)', () => {
 
     expect(screen.getByText('What value of x would make 0.5x equal to 1')).toBeInTheDocument()
   })
+
+  it('Part 2 prompt states the endpoints are not valid answers', async () => {
+    const user = userEvent.setup()
+    render(<MvtMultiPartSlide slide={mvtSlide} onCorrect={() => {}} />)
+
+    // Advance past Part 1 (secant slope = 1 on [0, 4]).
+    await user.type(screen.getByRole('textbox'), '1')
+    await user.click(screen.getByRole('button', { name: /check/i }))
+
+    // ax = 0, bx = 4, so the Part 2 prompt must forbid those endpoints.
+    expect(
+      screen.getByText(/You cannot enter 0 or 4/),
+    ).toBeInTheDocument()
+  })
 })

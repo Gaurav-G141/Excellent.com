@@ -234,16 +234,16 @@ function generateIvt(): ProblemSlide {
     type: 'problem',
     component: 'ivtProblem',
     title: 'Apply the Intermediate Value Theorem',
-    body: 'Points A and B sit on the curve. Use the given equation to answer the question.',
+    body: 'Points A and B mark the start and end values. The function moves continuously from one to the other. Which value must it take somewhere in between?',
     config: {
       coefficients,
       viewport,
       ax,
       bx,
-      functionDisplay: formatPolynomial(coefficients),
       guaranteedValue,
       distractors,
       cTolerance: 0.25,
+      hideCurve: true,
     },
     feedback: {
       correct: '',

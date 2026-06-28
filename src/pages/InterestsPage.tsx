@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { AppHeader } from '../components/AppHeader'
 import { TabNav } from '../components/TabNav'
-import { useAuth } from '../contexts/AuthContext'
 import { useInterests } from '../hooks/useInterests'
 import { MAX_INTEREST_LENGTH, MAX_INTERESTS } from '../lib/interests'
 import { ERROR_MESSAGE, moderateInterest } from '../lib/interestsModeration'
@@ -12,7 +11,6 @@ import './InterestsPage.css'
 type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 
 export default function InterestsPage() {
-  const { signOut } = useAuth()
   const { interests, loading, save } = useInterests()
 
   const [draft, setDraft] = useState<string[]>([])
@@ -92,17 +90,7 @@ export default function InterestsPage() {
 
   return (
     <div className="home-page">
-      <header className="home-header">
-        <h1>Excellent</h1>
-        <div className="home-header-actions">
-          <Link to="/" className="home-interests">
-            Home
-          </Link>
-          <button type="button" className="home-sign-out" onClick={() => signOut()}>
-            Sign out
-          </button>
-        </div>
-      </header>
+      <AppHeader primaryLink="home" />
 
       <main className="home-main">
         <TabNav />

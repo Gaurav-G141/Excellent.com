@@ -58,7 +58,7 @@
       "type": "problem",
       "component": "secantZoomDerivative",
       "title": "Estimate the derivative",
-      "body": "Use the zoom slider to magnify the marked point. Each grid square is 1 unit. When the curve looks straight, estimate its slope.",
+      "body": "Zoom in on the marked point until the curve looks like a straight line, then estimate the slope of that line. Give your best estimate of the derivative — it's fine if it's not exact.",
       "config": {
         "coefficients": [0.52, 1.18, -0.32, 0.05],
         "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },
@@ -94,7 +94,7 @@
       "type": "problem",
       "component": "secantToTangent",
       "title": "Approach the fixed point",
-      "body": "Drag point P toward the fixed point at (2, 2). When the two points are very close, the secant slope approximates the derivative.",
+      "body": "Drag point P toward the fixed point at (2, 2) until the secant looks like a straight line through the curve, then estimate the slope of that line. Give your best estimate of the derivative — it's fine if it's not exact.",
       "config": {
         "coefficients": [0.52, 1.18, -0.32, 0.05],
         "viewport": { "xMin": -1, "xMax": 4, "yMin": 0, "yMax": 6 },

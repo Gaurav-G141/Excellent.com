@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { ProblemSlide, SecantZoomDerivativeConfig } from '../../types/lesson'
-import { evaluateDerivative, evaluatePoly } from '../../utils/polynomial'
+import { evaluatePoly } from '../../utils/polynomial'
 import { zoomViewport } from '../../utils/viewport'
 import { GraphCanvas } from '../graph/GraphCanvas'
 import { CorrectFlash } from '../lesson/CorrectFlash'
@@ -15,7 +15,8 @@ interface Props {
 // they've zoomed in enough to read the slope (below this we nudge them to keep
 // zooming instead of telling them the slope is wrong).
 const ZOOM_ENOUGH_FRACTION = 0.6
-const NEEDS_ZOOM_MESSAGE = 'Zoom in further, the curve should roughly look like a straight line'
+const NEEDS_ZOOM_MESSAGE =
+  'Please zoom in further: The function should look almost like a straight line'
 const WRONG_SLOPE_MESSAGE =
   'Recall that a derivative is the slope of the tangent line. The slope of a line is the change in y divided by the change in x'
 
@@ -43,9 +44,12 @@ export function SecantZoomDerivativeSlide({ slide, onCorrect }: Props) {
     [coefficients, referenceX],
   )
 
-  const correctSlope = useMemo(
-    () => evaluateDerivative(coefficients, targetX),
-    [coefficients, targetX],
+  // Grade against the slope the learner actually reads off the zoomed graph:
+  // the secant through the two marked points, not the exact analytic derivative.
+  // The generator guarantees this secant is within ~0.1 of the true derivative.
+  const secantSlope = useMemo(
+    () => (referenceY - targetY) / (referenceX - targetX),
+    [referenceY, targetY, referenceX, targetX],
   )
 
   const zoomedViewport = useMemo(
@@ -62,12 +66,17 @@ export function SecantZoomDerivativeSlide({ slide, onCorrect }: Props) {
     const entered = Number.parseFloat(slopeInput)
     if (Number.isNaN(entered)) return
 
-    if (Math.abs(entered - correctSlope) <= tolerance) {
+    // Zoom gate first: don't grade (correct or not) until the curve is nearly
+    // straight, so the learner reads the slope off a near-linear segment.
+    if (zoom < zoomEnoughThreshold) {
+      setWrongFeedback(NEEDS_ZOOM_MESSAGE)
+      return
+    }
+
+    if (Math.abs(entered - secantSlope) <= tolerance) {
       setSolved(true)
       setFlashCorrect(true)
       setWrongFeedback(null)
-    } else if (zoom < zoomEnoughThreshold) {
-      setWrongFeedback(NEEDS_ZOOM_MESSAGE)
     } else {
       setWrongFeedback(WRONG_SLOPE_MESSAGE)
     }

@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest'
 import {
   generateEndingQuestions,
   generateLesson3Questions,
+  generatePracticeProblem,
 } from './generateQuestion'
-import { evaluateDerivative, evaluateSecondDerivative } from './polynomial'
+import { evaluateDerivative, evaluatePoly, evaluateSecondDerivative } from './polynomial'
 import type { RelatedRatesProblemConfig } from '../types/lesson'
 
 describe('generateEndingQuestions', () => {
@@ -38,6 +39,51 @@ describe('generateEndingQuestions', () => {
     const config = critical!.config as { coefficients: number[]; criticalPoints: { x: number }[] }
     for (const point of config.criticalPoints) {
       expect(Math.abs(evaluateDerivative(config.coefficients, point.x))).toBeLessThan(0.05)
+    }
+  })
+})
+
+describe('estimate-the-derivative problems have a faithful secant', () => {
+  const secantSlope = (coefficients: number[], a: number, b: number) =>
+    (evaluatePoly(coefficients, b) - evaluatePoly(coefficients, a)) / (b - a)
+
+  it('zoom problems: |secant slope - true derivative| <= 0.1 and the secant is near a 0.1-step value', () => {
+    for (let i = 0; i < 200; i++) {
+      const q = generatePracticeProblem('zoom')
+      const cfg = q.config as unknown as {
+        coefficients: number[]
+        targetX: number
+        referenceX: number
+        tolerance: number
+      }
+      const secant = secantSlope(cfg.coefficients, cfg.targetX, cfg.referenceX)
+      const trueDeriv = evaluateDerivative(cfg.coefficients, cfg.targetX)
+      expect(Math.abs(secant - trueDeriv)).toBeLessThanOrEqual(0.1 + 1e-9)
+
+      // The secant slope is enterable: it sits within tolerance of a 0.1-step value.
+      const nearestNice = Math.round(secant * 10) / 10
+      expect(Math.abs(secant - nearestNice)).toBeLessThanOrEqual(cfg.tolerance + 1e-9)
+    }
+  })
+
+  it('tangent problems: secant at the coincident threshold is within 0.1 of the true derivative', () => {
+    for (let i = 0; i < 200; i++) {
+      const q = generatePracticeProblem('tangent')
+      const cfg = q.config as unknown as {
+        coefficients: number[]
+        targetX: number
+        coincidentThreshold: number
+        tolerance: number
+      }
+      // Worst-case graded position: P sits at the edge of the "close enough" band.
+      const secant = secantSlope(
+        cfg.coefficients,
+        cfg.targetX,
+        cfg.targetX + cfg.coincidentThreshold,
+      )
+      const trueDeriv = evaluateDerivative(cfg.coefficients, cfg.targetX)
+      expect(Math.abs(secant - trueDeriv)).toBeLessThanOrEqual(0.1 + 1e-9)
+      expect(Math.abs(secant - trueDeriv)).toBeLessThanOrEqual(cfg.tolerance + 1e-9)
     }
   })
 })

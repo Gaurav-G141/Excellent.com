@@ -79,6 +79,22 @@ export function round(value: number, places = 4): number {
   return Number(value.toFixed(places))
 }
 
+/**
+ * Round a real-valued result to a whole COUNT in the direction the real-world
+ * situation demands — NOT to the nearest integer:
+ *
+ *  - 'up'   for a MINIMUM ("at least this many are needed"). A koi pond needing
+ *           3.2 snails to clear the algae needs 4, because 3 falls short.
+ *  - 'down' for a MAXIMUM ("at most this many fit/are affordable"). A budget that
+ *           covers 24.8 cars affords 24, because the 25th can't be paid for.
+ *
+ * Use this for any "how many whole things" answer so the rounding direction is
+ * explicit at the call site instead of an easy-to-misread Math.ceil/Math.floor.
+ */
+export function wholeCount(value: number, direction: 'up' | 'down'): number {
+  return direction === 'up' ? Math.ceil(value) : Math.floor(value)
+}
+
 let seq = 0
 
 /** Unique id for a freshly generated problem so React remounts it cleanly. */

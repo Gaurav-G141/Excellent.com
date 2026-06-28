@@ -4,6 +4,7 @@ import {
   LEVEL_PROMPTS,
   SYSTEM_LINE,
   RULES_BLOCK,
+  STYLE_BLOCK,
   MAX_LEVEL,
   buildInterestClause,
   buildRewritePrompt,
@@ -67,6 +68,35 @@ describe('levelPrompts: LEVEL_PROMPTS table', () => {
     expect(SYSTEM_LINE.trim().length).toBeGreaterThan(0)
     expect(typeof RULES_BLOCK).toBe('string')
     expect(RULES_BLOCK.trim().length).toBeGreaterThan(0)
+  })
+})
+
+// ── STYLE_BLOCK: narrative-freedom guidance that keeps the math safe ──────────
+
+describe('levelPrompts: STYLE_BLOCK', () => {
+  it('is a non-empty string included in the full prompt', () => {
+    expect(typeof STYLE_BLOCK).toBe('string')
+    expect(STYLE_BLOCK.trim().length).toBeGreaterThan(0)
+    expect(buildRewritePrompt(baseInput())).toContain(STYLE_BLOCK)
+  })
+
+  it('encourages varied, vivid, non-templated storytelling', () => {
+    const lower = STYLE_BLOCK.toLowerCase()
+    expect(lower).toContain('vary')
+    expect(lower).toContain('vivid')
+    expect(lower).toContain('template')
+  })
+
+  it('still restates the hard safety constraints (numbers, formula, subject, no answer)', () => {
+    const lower = STYLE_BLOCK.toLowerCase()
+    expect(lower).toContain('never change the math')
+    expect(lower).toContain('every number')
+    expect(lower).toContain('given formula')
+    expect(lower).toContain('same subject')
+    expect(lower).toContain('same quantity')
+    expect(lower).toContain('one concrete question')
+    // No answer may ever be revealed or hinted.
+    expect(lower).toContain('never reveal or hint at any answer')
   })
 })
 

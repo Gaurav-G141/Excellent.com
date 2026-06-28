@@ -10,6 +10,20 @@ const ivtSlide = lessons['related-rates'].slides.find(
 ) as ProblemSlide
 
 describe('IvtProblemSlide (L3S6)', () => {
+  it('hides the equation and the plotted curve (endpoints only)', () => {
+    const { container } = render(<IvtProblemSlide slide={ivtSlide} onCorrect={() => {}} />)
+
+    // The misleading "f(x) = …" equation must not be shown anymore.
+    expect(screen.queryByText(/f\(x\)\s*=/i)).not.toBeInTheDocument()
+    // f(a) and f(b) are still shown numerically.
+    expect(screen.getByText(/f\(a\)\s*=/i)).toBeInTheDocument()
+    expect(screen.getByText(/f\(b\)\s*=/i)).toBeInTheDocument()
+    // The curve path is hidden so the graph can't reveal where the function goes.
+    expect(container.querySelector('.graph-curve')).toBeNull()
+    // The A and B endpoint dots are still drawn.
+    expect(container.querySelectorAll('.graph-target-dot').length).toBe(2)
+  })
+
   it('completes after the correct multiple-choice — no second "find an x" step', async () => {
     const user = userEvent.setup()
     render(<IvtProblemSlide slide={ivtSlide} onCorrect={() => {}} />)

@@ -1,26 +1,13 @@
-import { Link } from 'react-router-dom'
+import { AppHeader } from '../components/AppHeader'
 import { Scrapbook } from '../components/stickers/Scrapbook'
 import { TabNav } from '../components/TabNav'
-import { useAuth } from '../contexts/AuthContext'
 import './HomePage.css'
 import './ScrapbookPage.css'
 
 export default function ScrapbookPage() {
-  const { signOut } = useAuth()
-
   return (
     <div className="home-page">
-      <header className="home-header">
-        <h1>Excellent</h1>
-        <div className="home-header-actions">
-          <Link to="/interests" className="home-interests">
-            Interests
-          </Link>
-          <button type="button" className="home-sign-out" onClick={() => signOut()}>
-            Sign out
-          </button>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="home-main">
         <TabNav />

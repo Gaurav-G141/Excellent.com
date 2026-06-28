@@ -119,3 +119,32 @@ describe('leading decimal point numbers', () => {
     expect(evaluateNumericExpression('.')).toBeNull()
   })
 })
+
+describe('multi-digit and decimal number parsing', () => {
+  it('parses multi-digit integers like 100', () => {
+    expect(evaluateNumericExpression('100')).toBe(100)
+    expect(evalAt('100', 0)).toBe(100)
+  })
+
+  it('parses two-decimal numbers like 12.34', () => {
+    expect(evaluateNumericExpression('12.34')).toBeCloseTo(12.34, 9)
+    expect(matchesNumber('12.34', 12.34)).toBe(true)
+  })
+
+  it('parses sub-one decimals like 0.25', () => {
+    expect(evaluateNumericExpression('0.25')).toBeCloseTo(0.25, 9)
+    expect(matchesNumber('0.25', 0.25)).toBe(true)
+  })
+
+  it('parses negative decimals', () => {
+    expect(evaluateNumericExpression('-12.34')).toBeCloseTo(-12.34, 9)
+    expect(evaluateNumericExpression('-0.25')).toBeCloseTo(-0.25, 9)
+    expect(matchesNumber('-12.34', -12.34)).toBe(true)
+  })
+
+  it('parses multi-digit + decimal coefficients inside a polynomial', () => {
+    // 12.34x + 100  evaluated and graded as a polynomial.
+    expect(matchesPolynomial('12.34*x + 100', [100, 12.34])).toBe(true)
+    expect(evalAt('12.34x+100', 2)).toBeCloseTo(124.68, 9)
+  })
+})

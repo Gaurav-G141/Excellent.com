@@ -1,6 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AppHeader } from '../components/AppHeader'
 import { TabNav } from '../components/TabNav'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -33,7 +34,7 @@ function studiedLabel(status: LessonStatus | undefined): string {
 }
 
 export default function HomePage() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [streak, setStreak] = useState(0)
   const [statuses, setStatuses] = useState<Record<string, LessonStatus>>({})
@@ -90,17 +91,7 @@ export default function HomePage() {
 
   return (
     <div className="home-page">
-      <header className="home-header">
-        <h1>Excellent</h1>
-        <div className="home-header-actions">
-          <Link to="/interests" className="home-interests">
-            Interests
-          </Link>
-          <button type="button" className="home-sign-out" onClick={() => signOut()}>
-            Sign out
-          </button>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="home-main">
         <TabNav />

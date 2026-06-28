@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useCompletedLessons } from '../hooks/useCompletedLessons'
-import { APPLICATION_LESSONS } from '../utils/applications'
 import { PRACTICE_LESSONS } from '../utils/practice'
+import { APPLICATIONS_UNLOCK_LESSON } from '../utils/applications/scenarios'
 import './TabNav.css'
 
 function tabClass({ isActive }: { isActive: boolean }, locked: boolean): string {
@@ -12,11 +12,12 @@ function tabClass({ isActive }: { isActive: boolean }, locked: boolean): string 
 export function TabNav() {
   const { completed, loading } = useCompletedLessons()
 
-  // A tab is locked until at least one of its lessons has been completed.
+  // Practice unlocks after any one of its lessons is completed.
   const practiceLocked =
     !loading && !PRACTICE_LESSONS.some((group) => completed.has(group.lessonId))
-  const applicationsLocked =
-    !loading && !APPLICATION_LESSONS.some((group) => completed.has(group.lessonId))
+  // Applications stay locked until "Rules of Derivatives" is done: a learner needs
+  // the power rule (taught there) before any scenario makes sense.
+  const applicationsLocked = !loading && !completed.has(APPLICATIONS_UNLOCK_LESSON)
 
   return (
     <nav className="app-tabs" aria-label="Primary">

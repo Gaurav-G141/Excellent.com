@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { formatPolynomial, superscript, trimPolynomial } from '../../utils/polynomial'
 import './PolynomialBuilder.css'
 
@@ -7,12 +7,17 @@ import './PolynomialBuilder.css'
  * terms. Pure and side-effect free so it can be unit-tested without rendering.
  * Negative or non-finite inputs are ignored; trailing zeros are preserved here
  * (callers trim for display / compare with the polynomial helpers).
+ *
+ * The combined coefficient is rounded to two decimal places so that repeatedly
+ * adding 2-decimal terms can never accumulate a float artifact (e.g. 0.1 + 0.2
+ * = 0.30000000000000004); the calculator only ever accepts ≤2 decimals, so this
+ * rounding is lossless for any value the learner can actually enter.
  */
 export function addTermToCoeffs(coeffs: number[], coeff: number, power: number): number[] {
   if (!Number.isFinite(coeff) || !Number.isInteger(power) || power < 0) return coeffs.slice()
   const result = coeffs.slice()
   while (result.length <= power) result.push(0)
-  result[power] += coeff
+  result[power] = Math.round((result[power] + coeff) * 100) / 100
   return result
 }
 
@@ -27,8 +32,10 @@ export interface PolynomialBuilderProps {
   ariaLabel?: string
   /** Visual status — 'wrong' lights the builder red to flag an incorrect answer. */
   status?: 'default' | 'wrong'
-  /** Allow a decimal point in coefficients (e.g. 93.5). Off by default. */
+  /** Allow a decimal point in coefficients (e.g. 93.5). On by default. */
   allowDecimal?: boolean
+  /** Maximum number of fractional digits allowed (caps decimal precision). */
+  maxDecimals?: number
 }
 
 const DIGITS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const
@@ -37,15 +44,18 @@ export function PolynomialBuilder({
   value,
   onChange,
   maxDegree = 8,
-  maxCoefficient = 99,
+  maxCoefficient = 100,
   label,
   ariaLabel,
   status = 'default',
-  allowDecimal = false,
+  allowDecimal = true,
+  maxDecimals = 2,
 }: PolynomialBuilderProps) {
   const [coeffStr, setCoeffStr] = useState('')
   const [sign, setSign] = useState<1 | -1>(1)
   const [power, setPower] = useState(0)
+  const [showHelp, setShowHelp] = useState(false)
+  const helpId = useId()
 
   const liveDisplay = formatPolynomial(trimPolynomial(value))
 
@@ -59,13 +69,19 @@ export function PolynomialBuilder({
   const previewDisplay = hasTerm ? `${sign === -1 ? '-' : ''}${previewCoeff}${previewVar}` : null
 
   function appendDigit(digit: string) {
+    // Refuse a further fractional digit once the decimal cap is reached so a
+    // value like "12.34" can never grow a third decimal place.
+    const dotIndex = coeffStr.indexOf('.')
+    if (dotIndex !== -1 && coeffStr.length - dotIndex - 1 >= maxDecimals) return
     const next = coeffStr === '0' && digit === '0' ? '0' : `${coeffStr}${digit}`
+    // Block only values strictly above the cap, so the cap itself (e.g. 100) is
+    // enterable.
     if (Number.parseFloat(next) > maxCoefficient) return
     setCoeffStr(next)
   }
 
   function appendDot() {
-    if (!allowDecimal || coeffStr.includes('.')) return
+    if (!allowDecimal || maxDecimals < 1 || coeffStr.includes('.')) return
     setCoeffStr((prev) => (prev === '' ? '0.' : `${prev}.`))
   }
 
@@ -111,7 +127,48 @@ export function PolynomialBuilder({
       aria-label={groupLabel}
       aria-invalid={status === 'wrong' || undefined}
     >
-      {label && <span className="pb-label">{label}</span>}
+      <div className="pb-header">
+        {label && <span className="pb-label">{label}</span>}
+        <button
+          type="button"
+          className="pb-help-toggle"
+          aria-expanded={showHelp}
+          aria-controls={helpId}
+          onClick={() => setShowHelp((v) => !v)}
+        >
+          {showHelp ? 'Hide help' : 'How do I enter a polynomial?'}
+        </button>
+      </div>
+
+      {showHelp && (
+        <div className="pb-help" id={helpId} role="region" aria-label="How to enter a polynomial">
+          <p className="pb-help-intro">
+            Build it one term at a time. For example, to enter <strong>3x² − 5</strong>:
+          </p>
+          <ol className="pb-help-steps">
+            <li>
+              Tap <strong>3</strong> on the number pad to set the coefficient.
+            </li>
+            <li>
+              Tap <strong>+</strong> under “power of x” twice so it reads <strong>x²</strong>.
+            </li>
+            <li>
+              Press <strong>Add term</strong> — the line up top now shows <strong>3x²</strong>.
+            </li>
+            <li>
+              For the <strong>−5</strong>: tap <strong>5</strong>, tap <strong>±</strong> to make it
+              negative, and leave the power at <strong>x⁰</strong>.
+            </li>
+            <li>
+              Press <strong>Add term</strong> again — it now reads <strong>3x² − 5</strong>.
+            </li>
+          </ol>
+          <p className="pb-help-tip">
+            <strong>⌫</strong> deletes the last digit, and <strong>Clear</strong> starts the whole
+            answer over.
+          </p>
+        </div>
+      )}
 
       <output className="pb-live" aria-label={`${groupLabel} current value`}>
         {liveDisplay}

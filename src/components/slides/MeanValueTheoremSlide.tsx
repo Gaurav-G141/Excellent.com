@@ -22,16 +22,20 @@ export function MeanValueTheoremSlide({ slide, onContinue }: Props) {
 
   const lo = Math.min(ax, bx)
   const hi = Math.max(ax, bx)
-  const tooClose = Math.abs(hi - lo) < 0.4
+  // Only treat A and B as the SAME point when they're essentially pixel-identical.
+  // 0.02 data units is far below one on-screen pixel for these viewports, so the
+  // parallel tangent stays available for any visibly-separated pair of points.
+  const COINCIDENT_EPSILON = 0.02
+  const coincident = Math.abs(hi - lo) < COINCIDENT_EPSILON
   const midX = (lo + hi) / 2
 
   const secantSlope = useMemo(
     () => (evaluatePoly(coefficients, hi) - evaluatePoly(coefficients, lo)) / (hi - lo),
     [coefficients, lo, hi],
   )
-  // When the points are too close the secant slope is unstable (and NaN when
-  // they coincide), so fall back to the tangent slope at the shared point.
-  const displaySlope = tooClose ? evaluateDerivative(coefficients, midX) : secantSlope
+  // When the points coincide the secant slope is undefined (NaN), so fall back
+  // to the tangent slope (the derivative) at the shared point.
+  const displaySlope = coincident ? evaluateDerivative(coefficients, midX) : secantSlope
   const cValue = useMemo(
     () => findWhereDerivativeEquals(coefficients, secantSlope, lo, hi),
     [coefficients, secantSlope, lo, hi],
@@ -61,7 +65,7 @@ export function MeanValueTheoremSlide({ slide, onContinue }: Props) {
         {(api) => {
           // Avoid a degenerate/infinite secant when the points coincide by
           // drawing the tangent at the shared point instead.
-          const segment = tooClose ? api.clippedTangentSegment(midX) : api.secantSegment(ax, bx, 0)
+          const segment = coincident ? api.clippedTangentSegment(midX) : api.secantSegment(ax, bx, 0)
           const tangent =
             showTangent && cValue != null ? api.clippedTangentSegment(cValue) : null
           const cScreen =
@@ -114,7 +118,7 @@ export function MeanValueTheoremSlide({ slide, onContinue }: Props) {
         <button
           type="button"
           className="slide-secondary-cta"
-          disabled={tooClose}
+          disabled={coincident}
           onClick={() => setShowTangent(true)}
         >
           Show parallel tangent

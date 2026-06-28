@@ -10,9 +10,8 @@
  * solving a problem.
  */
 
-import type { WordProblem } from '../../utils/applications/types'
 import { LIFETIME_MS, SPAWN_CHANCE, STICKER_SLOT_COUNT } from './config'
-import { resolveSubject } from './catalog'
+import { resolveSubject, type StickerableProblem } from './catalog'
 import { generateStickerImage } from './generate'
 import {
   addSticker,
@@ -31,7 +30,7 @@ let spawnQueue: Promise<void> = Promise.resolve()
  * Never throws.
  */
 export function maybeSpawnSticker(
-  problem: WordProblem,
+  problem: StickerableProblem,
   uid: string,
   interests?: string[],
 ): Promise<void> {
@@ -69,7 +68,7 @@ async function removeMany(uid: string, count: number): Promise<void> {
 }
 
 async function spawnOne(
-  problem: WordProblem,
+  problem: StickerableProblem,
   uid: string,
   interests?: string[],
 ): Promise<void> {

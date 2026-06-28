@@ -14,7 +14,8 @@
   border-radius: 16px;
   background: var(--success-flash);
   pointer-events: none;
-  animation: correct-flash 0.7s ease-out;
+  opacity: 0;
+  animation: correct-flash 0.7s ease-out forwards;
   z-index: 1;
 }
 

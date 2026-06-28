@@ -194,7 +194,7 @@ function coeffsToInput(coeffs: number[]): string {
   for (let power = trimmed.length - 1; power >= 0; power--) {
     const c = trimmed[power]
     if (c === 0) continue
-    const abs = Math.abs(c)
+    const abs = Number(Math.abs(c).toFixed(2))
     const term = power === 0 ? `${abs}` : power === 1 ? `${abs}*x` : `${abs}*x^${power}`
     if (out === '') out = c < 0 ? `-${term}` : term
     else out += c < 0 ? ` - ${term}` : ` + ${term}`

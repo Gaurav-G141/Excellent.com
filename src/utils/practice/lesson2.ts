@@ -184,6 +184,20 @@ function generateMvt(): ProblemSlide {
     const D = randInt(-2, 2)
     const candidateCoefficients = [D, C, B, A]
 
+    // Reject ambiguous / endpoint-satisfying configurations. The construction
+    // guarantees an interior c with f'(c) = S, but a learner gets confused if an
+    // ENDPOINT also (nearly) satisfies the MVT. So reroll whenever either endpoint
+    // lands within the grading tolerance of the secant slope. This also rules out
+    // the case where the second root of f'(x)=S sits on/near an endpoint, since
+    // then f'(endpoint) ≈ S. The interior c remains strictly inside (p, q).
+    const candDerivative = derivativeCoefficients(candidateCoefficients)
+    const candSecantSlope =
+      (evaluatePoly(candidateCoefficients, candQ) - evaluatePoly(candidateCoefficients, candP)) /
+      (candQ - candP)
+    const endpointTolerance = 0.12 // matches derivativeTolerance used by the grader
+    if (Math.abs(evaluatePoly(candDerivative, candP) - candSecantSlope) <= endpointTolerance) continue
+    if (Math.abs(evaluatePoly(candDerivative, candQ) - candSecantSlope) <= endpointTolerance) continue
+
     // Re-derive the exact viewport range used below and require it readable.
     const sampleMin = candP - 1
     const sampleMax = candQ + 1

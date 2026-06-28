@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import type { WordProblem } from '../../utils/applications/types'
-import { resolveSubject } from './catalog'
+import { resolveSubject, type StickerableProblem } from './catalog'
 
 // Minimal WordProblem builder — resolveSubject only reads `title` and `topicId`,
 // so the other fields are filler to satisfy the type.
@@ -41,6 +41,77 @@ const TOPIC_POOLS: Record<string, readonly string[]> = {
 
 // Mirrors GENERIC_SUBJECTS in catalog.ts.
 const GENERIC_SUBJECTS = ['gold star', 'trophy', 'hot air balloon', 'smiling sun']
+
+describe('resolveSubject: curated subjectTerms beat title keywords', () => {
+  it('draws the real subject (mice/owl), NOT a keyword-triggered box', () => {
+    // The reworded title says "conveyor" (which used to map to a cardboard box),
+    // but the problem is really about mice and owls — the subjectTerms must win.
+    const problem: StickerableProblem = {
+      topicId: 's1-equilibrium',
+      title: 'Conveyor belt population study',
+      prompt: 'On a freight farm, mice and owls reach a balance.',
+      subjectTerms: ['mice', 'owl'],
+    }
+    for (let i = 0; i < 50; i++) {
+      const subject = resolveSubject(problem)
+      expect(['mice', 'owl']).toContain(subject)
+      expect(subject).not.toBe('cardboard box')
+    }
+  })
+
+  it('singularizes a plural subject term via asDrawableSubject', () => {
+    const problem: StickerableProblem = {
+      topicId: 'unknown-topic',
+      title: 'A study',
+      prompt: 'Counting things.',
+      subjectTerms: ['ladybugs'],
+    }
+    expect(resolveSubject(problem)).toBe('ladybug')
+  })
+
+  it('stickerSubject still wins over subjectTerms', () => {
+    const problem: StickerableProblem = {
+      topicId: 's1-equilibrium',
+      title: 'Conveyor belt population study',
+      prompt: 'mice and owls reach a balance.',
+      stickerSubject: 'rainbow',
+      subjectTerms: ['mice', 'owl'],
+    }
+    expect(resolveSubject(problem)).toBe('rainbow')
+  })
+
+  it('ignores empty/blank subjectTerms and falls through to keywords', () => {
+    const problem: StickerableProblem = {
+      topicId: 'a2-power',
+      title: 'Pizza dough cost',
+      prompt: 'A scenario.',
+      subjectTerms: ['', '   '],
+    }
+    expect(resolveSubject(problem)).toBe('pizza')
+  })
+})
+
+describe('resolveSubject: keyword rules scan title + prompt', () => {
+  it('matches a depictive keyword found only in the prompt body', () => {
+    const subject = resolveSubject({
+      topicId: 'unknown-topic',
+      title: 'A quiet study',
+      prompt: 'A rocket climbs into the sky.',
+    })
+    expect(subject).toBe('rocket')
+  })
+
+  it('no longer maps conveyor/freight to a cardboard box', () => {
+    const subject = resolveSubject({
+      topicId: 'no-such-topic',
+      title: 'Conveyor and freight logistics',
+      prompt: 'A scenario.',
+    })
+    expect(subject).not.toBe('cardboard box')
+    // With no subjectTerm/interest/keyword and an unknown topic, falls to generic.
+    expect(GENERIC_SUBJECTS).toContain(subject)
+  })
+})
 
 describe('resolveSubject: matched interest wins over the catalog', () => {
   it('draws a learner interest that appears in the themed problem', () => {
