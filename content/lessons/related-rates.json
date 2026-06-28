@@ -1,7 +1,7 @@
 {
   "id": "related-rates",
   "title": "Related Rates and Motion",
-  "subject": "Calculus BC",
+  "subject": "Calculus",
   "randomQuestions": { "kind": "relatedRates", "count": 2 },
   "slides": [
     {

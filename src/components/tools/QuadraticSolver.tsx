@@ -49,7 +49,11 @@ function describe(result: QuadResult): { roots: string[]; note: string } {
   }
 }
 
-export function QuadraticSolver({ open, onClose }: Props) {
+/**
+ * The quadratic-solver UI without a modal wrapper, so it can be embedded inside
+ * the combined math-tools modal (or used standalone via {@link QuadraticSolver}).
+ */
+export function QuadraticBody() {
   const [a, setA] = useState('')
   const [b, setB] = useState('')
   const [c, setC] = useState('')
@@ -94,7 +98,7 @@ export function QuadraticSolver({ open, onClose }: Props) {
   }
 
   return (
-    <Modal open={open} title="Quadratic solver" onClose={onClose}>
+    <>
       <p className="quad-eq">
         a·x² + b·x + c = 0
       </p>
@@ -123,6 +127,15 @@ export function QuadraticSolver({ open, onClose }: Props) {
           <p className="quad-note">{output.note}</p>
         </div>
       )}
+    </>
+  )
+}
+
+/** Standalone quadratic-solver modal (kept for direct use and unit tests). */
+export function QuadraticSolver({ open, onClose }: Props) {
+  return (
+    <Modal open={open} title="Quadratic solver" onClose={onClose}>
+      <QuadraticBody />
     </Modal>
   )
 }

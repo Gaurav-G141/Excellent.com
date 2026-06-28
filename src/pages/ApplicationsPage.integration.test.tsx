@@ -1,6 +1,6 @@
 /**
  * Integration coverage for ApplicationsPage: the page-level unlock gate AND the
- * newly-wired shared AppHeader (Interests link + Quadratic / Calculator tools +
+ * newly-wired shared AppHeader (Interests link + combined Calculator tool +
  * Sign out) that now sits on this page alongside Home/Practice/Scrapbook/Interests.
  *
  * Gating mirrors TabNav: locked until "Rules of Derivatives" (derivative-rules)
@@ -122,7 +122,6 @@ describe('ApplicationsPage: shared AppHeader is wired in', () => {
     renderPage()
 
     // AppHeader is present even on the locked page.
-    expect(screen.getByRole('button', { name: 'Quadratic' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Calculator' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
     // Default header variant links to Interests.

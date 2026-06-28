@@ -10,8 +10,21 @@
   row-gap: 8px;
 }
 
-/* The tool buttons reuse .home-interests for the pill look; this is just a hook
+/* The tool button reuses .home-interests for the pill look; this is just a hook
  * for future overrides and keeps intent explicit. */
 .home-tool {
   font-family: var(--font-mono);
+}
+
+/* Icon-only calculator button: square-ish pill that centers the glyph. */
+.home-tool-icon {
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-h);
+}
+
+.home-tool-icon svg {
+  display: block;
 }

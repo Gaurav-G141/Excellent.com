@@ -17,10 +17,11 @@ function renderHeader(props?: { primaryLink?: 'interests' | 'home' }) {
 }
 
 describe('AppHeader', () => {
-  it('renders both tool buttons and sign out', () => {
+  it('renders the single calculator tool button and sign out', () => {
     renderHeader()
-    expect(screen.getByRole('button', { name: 'Quadratic' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Calculator' })).toBeInTheDocument()
+    // The two tools were combined behind one icon button.
+    expect(screen.queryByRole('button', { name: 'Quadratic' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
   })
 
@@ -37,28 +38,40 @@ describe('AppHeader', () => {
     expect(screen.queryByRole('link', { name: 'Interests' })).not.toBeInTheDocument()
   })
 
-  it('opens the quadratic solver modal on click', async () => {
+  it('opens the combined math-tools modal on the calculator button, defaulting to the calculator tab', async () => {
     const user = userEvent.setup()
     renderHeader()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Quadratic' }))
-    expect(screen.getByRole('dialog', { name: 'Quadratic solver' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Calculator' }))
+    expect(screen.getByRole('dialog', { name: 'Calculator' })).toBeInTheDocument()
+    // Both tools are reachable as tabs inside the one modal.
+    expect(screen.getByRole('tab', { name: 'Calculator' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(screen.getByRole('tab', { name: 'Quadratic' })).toBeInTheDocument()
   })
 
-  it('opens the calculator modal on click', async () => {
+  it('switches to the quadratic tab inside the modal', async () => {
     const user = userEvent.setup()
     renderHeader()
 
     await user.click(screen.getByRole('button', { name: 'Calculator' }))
-    expect(screen.getByRole('dialog', { name: 'Calculator' })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Quadratic' }))
+    expect(screen.getByRole('tab', { name: 'Quadratic' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    // The quadratic solver's Solve action is now visible.
+    expect(screen.getByRole('button', { name: 'Solve' })).toBeInTheDocument()
   })
 
-  it('closes a modal with the Escape key', async () => {
+  it('closes the modal with the Escape key', async () => {
     const user = userEvent.setup()
     renderHeader()
 
-    await user.click(screen.getByRole('button', { name: 'Quadratic' }))
+    await user.click(screen.getByRole('button', { name: 'Calculator' }))
     expect(screen.getByRole('dialog')).toBeInTheDocument()
 
     await user.keyboard('{Escape}')

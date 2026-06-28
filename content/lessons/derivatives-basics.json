@@ -1,7 +1,7 @@
 {
   "id": "derivatives-basics",
   "title": "Derivatives",
-  "subject": "Calculus BC",
+  "subject": "Calculus",
   "randomQuestions": { "kind": "derivatives", "count": 3 },
   "slides": [
     {

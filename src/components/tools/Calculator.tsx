@@ -16,7 +16,12 @@ function pretty(expr: string): string {
   return expr.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−')
 }
 
-export function Calculator({ open, onClose }: Props) {
+/**
+ * The calculator UI without a modal wrapper, so it can be embedded inside the
+ * combined math-tools modal (or used standalone via {@link Calculator}). When
+ * `active` is false (e.g. another tab is showing) it stops listening for keys.
+ */
+export function CalculatorBody({ active }: { active: boolean }) {
   const [expr, setExpr] = useState('')
 
   const reset = useCallback(() => setExpr(''), [])
@@ -54,7 +59,7 @@ export function Calculator({ open, onClose }: Props) {
   }, [])
 
   useEffect(() => {
-    if (!open) return
+    if (!active) return
     function onKeyDown(e: KeyboardEvent) {
       const { key } = e
       if (key >= '0' && key <= '9') input(key)
@@ -70,12 +75,12 @@ export function Calculator({ open, onClose }: Props) {
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [open, input])
+  }, [active, input])
 
-  // Clear the slate whenever the modal is freshly opened.
+  // Clear the slate whenever the calculator becomes active (freshly shown).
   useEffect(() => {
-    if (open) reset()
-  }, [open, reset])
+    if (active) reset()
+  }, [active, reset])
 
   const keys: { label: string; value: string; variant?: string }[] = [
     { label: 'C', value: 'C', variant: 'fn' },
@@ -99,7 +104,7 @@ export function Calculator({ open, onClose }: Props) {
   ]
 
   return (
-    <Modal open={open} title="Calculator" onClose={onClose}>
+    <>
       <div className="calc-display" data-testid="calc-display" aria-live="polite">
         {expr === '' ? '0' : pretty(expr)}
       </div>
@@ -115,6 +120,15 @@ export function Calculator({ open, onClose }: Props) {
           </button>
         ))}
       </div>
+    </>
+  )
+}
+
+/** Standalone calculator modal (kept for direct use and unit tests). */
+export function Calculator({ open, onClose }: Props) {
+  return (
+    <Modal open={open} title="Calculator" onClose={onClose}>
+      <CalculatorBody active={open} />
     </Modal>
   )
 }
