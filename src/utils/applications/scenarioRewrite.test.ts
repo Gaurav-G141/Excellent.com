@@ -194,6 +194,121 @@ describe('rewriteScenario: fallback on bad / unsafe output', () => {
   })
 })
 
+describe('rewriteScenario: full step rewrite (re-theming)', () => {
+  const themed = {
+    title: 'Ladybug Garden',
+    prompt: 'Ladybugs settle across a rose bed. How many helpers keep the count steady on the fifth day?',
+    steps: [
+      { question: 'What has to be true for the ladybug count to hold steady?', hints: ['Think about balance.'] },
+      { question: 'How quickly is the number of ladybugs shifting on the fifth day?', hints: [] },
+      { question: 'So how many helpers are needed?', hints: ['Use your last result.'] },
+    ],
+  }
+
+  it('rewrites every step prompt/hints while preserving all answers', async () => {
+    getJsonModelMock.mockReturnValue(modelReturningJson(themed))
+    const scenario = makeScenario()
+    const original = makeScenario()
+
+    const result = await rewriteScenario(scenario, 6)
+
+    expect(result.prompt).toBe(themed.prompt)
+    expect(result.steps[0].prompt).toBe(themed.steps[0].question)
+    expect(result.steps[1].prompt).toBe(themed.steps[1].question)
+    expect(result.steps[2].prompt).toBe(themed.steps[2].question)
+    // Hints rewritten where provided; left untouched where the rewrite gave none.
+    expect(result.steps[0].hints).toEqual(['Think about balance.'])
+    // Every code-owned answer field is preserved exactly.
+    expect((result.steps[1] as { expected: number }).expected).toBe(37)
+    expect((result.steps[2] as { options: number[] }).options).toEqual([3, 6, 9])
+    expect((result.steps[2] as { correct: number }).correct).toBe(6)
+    expect((result.steps[0] as { rubric: string }).rubric).toBe(
+      (original.steps[0] as { rubric: string }).rubric,
+    )
+  })
+
+  it('allows recasting the subject when the steps are rewritten too', async () => {
+    // With a full step rewrite the prompt+steps are re-themed together, so the
+    // original subject ("beanbag") need not survive.
+    const scenario = { ...makeScenario(), subjectTerms: ['beanbag'] }
+    getJsonModelMock.mockReturnValue(modelReturningJson(themed))
+    const result = await rewriteScenario(scenario, 6)
+    expect(result).not.toBe(scenario)
+    expect(result.prompt).toBe(themed.prompt)
+  })
+
+  it('falls back when a rewritten STEP leaks a step answer', async () => {
+    getJsonModelMock.mockReturnValue(
+      modelReturningJson({
+        ...themed,
+        steps: [
+          themed.steps[0],
+          { question: 'The count jumped by 37 today — is it still shifting?', hints: [] },
+          themed.steps[2],
+        ],
+      }),
+    )
+    const scenario = makeScenario()
+    expect(await rewriteScenario(scenario, 6)).toBe(scenario)
+  })
+
+  it('falls back when a rewritten HINT contains banned jargon', async () => {
+    getJsonModelMock.mockReturnValue(
+      modelReturningJson({
+        ...themed,
+        steps: [
+          { question: themed.steps[0].question, hints: ['Use the derivative here.'] },
+          themed.steps[1],
+          themed.steps[2],
+        ],
+      }),
+    )
+    const scenario = makeScenario()
+    expect(await rewriteScenario(scenario, 6)).toBe(scenario)
+  })
+
+  it('ignores a step list whose length does not match (keeps original steps)', async () => {
+    getJsonModelMock.mockReturnValue(
+      modelReturningJson({ ...themed, steps: [themed.steps[0]] }),
+    )
+    const scenario = makeScenario()
+    const original = makeScenario()
+    const result = await rewriteScenario(scenario, 6)
+    // Title/prompt still applied; steps untouched because the count was wrong.
+    expect(result.prompt).toBe(themed.prompt)
+    expect(result.steps).toEqual(original.steps)
+  })
+
+  it('appends "expression in x" to a rewritten expression step that omits it', async () => {
+    const scenario: ScenarioProblem = {
+      id: 'e1',
+      topicId: 't',
+      title: 'Base',
+      prompt: 'Build a thing.',
+      given: 'A(x) = 2x^2 + 5x',
+      steps: [
+        {
+          id: 'derive',
+          tier: 'scaffold',
+          kind: 'expression',
+          prompt: 'Build the rate formula (as an expression in x).',
+          trueCoefficients: [5, 4],
+          builder: true,
+        },
+      ],
+    }
+    getJsonModelMock.mockReturnValue(
+      modelReturningJson({
+        title: 'Themed',
+        prompt: 'A themed setup.',
+        steps: [{ question: 'Build the speed formula for the ladybug.', hints: [] }],
+      }),
+    )
+    const result = await rewriteScenario(scenario, 6)
+    expect(result.steps[0].prompt.toLowerCase()).toContain('expression in x')
+  })
+})
+
 describe('rewriteScenario: fallback on timeout', () => {
   it('falls back when the model never resolves in time', async () => {
     vi.useFakeTimers()
