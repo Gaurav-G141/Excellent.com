@@ -1,180 +1,95 @@
-# Spec 01 — Firebase & Authentication
+# Spec 01 — Firebase, Auth, and the Firestore data model
 
-## Purpose
+Status: current. Defines Firebase configuration, the email/password auth flow,
+the full Firestore data model, and the security rules. (The filename keeps its
+historical "emulator" slug; the app talks to real Firebase, not an emulator.)
 
-Define Firebase configuration, authentication flow, Firestore data model, and security rules. This spec covers everything needed for user accounts and session management.
-
-## Firebase Configuration
+## Firebase configuration
 
 ### Files
 
-| File | Purpose |
-|------|---------|
-| `firebase.json` | Firestore rules and indexes deployment config |
-| `.firebaserc` | Firebase CLI project alias |
-| `firestore.rules` | Security rules for users and progress |
-| `firestore.indexes.json` | Composite indexes (empty for MVP) |
-| `.env.example` | Environment variable template |
+- `firebase.json` — Hosting + Firestore rules/indexes deployment config
+- `.firebaserc` — Firebase CLI project alias
+- [`firestore.rules`](../../firestore.rules) — owner-only rules with per-document
+  schema validation (mirrors `src/lib/firestoreValidation.ts`)
+- `firestore.indexes.json` — composite indexes
+- [`.env.example`](../../.env.example) — environment variable template
+- [`src/lib/firebase.ts`](../../src/lib/firebase.ts) — initializes the app and
+  exports `auth`, `db`, and `firebaseConfigError`
 
-### Environment Variables
+### Environment variables
 
-Copy `.env.example` to `.env`, then fill in values from the Firebase Console (Project Settings → Your apps → Web app) or run:
-
-```bash
-firebase apps:sdkconfig WEB
-```
+Copy `.env.example` to `.env` and fill in the Firebase web config (Console →
+Project Settings → Your apps → Web app, or `firebase apps:sdkconfig WEB`):
 
 ```bash
 VITE_FIREBASE_API_KEY=
 VITE_FIREBASE_AUTH_DOMAIN=
 VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
 ```
 
-### npm Scripts
+If any are missing, `firebaseConfigError` is set and `App` renders
+`FirebaseSetupPage` instead of the router. (OpenAI env vars are documented in
+[`../openai-setup.md`](../openai-setup.md).)
 
-| Script | Command | Purpose |
-|--------|---------|---------|
-| `dev` | `vite` | Frontend dev server |
-| `deploy:rules` | `firebase deploy --only firestore:rules` | Deploy Firestore security rules |
+### Relevant npm scripts
 
-### Initial Firebase Setup
-
-1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com).
-2. Link the CLI: `firebase login` and `firebase use <project-id>`.
-3. Enable **Authentication → Email/Password**.
-4. Create a **Firestore** database.
-5. Register a **Web app** and copy its config into `.env`.
-6. Deploy rules: `npm run deploy:rules`.
+- `dev` — `vite` dev server
+- `deploy:rules` — `firebase deploy --only firestore:rules`
+- `deploy:hosting` / `deploy:web` — deploy Hosting (build + deploy for `:web`)
 
 ## Authentication
 
-### Method
+Email/password only (no OAuth). `AuthProvider`
+([`src/contexts/AuthContext.tsx`](../../src/contexts/AuthContext.tsx)) tracks the
+session via `onAuthStateChanged`. Route protection lives in
+`src/components/ProtectedRoute.tsx`.
 
-Email/password only for MVP. No OAuth.
+### Routes (see [`src/App.tsx`](../../src/App.tsx))
 
-### Routes
+- Public-only: `/login`, `/signup`
+- Protected: `/`, `/practice`, `/applications`, `/scrapbook`, `/interests`,
+  `/lessons/:lessonId`
+- `*` → redirect to `/`
 
-| Route | Access | Purpose |
-|-------|--------|---------|
-| `/login` | Public | Sign in |
-| `/signup` | Public | Create account |
-| `/` | Protected | Home / course map (placeholder until Spec 03) |
+### Flow
 
-Unauthenticated users visiting protected routes are redirected to `/login`.
+1. Sign up — `createUserWithEmailAndPassword`, then create `users/{uid}`.
+2. Login — `signInWithEmailAndPassword`.
+3. Session — `onAuthStateChanged` in `AuthProvider`.
+4. Logout — `signOut`.
 
-### Auth Flow
+## Firestore data model
 
-1. **Sign up** — `createUserWithEmailAndPassword`, then create `users/{uid}` doc in Firestore with displayName and email.
-2. **Login** — `signInWithEmailAndPassword`.
-3. **Session** — `onAuthStateChanged` listener in `AuthProvider` context.
-4. **Logout** — `signOut`, redirect to `/login`.
+All collections are owner-only and schema-validated. See
+[`firestore.rules`](../../firestore.rules) and `firestoreValidation.ts`.
 
-### Auth Context API
+- **`users/{uid}`** — `displayName`, `email`, `createdAt`; streak fields
+  (`streakCount`, `lastActiveDate`, `longestStreak`); Applications rating
+  (`applicationsRating` 1..15, `applicationsGames`); `interests` (≤12 strings,
+  each 1..60 chars).
+- **`progress/{uid}/lessons/{lessonId}`** — `currentSlideIndex` (0..1000),
+  `lessonCompleted` (bool), `updatedAt`.
+- **`practice/{uid}/topics/{topicId}`** — `lastPracticedAt` (timestamp), for the
+  Practice review panel.
+- **`applications/{uid}/topics/{topicId}`** — `lastSeenAt` (timestamp), for the
+  recency-weighted topic picker.
+- **`stickers/{uid}/items/{itemId}`** — `subject`, `src`, `provider`
+  (`openai`|`pollinations`), `slotIndex` (0..11), `createdAt`, `expiresAt`.
+- **`courses/{courseId}`** — read-only in rules; **not used by the client**
+  (legacy). Lesson order is defined in code (`src/lessons/index.ts`), not here.
 
-```typescript
-interface AuthContextValue {
-  user: User | null;
-  loading: boolean;
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-}
-```
+## Security rules
 
-### Validation
+Each `match` allows reads only to the owner and writes only to the owner **and**
+when `request.resource.data` passes the matching validator (`validUser`,
+`validProgress`, `validPractice`, `validApplicationsActivity`, `validSticker`).
+These mirror the TypeScript validators so client and server agree. Run
+`firebase-security-rules-auditor` after editing the rules.
 
-- Email: required, valid format
-- Password: minimum 6 characters (Firebase default)
-- Display name: required on signup
+## Related
 
-## Firestore Data Model
-
-### `users/{uid}`
-
-Created on signup.
-
-```typescript
-{
-  displayName: string;
-  email: string;
-  createdAt: Timestamp;
-}
-```
-
-### `progress/{uid}/lessons/{lessonId}`
-
-Created when user first enters a lesson (future spec).
-
-```typescript
-{
-  currentSlideIndex: number;       // 0-based, exact slide to resume
-  completedSlideIndices: number[]; // slides passed
-  lessonCompleted: boolean;
-  updatedAt: Timestamp;
-}
-```
-
-### `courses/default`
-
-Seeded manually (future spec).
-
-```typescript
-{
-  title: string;           // "Calculus BC"
-  lessonOrder: string[];   // ["derivatives-basics"]
-}
-```
-
-## Security Rules
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    match /progress/{userId}/lessons/{lessonId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    match /courses/{courseId} {
-      allow read: if request.auth != null;
-      allow write: if false;
-    }
-  }
-}
-```
-
-## SDK Initialization
-
-`src/lib/firebase.ts`:
-
-1. Initialize Firebase app from env vars.
-2. Export `auth` and `db` (Firestore) instances.
-
-## Testing Auth (Manual)
-
-1. Copy `.env.example` to `.env` and fill in Firebase web app config.
-2. Run `npm run deploy:rules`.
-3. Run `npm run dev`.
-4. Open `http://localhost:5173/signup` — create an account.
-5. Verify redirect to home; user display name shown.
-6. Confirm user in Firebase Console (Auth tab) and `users/{uid}` in Firestore.
-7. Sign out, sign back in at `/login`.
-8. Refresh page — session persists.
-
-## Acceptance Criteria (Spec 01)
-
-- [x] Firebase config files present
-- [x] Auth context with signUp, signIn, signOut
-- [x] Login and signup pages functional
-- [x] Protected route redirects unauthenticated users
-- [x] User document created in Firestore on signup
-- [x] `.env.example` documents all required variables
-
-## Open Questions
-
-- None for auth MVP. Progress persistence deferred to Spec 04.
+- App shell and routing detail: [`03-design-system-shell.md`](03-design-system-shell.md)
+- Per-lesson content: [`02-content-schema.md`](02-content-schema.md) and specs 04–07

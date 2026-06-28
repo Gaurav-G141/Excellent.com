@@ -96,8 +96,16 @@ function warmLevels(state: RatingState): number[] {
   return out
 }
 
+/**
+ * Dev-only account that retains the manual level controls below (handy for
+ * testing difficulty without grinding through problems). Everyone else gets the
+ * normal adaptive experience with no manual override.
+ */
+const DEV_ACCOUNT_EMAIL = 'g.gupta31415@gmail.com'
+
 export default function ApplicationsPage() {
   const { user } = useAuth()
+  const isDevAccount = (user?.email ?? '').trim().toLowerCase() === DEV_ACCOUNT_EMAIL
   const { completed, loading: lessonsLoading } = useCompletedLessons()
   const { interests } = useInterests()
   const {
@@ -105,7 +113,7 @@ export default function ApplicationsPage() {
     level,
     loading: levelLoading,
     applyOutcome,
-    setLevelForTesting, // TESTING ONLY — remove with the level controls below.
+    setLevelForTesting, // DEV ACCOUNT ONLY — drives the dev level controls below.
   } = useApplicationsLevel()
   const loading = lessonsLoading || levelLoading
 
@@ -348,9 +356,8 @@ export default function ApplicationsPage() {
     advance(next)
   }
 
-  // TESTING ONLY — jump to a chosen level and immediately re-seed at that level.
-  // Remove together with the controls rendered below and setLevelForTesting in
-  // useApplicationsLevel.
+  // DEV ACCOUNT ONLY — jump to a chosen level and immediately re-seed at that
+  // level. The controls that call this are rendered only for DEV_ACCOUNT_EMAIL.
   function handleSetLevel(target: number) {
     const next = setLevelForTesting(target)
     // Drop buffers warmed for the old trajectory; this jump is off-path.
@@ -394,41 +401,43 @@ export default function ApplicationsPage() {
               Solved this session: <strong>{solved}</strong>
             </p>
 
-            {/* TESTING ONLY — manual level controls. Delete this whole block
-                (and setLevelForTesting in useApplicationsLevel) to remove. */}
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.4rem',
-                margin: '0 0 1rem',
-              }}
-            >
-              <span style={{ fontSize: '0.85rem', opacity: 0.7, marginRight: '0.3rem' }}>
-                Test level (current: {level}):
-              </span>
-              {Array.from({ length: 15 }, (_, i) => i + 1).map((lvl) => (
-                <button
-                  key={lvl}
-                  type="button"
-                  onClick={() => handleSetLevel(lvl)}
-                  style={{
-                    width: '2rem',
-                    height: '2rem',
-                    borderRadius: '0.4rem',
-                    cursor: 'pointer',
-                    fontWeight: lvl === level ? 700 : 400,
-                    border: lvl === level ? '2px solid #6c5ce7' : '1px solid #ccc',
-                    background: lvl === level ? '#6c5ce7' : '#fff',
-                    color: lvl === level ? '#fff' : '#333',
-                  }}
-                >
-                  {lvl}
-                </button>
-              ))}
-            </div>
+            {/* DEV ACCOUNT ONLY — manual level controls, shown only for the dev
+                account (DEV_ACCOUNT_EMAIL). Regular users get the adaptive level. */}
+            {isDevAccount && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.4rem',
+                  margin: '0 0 1rem',
+                }}
+              >
+                <span style={{ fontSize: '0.85rem', opacity: 0.7, marginRight: '0.3rem' }}>
+                  Dev level (current: {level}):
+                </span>
+                {Array.from({ length: 15 }, (_, i) => i + 1).map((lvl) => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => handleSetLevel(lvl)}
+                    style={{
+                      width: '2rem',
+                      height: '2rem',
+                      borderRadius: '0.4rem',
+                      cursor: 'pointer',
+                      fontWeight: lvl === level ? 700 : 400,
+                      border: lvl === level ? '2px solid #6c5ce7' : '1px solid #ccc',
+                      background: lvl === level ? '#6c5ce7' : '#fff',
+                      color: lvl === level ? '#fff' : '#333',
+                    }}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="practice-stage applications-stage">
               {problem && isUnlocked(problem, completed) ? (

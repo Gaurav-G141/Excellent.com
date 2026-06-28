@@ -53,3 +53,11 @@ page (locked cards) and guarded in `LessonPlayer` for direct navigation.
 - `npm run build` (tsc + vite) green.
 - Throwaway `tsx` script confirmed related-rates values, `s″(t₀)`, `findWhereEquals`
   roots, and π-aware grading (15/15 checks passed).
+
+## Related
+
+- Next lessons: [`06-lesson-4-exponents-product-rule.md`](06-lesson-4-exponents-product-rule.md),
+  [`07-paper-box-lesson.md`](07-paper-box-lesson.md).
+- Real-world word problems for these concepts:
+  [`08-applications-scenarios.md`](08-applications-scenarios.md).
+- Drilling these topics: [`09-practice.md`](09-practice.md).

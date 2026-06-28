@@ -99,8 +99,9 @@ so nothing breaks.
 
 - Set a **monthly usage limit** in the OpenAI dashboard
   (Settings → Limits) as a backstop.
-- The client caps each request at a 6-second timeout and prefetches one problem
-  ahead, so a slow or failed call just falls back to base phrasing.
+- The client caps each rewrite request at a 9000ms (9-second) timeout and
+  prefetches problems ahead, so a slow or failed call just falls back to base
+  phrasing.
 
 ## Testing stickers locally (Spark plan, no Storage)
 
@@ -140,8 +141,10 @@ If the Firebase CLI login is failing (e.g. `Error: Authentication Error` /
 2. Paste the contents of `firestore.rules` and click **Publish**.
 
 Then run `npm run dev`, sign in, and solve a problem in the Applications tab — a
-crayon sticker should appear in the page margins. Stickers persist in Firestore
-and expire after 5 days (`LIFETIME_MS`).
+sticker should appear in the **Scrapbook** tab (`/scrapbook`). Stickers persist
+in Firestore and expire after 2 days (`LIFETIME_MS`). See
+[`specs/10-stickers-scrapbook.md`](specs/10-stickers-scrapbook.md) for the full
+feature.
 
 > CLI auth tip: the login failure is environmental (an outdated `firebase-tools`
 > against a very new Node). If you'd rather fix the CLI than use the console, run

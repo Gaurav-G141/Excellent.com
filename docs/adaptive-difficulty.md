@@ -1,8 +1,29 @@
 # Adaptive Difficulty for the Applications Tab — Spec
 
-Status: approved for build. Scope: the **Applications** tab only. Lessons and
-Practice are untouched. The motivation-stickers feature is parked until image
-generation is available.
+Status: built (this is the original design spec; kept for the rationale behind
+the Elo model and the 1..15 prompt gradient). For the **as-built** Applications
+tab — which now serves multi-step **scenario** problems, themes scenes to learner
+interests, and AI-grades a free-response step — see
+[`specs/08-applications-scenarios.md`](specs/08-applications-scenarios.md). The
+core math/grading guarantee and the difficulty engine described here are still
+accurate; where this doc and the code disagree, the code and spec 08 win.
+
+Scope: the **Applications** tab only. Lessons and Practice are untouched. (The
+motivation-stickers feature, parked in the original plan, is now built — see
+[`specs/10-stickers-scrapbook.md`](specs/10-stickers-scrapbook.md).)
+
+As-built deltas from this spec:
+
+- Problems are multi-step scenarios (`ScenarioProblem`), not single-shot
+  `WordProblem`s. The AI rewrites only the scenario `title` + `prompt`; steps,
+  rubrics, hints, and answers are code-owned.
+- The first conceptual step is an **AI-graded free-response** (`FrqStep`), graded
+  by [`src/lib/aiGrade.ts`](../src/lib/aiGrade.ts) with rigor scaling by band
+  (lenient/standard/strict); all other steps are graded in code.
+- Scenes are **themed to learner interests** (`buildInterestClause` in
+  `levelPrompts.ts`).
+- Step visibility scales with difficulty via step `tier` (`guide`/`core`/
+  `scaffold`) and `visibleSteps`.
 
 This feature makes Applications problems adapt to the learner: answer well and
 the problem's **wording** gets trickier and less obvious; struggle and it gets
@@ -145,8 +166,8 @@ Reuses `cleanText` + the banned-jargon list from
 
 - label count matches; every `title`/`prompt`/label is non-empty, within length
   caps, and free of banned jargon; prompt not absurdly long.
-- On any failure, timeout (~2.5s), or AI unavailable → use the base problem
-  unchanged.
+- On any failure, timeout (`REWRITE_TIMEOUT_MS = 9000` ms, up to 2 attempts), or
+  AI unavailable → use the base problem unchanged.
 
 Validated text is applied onto a **clone** of the `WordProblem`; the `given`
 block and every `fields[*]` answer are copied verbatim.
@@ -213,9 +234,34 @@ flowchart LR
 
 ---
 
-## 7. Files touched (all additive; Lessons/Practice untouched)
+## 7. Files touched
 
-New:
+As-built (current Applications scenario system; see
+[`specs/08-applications-scenarios.md`](specs/08-applications-scenarios.md)):
+
+- `src/utils/applications/difficulty.ts` — the Elo engine (as below).
+- `src/utils/applications/levelPrompts.ts` — `LEVEL_PROMPTS[1..15]`, shared
+  system/rules/style blocks, bands (`bandFor`, `IMPLIED_BAND_MIN`,
+  `STORY_BAND_MIN`), `buildInterestClause` (interest theming),
+  `buildRewritePrompt`, `validateRewrite`.
+- `src/utils/applications/scenarioTypes.ts` — `ScenarioProblem` / `ScenarioStep`
+  (`frq`/`number`/`expression`/`choice`), `tier`, `visibleSteps`,
+  `resolveStepPrompt`.
+- `src/utils/applications/scenarioRewrite.ts` — `rewriteScenario` (title+prompt
+  only, `REWRITE_TIMEOUT_MS = 9000`, subject-term preservation, answer-leak
+  validation).
+- `src/utils/applications/scenarioGrade.ts` — `gradeCodeStep`,
+  `heuristicGradeFrq`, `rigorForLevel`.
+- `src/utils/applications/scenarios/` — per-lesson scenario registry
+  (`lesson1..4`, `index.ts`, `APPLICATIONS_UNLOCK_LESSON`).
+- `src/utils/applications/problemBuffer.ts` — prefetch buffer.
+- `src/utils/applications/topicPicker.ts` — recency-weighted topic picker.
+- `src/lib/aiGrade.ts` — AI free-response grading (rigor lenient/standard/strict).
+- `src/pages/ApplicationsPage.tsx`, `src/components/applications/*` — UI wiring.
+- `src/lib/firestoreValidation.ts` + `firestore.rules` — `applicationsRating`
+  (1..15) / `applicationsGames`, and `applications/{uid}/topics/{topicId}`.
+
+Original plan (single-shot `WordProblem` path, still present in code):
 
 - `src/utils/applications/difficulty.ts` — `Outcome`, `RatingState`,
   `INITIAL_RATING`, `MAX_LEVEL=15`, `scoreFromOutcome()`, `kFactor(games)`,

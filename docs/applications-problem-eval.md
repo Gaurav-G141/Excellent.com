@@ -1,5 +1,10 @@
 # Applications Problem Eval
 
+> **Historical / superseded as of 2026-06-28.** This is a one-off eval run of the
+> original single-shot `WordProblem` rewrite pipeline. The live tab now serves
+> multi-step scenarios — see
+> [`specs/08-applications-scenarios.md`](specs/08-applications-scenarios.md).
+
 Generated 10 problems for each wording level (1–15) using the live pipeline: a random topic's `generate()` followed by `rewriteProblem(base, level)`. AI rewrite WAS configured for this run.
 
 > "Level" controls how the problem is *phrased* (1 = maximally explicit, 15 = an implied story). It does not change the math or which topic is used. The answer/given are owned by code and are shown here so you can judge correctness too. "Rewrite" notes whether the AI rephrasing was applied or it fell back to the base phrasing.

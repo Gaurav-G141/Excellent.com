@@ -1,5 +1,10 @@
 # Spec 00 — Overview
 
+> **Historical / superseded as of 2026-06-28.** This describes the original
+> single-lesson MVP. The current canonical overview is
+> [`../architecture.md`](../architecture.md); per-feature detail is in the rest of
+> [`docs/specs/`](.).
+
 ## Purpose
 
 This document defines the scope, architecture, and build order for **Excellent.com** — a minimum viable Brilliant.org-style learning app focused on a single Calculus BC lesson: **Derivatives**.

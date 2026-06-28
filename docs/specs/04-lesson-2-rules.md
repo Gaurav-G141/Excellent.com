@@ -18,24 +18,27 @@ registered in [`src/lessons/index.ts`](../../src/lessons/index.ts).
 ## Shared utilities
 
 - `src/utils/polynomial.ts`: `addPolynomials`, `multiplyPolynomials`,
-  `composePolynomials`, `findWhereDerivativeEquals` (for the MVT point).
+  `findWhereDerivativeEquals` (for the MVT point).
 - `src/utils/expression.ts`: dependency-free expression evaluator with implicit
   multiplication. `matchesPolynomial` grades type-in answers by numeric sampling, so
   any algebraically-equivalent form (factored or expanded) is accepted.
 
 ## Slides
 
-| # | id | component | type | Notes |
-|---|----|-----------|------|-------|
-| 0 | power-rule | `powerRuleExponent` | demo | Drag the exponent down; repeatable with Reset. |
-| 1 | power-match | `dragMatch` | problem | Tap-to-match; Check disabled until every prompt filled (no blank submit). |
-| 2 | sum-rule | `sumRule` | demo | 3 synced graphs share one viewport; tangent arrows use a fixed data run so heights ∝ slope. Bottom strip stacks f′ + g′ at the same px scale, equal to (f+g)′. |
-| 3 | sum-type-in | `typeInDerivative` | problem | f(x)=x²+3x → 2x+3. |
-| 4 | chain-rule | `chainRule` | demo | Two-step animation (Play / Back / Next), ~1.5s per step, each step highlighted. |
-| 5 | chain-type-in | `typeInDerivative` | problem | (3x+2)² → 18x+12 (accepts factored 6(3x+2)). |
-| 6 | mvt | `meanValueTheorem` | demo | Drag A & B → secant; button reveals the parallel interior tangent at c. |
-| 7 | mvt-multipart | `mvtMultiPart` | problem | 3 parts: secant slope, f′(x), interior c. |
-| 8 | combining | `typeInDerivative` | problem | (2x+1)²+3x³ → 9x²+8x+4 (chain + power + sum). |
+Slide ids are prefixed `l2-slide-N-...`; the component is the (`type`,
+`component`) pair from the JSON.
+
+| # | component | type | Notes |
+|---|-----------|------|-------|
+| 0 | `powerRuleExponent` | demo | Drag the exponent down; repeatable with Reset. |
+| 1 | `dragMatch` | problem | Tap-to-match; Check disabled until every prompt filled (no blank submit). |
+| 2 | `sumRule` | demo | 3 synced graphs share one viewport; tangent arrows use a fixed data run so heights ∝ slope. Bottom strip stacks f′ + g′ at the same px scale, equal to (f+g)′. |
+| 3 | `polynomialDerivative` | problem | f(x)=x²+3x → 2x+3 (coefficients `[0, 3, 1]`). |
+| 4 | `chainRule` | demo | Two-step animation (Play / Back / Next), ~1.5s per step, each step highlighted. |
+| 5 | `polynomialDerivative` | problem | (3x+2)² → 18x+12 (f coefficients `[4, 12, 9]`; accepts factored 6(3x+2)). |
+| 6 | `meanValueTheorem` | demo | Drag A & B → secant; button reveals the parallel interior tangent at c. |
+| 7 | `mvtMultiPart` | problem | 3 parts: secant slope, f′(x), interior c. |
+| 8 | `polynomialDerivative` | problem | (2x+1)²+3x³ → 9x²+8x+4 (f coefficients `[1, 4, 4, 3]`; chain + power + sum). |
 
 ## Feedback incorporated
 

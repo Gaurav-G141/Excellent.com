@@ -1,5 +1,9 @@
 # Children's-Drawing Motivation Stickers (Pollinations)
 
+> **Historical / superseded as of 2026-06-28.** This is the original plan; the
+> feature is now built. For the as-built behavior see
+> [`../specs/10-stickers-scrapbook.md`](../specs/10-stickers-scrapbook.md).
+
 Status: planned (not yet built). Scope: a new decorative reward layer. Does NOT
 change any problem math, grading, hints, difficulty, or Lessons/Practice logic.
 

@@ -4,6 +4,12 @@ Real-world word problems covering the same concepts the app teaches, written as 
 
 **Non-obvious by design:** each prompt asks a natural question and does not name the technique or echo the lessons' wording (no "derivative", "rate of change", "secant/tangent", "Mean Value Theorem", "critical point", "second derivative", "guaranteed to take"). The method is named only in the **Solution** and **In scope** lines, which are author-facing.
 
+> **Live Applications UX is scenario-based.** This document is a static problem
+> bank / authoring reference. The shipped Applications tab now serves multi-step
+> **scenario** problems whose surface wording is AI-rewritten to the learner's
+> difficulty level (the math is still code-owned). See
+> [`specs/08-applications-scenarios.md`](specs/08-applications-scenarios.md).
+
 ## Scope this set respects
 
 - **Polynomials only**, with simple coefficients. No `e^x`, `ln`, `sin`, `cos`, `tan`, `sqrt`, or other special functions.
@@ -29,6 +35,11 @@ Real-world word problems covering the same concepts the app teaches, written as 
   - [Related rates](#related-rates)
   - [Velocity and acceleration](#velocity-and-acceleration)
   - [A value that must occur](#a-value-that-must-occur)
+- [Lesson 4 — Exponents and the Product Rule](#lesson-4--exponents-and-the-product-rule)
+  - [Continuous growth](#continuous-growth)
+  - [Base-n growth](#base-n-growth)
+  - [Natural-log response](#natural-log-response)
+  - [Product rule](#product-rule)
 
 ---
 
@@ -231,3 +242,50 @@ Real-world word problems covering the same concepts the app teaches, written as 
 **Solution:** \(f(0) = 0\), \(f(3) = 15\). The peak is at \(x = 4\), so on \([0,3]\) the altitude climbs steadily from \(0\) to \(15\); every value strictly between occurs. \(9\) is inside \((0, 15)\); \(-2 < 0\) and \(20 > 15\) are outside.
 **Answer:** **9 m** must occur. (Existence only — the position where it happens isn't pinned down.)
 **In scope:** Intermediate Value Theorem on a continuous quadratic, monotonic on \([0,3]\); correct value strictly inside the endpoint range.
+
+---
+
+# Lesson 4 — Exponents and the Product Rule
+
+Per the Lesson 4 exception above, answers stay **numeric / multiple-choice**
+(exponential and log scenarios) or an **expression in x** (product rule), so the
+existing grader still applies; no symbolic `e^x`/`ln`/`1/x` answer entry is added.
+
+## Continuous growth
+
+### Sourdough Starter
+**Scenario:** A baker's sourdough culture rises continuously so its mass (grams) after \(t\) hours is \(M(t) = e^t\). How fast is the culture's mass growing at the moment \(t = 0\)?
+**Solution:** \(M'(t) = e^t\); at \(t = 0\), \(M'(0) = e^0 = 1\).
+**Answer:** **1 gram per hour** at \(t = 0\).
+**In scope:** \(d/dx\,e^x = e^x\), evaluated to a number.
+
+## Base-n growth
+
+### Rabbit Warren
+**Scenario:** A warren's rabbit count is modeled by \(R(t) = 2^t\), with \(t\) in months. Which expression gives how fast the population is growing at any month \(t\)?
+**Options:** (a) \(\ln(2)\cdot 2^t\) · (b) \(2^t\) · (c) \(t\cdot 2^{t-1}\) · (d) \(2\cdot\ln(t)\)
+**Solution:** Rewrite \(2^t = e^{\ln(2)\,t}\); the chain rule brings down \(\ln(2)\), so \(R'(t) = \ln(2)\cdot 2^t\).
+**Answer:** **(a)** \(\ln(2)\cdot 2^t\).
+**In scope:** \(d/dx\,n^x = \ln(n)\cdot n^x\), as a multiple-choice number/expression.
+
+## Natural-log response
+
+### Speaker Loudness Knob
+**Scenario:** Perceived loudness (in a unitless index) responds to the volume knob \(x\) as \(L(x) = 5\ln(x)\). How fast does the loudness index change when the knob is at \(x = 5\)?
+**Solution:** \(L'(x) = 5/x\); at \(x = 5\), \(L'(5) = 1\).
+**Answer:** **1 index unit per knob step** at \(x = 5\).
+**In scope:** \(d/dx\,[c\ln x] = c/x\), evaluated to a number.
+
+## Product rule
+
+### Garden Plot Revenue
+**Scenario:** A market stall's revenue is the price per crate \((2x + 1)\) times the number of crates sold \((x^2 + 3)\), where \(x\) is a single supply setting. Write an expression for how fast revenue changes as you adjust \(x\).
+**Solution:** \((uv)' = u'v + uv'\) with \(u = 2x+1\), \(v = x^2+3\): \(2(x^2+3) + (2x+1)(2x) = 6x^2 + 2x + 6\).
+**Answer:** \(6x^2 + 2x + 6\) (as an expression in x).
+**In scope:** Product rule on two polynomial factors; answer is a polynomial in x.
+
+### Price-and-Volume at an Instant
+**Scenario:** A shop's daily takings are the unit price \((x + 4)\) times units sold \((3x + 1)\), where \(x\) is a promo dial. How fast are takings changing when the dial is at \(x = 2\)?
+**Solution:** \((uv)' = u'v + uv' = 1\cdot(3x+1) + (x+4)\cdot 3 = 6x + 13\); at \(x = 2\), \(6(2) + 13 = 25\).
+**Answer:** **25** (takings units per dial step) at \(x = 2\).
+**In scope:** Product rule, then evaluate to a number.

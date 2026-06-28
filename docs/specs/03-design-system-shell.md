@@ -1,54 +1,69 @@
-# Spec 03 — Design System & Lesson Shell (Slides 0–1)
+# Spec 03 — Design system, app shell, and lesson shell
+
+Status: current. Covers the design tokens, the app-wide shell (header + tab
+navigation + modal), and the lesson player shell.
 
 ## Design tokens
 
-Aligned with [`src/index.css`](../../src/index.css):
+Defined in [`src/index.css`](../../src/index.css). The palette is a "graphing
+notebook": cool paper, indigo accent, coral + teal curve colors.
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--accent` | `#1a5fb4` | Curve, arrows, CTAs, progress |
-| `--surface` | `#ffffff` | Card, graph background |
-| `--border` | `#e5e7eb` | Grid, borders |
-| `--text-h` | `#111827` | Headings |
-| `--text-muted` | `#6b7280` | Body copy |
-| `--error` | `#b42318` | Wrong feedback sheet top border |
+- Type: `--font-display` (Space Grotesk), `--font-sans` (IBM Plex Sans),
+  `--font-mono` (IBM Plex Mono, used for math/data).
+- Text/surface: `--ink` `#131a26`, `--text` `#3f4a5c`, `--text-h` `#131a26`,
+  `--text-muted` `#6b7689`, `--bg` `#edf0f6`, `--surface` `#ffffff`,
+  `--surface-2` `#f5f7fc`, `--border` `#e2e7f0`, `--code-bg` `#eef1f8`.
+- Accent: `--accent` `#4f46e5`, `--accent-hover` `#4338ca`, `--accent-bg`,
+  `--accent-ring`.
+- Curves/feedback: `--tangent-arrow` `#f0612f` (coral), `--secant-line`
+  `#0f9488` (teal), `--success-flash` (green blink), `--error` `#dc2626`,
+  `--error-bg`.
+- Shape: `--radius` 16px, `--radius-sm` 12px, plus `--shadow-sm/-md/-pop`.
+
+Global rules also include a styled range slider (the primary tactile control in
+lessons), `:focus-visible` outlines, and a `prefers-reduced-motion` block that
+collapses animations.
+
+## App shell
+
+The app is a mobile-sized SPA: `#root` is centered at `max-width: 480px` with a
+surface card and shadow. Shared chrome:
+
+- [`AppHeader`](../../src/components/AppHeader.tsx) — top bar (title, account /
+  sign-out, link to Interests).
+- [`TabNav`](../../src/components/TabNav.tsx) — bottom tab navigation across
+  Lessons / Practice / Applications / Scrapbook, with unlock gating (Practice
+  after lesson 1, Applications after `derivative-rules`).
+- [`Modal`](../../src/components/Modal.tsx) — shared modal/dialog.
+- [`src/components/tools/`](../../src/components/tools/) — embeddable learner
+  tools (`Calculator`, `QuadraticSolver`) with their own pure logic modules.
+
+Routing for these screens is in [`src/App.tsx`](../../src/App.tsx); see
+[`01-firebase-emulator.md`](01-firebase-emulator.md).
 
 ## Lesson player shell
 
-Implemented in [`src/components/lesson/LessonPlayer.tsx`](../../src/components/lesson/LessonPlayer.tsx):
+Implemented in
+[`src/components/lesson/LessonPlayer.tsx`](../../src/components/lesson/LessonPlayer.tsx)
+(reached at `/lessons/:lessonId` from the home page):
 
-- 480px max-width centered layout
-- Header: lesson title + exit link
-- 4px progress bar
-- Slide area with graph (320×240 SVG), copy, CTA
-- Problem feedback: bottom sheet ([`FeedbackPopup.tsx`](../../src/components/lesson/FeedbackPopup.tsx))
+- 480px-wide centered layout, lesson title + exit.
+- A [`ProgressBar`](../../src/components/lesson/ProgressBar.tsx) across the slides.
+- Slide area rendered by
+  [`SlideRenderer`](../../src/components/lesson/SlideRenderer.tsx) (graph SVG,
+  copy, CTA).
+- Problem feedback via
+  [`FeedbackPopup`](../../src/components/lesson/FeedbackPopup.tsx); correct
+  answers blink with [`CorrectFlash`](../../src/components/lesson/CorrectFlash.tsx).
+- Shared interactive inputs:
+  [`PolynomialBuilder`](../../src/components/lesson/PolynomialBuilder.tsx) (the
+  "polynomial playground" calculator, with optional decimal support) and the
+  end-of-lesson [`LessonQuiz`](../../src/components/lesson/LessonQuiz.tsx) for
+  `randomQuestions`.
 
-## Slide 0 visual spec
+Graph rendering primitives live in `src/components/graph/` (`GraphCanvas`,
+`DraggableGraphPoint`).
 
-![Rate of change arrow demo](./09-ui-mockups/01-rate-of-change-arrow.png)
+## Related
 
-- Blue curve on light grid
-- Animated dot + tangent arrow on curve
-- Scrub slider below graph
-- **Continue** button
-
-## Slide 1 visual spec
-
-![Greatest derivative problem](./09-ui-mockups/02-greatest-derivative-problem.png)
-
-- **Single cubic curve passing through all four points A–D**
-- Labeled tappable circles on the curve (not off-curve markers)
-- Muted tangent arrows at each point as slope hints
-- Selected point: blue ring
-- **Check** → feedback popup on wrong; **Continue** on correct
-
-## Route
-
-`/lessons/derivatives-basics` — linked from home page lesson card.
-
-## Acceptance criteria
-
-- [x] Lesson shell matches mockups
-- [x] Slide 1 graph passes through all four option points
-- [x] Mobile-width layout (480px)
-- [x] Touch targets ≥ 44px on CTAs and point labels
+- Slide schema and component list: [`02-content-schema.md`](02-content-schema.md)

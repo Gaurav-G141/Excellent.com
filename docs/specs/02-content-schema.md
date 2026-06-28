@@ -1,30 +1,91 @@
-# Spec 02 — Content Schema (Slides 0–7)
+# Spec 02 — Lesson content schema
 
-## Purpose
+Status: current. Describes the JSON schema lessons are authored in, and the
+specifics of the first lesson (`derivatives-basics`). Per-lesson detail for the
+others is in specs [04](04-lesson-2-rules.md), [05](05-lesson-3-related-rates.md),
+[06](06-lesson-4-exponents-product-rule.md), and [07](07-paper-box-lesson.md).
 
-JSON-driven lesson content for the Derivatives lesson. All eight slides in [`content/lessons/derivatives-basics.json`](../../content/lessons/derivatives-basics.json).
+## Where content lives
 
-## Slides 0–5
+- JSON files in [`content/lessons/`](../../content/lessons/), statically imported
+  and registered in [`src/lessons/index.ts`](../../src/lessons/index.ts).
+- TypeScript types in [`src/types/lesson.ts`](../../src/types/lesson.ts).
+- Rendered by [`SlideRenderer`](../../src/components/lesson/SlideRenderer.tsx),
+  which maps each slide's (`type`, `component`) pair to a React component in
+  `src/components/slides/`.
 
-See prior sections: rate of change, greatest derivative, draggable secant, zoom derivative, limit secant demo, secant-to-tangent.
+## Lesson shape
 
-## Slide 6 — `horizontalCritical` (demo)
+```jsonc
+{
+  "id": "derivatives-basics",
+  "title": "Derivatives",
+  "subject": "Calculus BC",
+  "randomQuestions": { "kind": "derivatives", "count": 3 }, // optional mastery quiz
+  "slides": [ /* Slide[] */ ]
+}
+```
 
-- **Title:** Critical points and zero slope
-- **Polynomial:** `[2.7, 1.225, -2.345, 1.935, -0.725, 0.1]` (quintic)
-- **Viewport:** `{ xMin: 0, xMax: 3, yMin: 2.5, yMax: 3.15 }`
-- **Interaction:** Horizontal line slider; when line touches curve at a critical point, show f′(x) = 0 message
-- **Critical points:** local max (x ≈ 0.5), inflection critical (x ≈ 1.4), local min (x ≈ 2.5)
+- `randomQuestions` (optional) appends a generated end-of-lesson mastery quiz
+  (`derivatives-basics` → 3, `related-rates` → 2). Lessons without it (e.g.
+  `derivative-rules`, `exponents-product-rule`, `paper-box`) end on their last
+  slide.
 
-## Slide 7 — `derivativeCriticalPoints` (problem)
+## Slide shape
 
-- **Title:** Find every critical point
-- **Same f(x)** as slide 6; stacked graphs for f(x) and f′(x)
-- **Task:** Tap every x where f′(x) = 0 on the derivative graph (3 critical points)
-- **Correct:** All critical x-values selected; green flash + Continue
+Every slide has an `id`, a `type` (`"demo"` or `"problem"`), a `component`
+string, a `title`, a `body`, and a `config` object specific to that component.
 
-## Acceptance criteria
+- **Demo slides** are non-graded explorations and carry a `ctaLabel` (the
+  continue button). The component receives `onContinue`.
+- **Problem slides** are graded; they carry `feedback` (`{ correct, wrong }`,
+  where messages may use `{placeholders}`) and `attempts` (e.g. `"unlimited"`).
+  The component receives `onCorrect` and advances on a correct answer (with the
+  shared `CorrectFlash` green blink). An empty `feedback.correct` advances
+  silently.
 
-- [x] 8 slides load in lesson player
-- [x] Slide 6 horizontal line demo with max/min/critical feedback
-- [x] Slide 7 dual-graph critical point selection
+`SlideRenderer` falls back to an "Unknown slide" continue card if no
+(`type`, `component`) branch matches.
+
+## Registered components
+
+Demo: `rateOfChangeArrow`, `draggableSecant`, `limitSecantDemo`,
+`horizontalCritical`, `powerRuleExponent`, `sumRule`, `chainRule`,
+`meanValueTheorem`, `expandingCircle`, `motionVectors`,
+`intermediateValueTheorem`, `exponentialTriangle`, `nPowerXAnimation`,
+`polynomialPlayground`, `paperBoxExplorer`.
+
+Problem: `greatestDerivative`, `secantZoomDerivative`, `secantToTangent`,
+`derivativeCriticalPoints`, `dragMatch`, `typeInDerivative`,
+`polynomialDerivative`, `mvtMultiPart`, `relatedRates`, `secondDerivative`,
+`ivtProblem`, `exponentialTriangleQuestion`, `productRuleMultiPart`,
+`multipleChoice`, `boxVolumeDerive`, `boxOptimize`, `boxTransfer`.
+
+(The exact list is the set of branches in `SlideRenderer.tsx` — keep them in sync
+when adding a component.)
+
+## `derivatives-basics` (8 slides)
+
+1. `rateOfChangeArrow` (demo) — animated tangent arrow along a cubic; "how fast
+   is this changing?".
+2. `greatestDerivative` (problem) — tap the steepest point.
+3. `draggableSecant` (demo) — drag two points; secant vs. the curve, coincide to
+   see the tangent.
+4. `secantZoomDerivative` (problem) — zoom in and estimate the slope
+   (`tolerance: 0.15`).
+5. `limitSecantDemo` (demo) — the derivative as a limit; a second point slides in.
+6. `secantToTangent` (problem) — drag P toward the fixed point and estimate the
+   slope.
+7. `horizontalCritical` (demo) — slide a horizontal line to where the tangent is
+   flat; `f'(x) = 0`. Quintic with three critical points (max ≈ 0.5, critical ≈
+   1.4, min ≈ 2.5).
+8. `derivativeCriticalPoints` (problem) — same `f`, stacked `f`/`f'` graphs; tap
+   every zero of `f'`.
+
+Plus a 3-question generated mastery quiz from `randomQuestions`.
+
+## Related
+
+- App shell and design tokens: [`03-design-system-shell.md`](03-design-system-shell.md)
+- Practice reuses `ProblemSlide` + these components:
+  [`09-practice.md`](09-practice.md)

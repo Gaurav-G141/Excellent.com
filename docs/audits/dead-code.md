@@ -1,5 +1,8 @@
 # Dead Code Audit
 
+> **Historical / superseded as of 2026-06-28.** Point-in-time audit (2026-06-24);
+> kept for reference. The codebase has changed substantially since.
+
 Read-only audit of unused/dead code across the repository. No source files were modified to produce this report.
 
 - Date: 2026-06-24

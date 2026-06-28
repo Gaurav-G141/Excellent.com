@@ -11,8 +11,14 @@ levels. This separates the two things that affect "how hard it feels":
    (driven by [src/utils/applications/difficulty.ts](../src/utils/applications/difficulty.ts)).
 
 > These rewrites are **emulated** faithfully from the saved per-level prompts +
-> `RULES_BLOCK` (live Gemini isn't callable from the build env). Real output
-> varies in flavor but follows the same gradient, distractor budget, and rules.
+> `RULES_BLOCK` (a live OpenAI `gpt-4o-mini` call isn't reachable from the build
+> env). Real output varies in flavor but follows the same gradient, distractor
+> budget, and rules.
+
+> Scope note: this walkthrough uses the original single-shot `WordProblem`. The
+> live tab now serves multi-step **scenarios** that rewrite only the title +
+> prompt at the same per-level gradient; the climb math below is unchanged. See
+> [`specs/08-applications-scenarios.md`](specs/08-applications-scenarios.md).
 
 ---
 
@@ -254,6 +260,6 @@ distractions"). This is the most likely reason it "doesn't feel too noticeable."
   spend most of your time there unless you string first-try wins together.
 
 > Reminder: these are emulated examples. The shipped app sends the same saved
-> prompts to Gemini, so live problems will vary in surface flavor but obey the
-> same per-level rules, distractor budgets, and answer-protection guards shown
-> here.
+> prompts to OpenAI (`gpt-4o-mini` by default), so live problems will vary in
+> surface flavor but obey the same per-level rules, distractor budgets, and
+> answer-protection guards shown here.

@@ -1,5 +1,8 @@
 # Post-Remediation Codebase Audit
 
+> **Historical / superseded as of 2026-06-28.** Point-in-time audit (2026-06-23);
+> kept for reference. The codebase has changed substantially since.
+
 **Date:** 2026-06-23
 **Scope:** Full read-only diagnostic of the React + Vite + Firebase calculus app after completing remediation Tiers 1–4.
 **Method:** Source review of `src/`, `content/`, and `firestore.rules`, plus the new automated test suite (`vitest`, 86 tests across 14 files). No further code changes were made while producing this document (the one exception — a crash regression introduced by Tier 2 — was fixed and is noted under "Remediation verification").

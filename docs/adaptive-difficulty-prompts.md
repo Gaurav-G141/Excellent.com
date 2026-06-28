@@ -2,7 +2,19 @@
 
 This is an auto-generated dump of the exact prompts the app sends to the AI to reword an Applications problem at each difficulty level. The math is never sent for rewriting — only the title, the prompt text, and the answer blank labels. Use it to audit whether each level actually escalates the "implied, not stated" phrasing.
 
-> Regenerate this file after editing levelPrompts.ts by temporarily restoring the `__genprompts.test.ts` generator and running it.
+> Generated artifact — may lag the source. This file is produced from
+> [`src/utils/applications/levelPrompts.ts`](../src/utils/applications/levelPrompts.ts).
+> Regenerate it after editing `levelPrompts.ts` by temporarily restoring the
+> `__genprompts.test.ts` generator and running it. The live `SYSTEM_LINE`,
+> `RULES_BLOCK`, and the added `STYLE_BLOCK` (encouraging narrative variety) are
+> the source of truth; the wording captured below may be from an earlier revision.
+
+> Scope note. The dump below is the **single-shot `WordProblem`** rewrite
+> (title + prompt + per-blank field labels). The live Applications tab now serves
+> multi-step **scenarios**, whose rewrite (`scenarioRewrite.ts`) reuses the same
+> `LEVEL_PROMPTS` / `RULES_BLOCK` / `STYLE_BLOCK` but rewrites **only the title and
+> prompt** (never the steps/labels) and adds a "keep these subjects" clause. See
+> [`specs/08-applications-scenarios.md`](specs/08-applications-scenarios.md).
 
 Every prompt is assembled in this order:
 
