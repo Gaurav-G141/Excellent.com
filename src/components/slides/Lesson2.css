@@ -66,7 +66,7 @@
 }
 
 .pr-drag-hint--done {
-  color: #16a34a;
+  color: var(--green);
   font-weight: 600;
 }
 
@@ -128,7 +128,7 @@
 }
 
 .match-clear:hover {
-  color: var(--danger, #b42318);
+  color: var(--error);
 }
 
 .match-prompt {
@@ -184,16 +184,16 @@
 }
 
 .match-prompt--wrong {
-  border-color: var(--danger, #b42318);
-  box-shadow: 0 0 0 2px rgba(180, 35, 24, 0.15);
+  border-color: var(--error);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 22%, transparent);
 }
 
 .match-slot--wrong,
 .match-slot--filled.match-slot--wrong {
   border-style: solid;
-  border-color: var(--danger, #b42318);
-  background: rgba(180, 35, 24, 0.08);
-  color: var(--danger, #b42318);
+  border-color: var(--error);
+  background: var(--error-bg);
+  color: var(--error);
 }
 
 .match-bank {
@@ -205,7 +205,7 @@
 
 .match-chip {
   padding: 10px 14px;
-  border: 1px solid var(--accent);
+  border: 2px solid var(--accent);
   border-radius: 999px;
   background: var(--surface);
   color: var(--accent);
@@ -213,13 +213,16 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
   transition:
     background 0.15s ease,
-    transform 0.06s ease;
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .match-chip:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .match-chip--used {
@@ -302,10 +305,10 @@
 }
 
 .sr-arrow--g .sr-arrow-line {
-  stroke: #0e9488;
+  stroke: var(--secant-line);
 }
 .sr-arrow--g .sr-arrow-head {
-  fill: #0e9488;
+  fill: var(--secant-line);
 }
 
 .sr-arrow--sum .sr-arrow-line {
@@ -354,7 +357,7 @@
   color: var(--accent);
 }
 .sr-readout--g {
-  color: #0e9488;
+  color: var(--secant-line);
 }
 .sr-readout--sum {
   color: var(--tangent-arrow);
@@ -498,8 +501,8 @@
 
 .mvt-step--done {
   opacity: 1;
-  border-color: #16a34a;
-  background: rgba(34, 197, 94, 0.06);
+  border-color: var(--green);
+  background: var(--green-bg);
 }
 
 .mvt-step-prompt {
@@ -509,7 +512,7 @@
 }
 
 .mvt-check {
-  color: #16a34a;
+  color: var(--green);
   font-weight: 700;
 }
 

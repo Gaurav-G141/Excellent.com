@@ -4,9 +4,10 @@
   flex-direction: column;
   gap: 10px;
   padding: 14px;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-sm, 10px);
   background: var(--surface);
+  box-shadow: var(--shadow-sm);
   /* Fill the container so the builder's width never tracks its own (changing)
      text content. In a side-by-side flex row, `.pp-builders .pb` overrides the
      flex-basis to share the row instead. */
@@ -15,12 +16,12 @@
 }
 
 .pb--wrong {
-  border-color: var(--danger, #d9534f);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger, #d9534f) 30%, transparent);
+  border-color: var(--error);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 30%, transparent);
 }
 
 .pb--wrong .pb-live {
-  color: var(--danger, #d9534f);
+  color: var(--error);
 }
 
 .pb-header {
@@ -149,16 +150,18 @@
 
 .pb-key {
   min-height: 40px;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--rule);
   border-radius: 8px;
-  background: var(--surface-2, var(--surface));
+  background: var(--surface);
   color: var(--text-h);
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
   transition:
     background 0.12s ease,
-    transform 0.06s ease;
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .pb-key:hover:not(:disabled) {
@@ -166,7 +169,8 @@
 }
 
 .pb-key:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .pb-key:disabled {
@@ -177,7 +181,7 @@
 .pb-key--sign.pb-key--active {
   background: var(--accent);
   color: #fff;
-  border-color: var(--accent);
+  border-color: var(--rule);
 }
 
 .pb-power {
@@ -219,33 +223,54 @@
 .pb-add {
   flex: 1;
   min-height: 42px;
-  border: none;
+  border: 2px solid var(--rule);
   border-radius: 8px;
   background: var(--accent);
   color: #fff;
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    background 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
+}
+
+.pb-add:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .pb-add:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .pb-clear {
   flex: 0 0 auto;
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--rule);
   border-radius: 8px;
-  background: transparent;
+  background: var(--surface);
   color: var(--text-muted);
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    color 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .pb-clear:hover {
-  color: var(--danger, #b42318);
+  color: var(--error);
+}
+
+.pb-clear:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }

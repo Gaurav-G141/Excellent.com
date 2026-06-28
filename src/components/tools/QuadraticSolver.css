@@ -1,9 +1,19 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Quadratic solver — a printed instrument in the Modal family. Mono labels &
+   readouts, ink-outlined inputs, printed STAMP solve key, result slip.
+   ───────────────────────────────────────────────────────────────────────── */
+
 .quad-eq {
-  margin: 0 0 16px;
+  margin: 0 0 18px;
+  padding: 8px 10px;
   font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
   text-align: center;
+  background: var(--surface-2);
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-sm);
 }
 
 .quad-fields {
@@ -21,60 +31,88 @@
 .quad-field-label {
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-muted);
   text-align: center;
 }
 
+/* Ink-outlined number wells. */
 .quad-input {
   width: 100%;
-  min-height: 44px;
+  min-height: 46px;
   padding: 8px 10px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--rule);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-h);
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 17px;
   text-align: center;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .quad-input:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
+/* Solve — printed STAMP button with accent FILL + hard offset. */
 .quad-solve {
   width: 100%;
-  min-height: 44px;
-  margin-top: 16px;
-  border: none;
-  border-radius: 999px;
+  min-height: 48px;
+  margin-top: 18px;
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-sm);
   background: var(--accent);
   color: #fff;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.03em;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background 0.15s ease;
+  box-shadow: var(--shadow-md);
+  transition:
+    background 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .quad-solve:hover {
   background: var(--accent-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--rule);
+}
+
+.quad-solve:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .quad-error {
-  margin: 14px 0 0;
+  margin: 16px 0 0;
+  padding: 10px 12px;
   color: var(--error);
   font-size: 13px;
+  font-weight: 500;
+  background: var(--error-bg);
+  border: 2px solid var(--error);
+  border-radius: var(--radius-sm);
 }
 
+/* Result slip — a printed readout panel with a bold rule. */
 .quad-result {
   margin-top: 18px;
   padding: 14px 16px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--rule);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
+  box-shadow: var(--shadow-sm);
 }
 
 .quad-roots {
@@ -88,12 +126,17 @@
 
 .quad-roots li {
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: 18px;
+  font-weight: 600;
   color: var(--ink);
 }
 
 .quad-note {
   margin: 12px 0 0;
-  font-size: 13px;
+  padding-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
   color: var(--text-muted);
+  border-top: 2px solid var(--border);
 }

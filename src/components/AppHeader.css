@@ -1,7 +1,7 @@
 /*
- * The header reuses the pill styles from HomePage.css (.home-interests /
- * .home-sign-out / .home-header-actions). These rules only add what's specific
- * to the tool buttons and to keeping the row tidy on narrow phones.
+ * The header reuses the printed stamp-pill styles from HomePage.css
+ * (.home-interests / .home-sign-out / .home-header-actions). These rules only
+ * add what's specific to the tool buttons and keep the row tidy on narrow phones.
  */
 
 .home-header-actions {
@@ -10,21 +10,26 @@
   row-gap: 8px;
 }
 
-/* The tool button reuses .home-interests for the pill look; this is just a hook
- * for future overrides and keeps intent explicit. */
+/* The tool button reuses .home-interests for the stamp-pill look; this is just a
+ * hook for future overrides and keeps intent explicit. */
 .home-tool {
   font-family: var(--font-mono);
 }
 
-/* Icon-only calculator button: square-ish pill that centers the glyph. */
+/* Icon-only calculator button: square-ish stamp tab that centers the glyph. */
 .home-tool-icon {
   padding: 8px 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-h);
+  color: var(--ink);
 }
 
 .home-tool-icon svg {
   display: block;
+}
+
+/* Pink-ink halftone pop on hover, matching the riso reward language. */
+.home-tool-icon:hover {
+  color: var(--pink-ink);
 }

@@ -337,17 +337,19 @@
 .ivt-option {
   flex: 1;
   min-height: 52px;
-  border: 1px solid var(--accent);
+  border: 2px solid var(--accent);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
   transition:
     background 0.15s ease,
-    transform 0.06s ease;
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .ivt-option:hover {
@@ -355,5 +357,6 @@
 }
 
 .ivt-option:active {
-  transform: translateY(1px);
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }

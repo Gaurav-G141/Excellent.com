@@ -1,15 +1,18 @@
+/* Scenario card — a printed "feature story" in the math zine: chunky display
+   headline, a pull-quote for the given, and a numbered column of steps. */
 .sc-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .sc-title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 19px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
   color: var(--text-h, var(--ink));
 }
 
@@ -20,18 +23,38 @@
   color: var(--text, var(--ink));
 }
 
+/* The given/known block as a pull-quote: bold 2px rule on the left, surface-2
+   fill, big mono value, with a sun highlighter overprint swiped behind it. */
 .sc-given {
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: var(--radius, 12px);
-  background: var(--surface-2);
+  position: relative;
+  isolation: isolate;
+  margin: 2px 0;
+  padding: 14px 16px 14px 18px;
   border: 1px solid var(--border);
+  border-left: var(--rule) solid;
+  border-left-width: 5px;
+  border-radius: 0 var(--radius-sm, 10px) var(--radius-sm, 10px) 0;
+  background: var(--surface-2);
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
   color: var(--text-h, var(--ink));
-  text-align: center;
+  text-align: left;
   white-space: pre-line;
+}
+
+.sc-given::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 5px;
+  right: 14%;
+  top: 58%;
+  height: 0.7em;
+  background: var(--overprint);
+  mix-blend-mode: multiply;
 }
 
 .sc-steps {
@@ -40,27 +63,45 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .sc-step {
-  border: 1px solid var(--border);
-  border-radius: var(--radius, 12px);
-  padding: 14px;
+  position: relative;
+  isolation: isolate;
+  border: 2px solid var(--rule);
+  border-radius: var(--radius, 14px);
+  padding: 14px 16px;
   background: var(--surface);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Completed steps go quiet: thin border, muted paper, no shadow. */
 .sc-step--done {
-  opacity: 0.72;
+  border: 1px solid var(--border);
   background: var(--surface-2);
+  box-shadow: none;
+  opacity: 0.78;
 }
 
+/* Active step gets a sun overprint highlight swiped across the top rather than
+   a soft accent ring — printed emphasis, not a glow. */
 .sc-step--active {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--rule);
+  box-shadow: var(--shadow-md);
+}
+
+.sc-step--active::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto 0;
+  height: 42px;
+  background: var(--overprint);
+  mix-blend-mode: multiply;
 }
 
 .sc-step-head {
@@ -69,19 +110,24 @@
   justify-content: space-between;
 }
 
+/* Printed registration label for the step number. */
 .sc-step-num {
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
+.sc-step--active .sc-step-num {
+  color: var(--text-h, var(--ink));
+}
+
 .sc-step-check {
-  color: var(--accent);
+  color: var(--green);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .sc-step-q {
@@ -104,25 +150,25 @@
   gap: 12px;
 }
 
+/* Printed input: paper field, ink hairline, accent focus ring. */
 .sc-input {
   width: 100%;
   box-sizing: border-box;
   padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius, 12px);
-  background: var(--surface);
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-sm, 10px);
+  background: var(--paper, var(--surface));
   color: var(--text-h, var(--ink));
   font-family: var(--font-mono);
   font-size: 16px;
   transition:
-    border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
 
 .sc-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .sc-clarify-row {
@@ -133,10 +179,11 @@
   margin: -2px 0 2px;
 }
 
+/* Secondary "clarify" action — a quieter printed pill. */
 .sc-clarify {
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
+  border: 1.5px solid var(--rule);
+  background: var(--surface);
+  color: var(--text-h, var(--ink));
   border-radius: 999px;
   padding: 6px 14px;
   font-family: var(--font-mono);
@@ -144,14 +191,13 @@
   font-weight: 600;
   cursor: pointer;
   transition:
-    border-color 0.15s ease,
+    background 0.15s ease,
     color 0.15s ease,
     opacity 0.15s ease;
 }
 
 .sc-clarify:hover:not(:disabled) {
-  border-color: var(--text-muted);
-  color: var(--text-h, var(--ink));
+  background: var(--surface-2);
 }
 
 .sc-clarify:disabled {
@@ -175,23 +221,22 @@
   width: 100%;
   box-sizing: border-box;
   padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius, 12px);
-  background: var(--surface);
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-sm, 10px);
+  background: var(--paper, var(--surface));
   color: var(--text-h, var(--ink));
-  font-family: var(--font-body, inherit);
+  font-family: var(--font-sans, inherit);
   font-size: 15px;
   line-height: 1.5;
   resize: vertical;
   transition:
-    border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
 
 .sc-textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .sc-textarea:disabled {
@@ -204,10 +249,12 @@
   gap: 10px;
 }
 
+/* Printed answer pills: ink outline on paper; selected flips to an accent fill
+   with paper-coloured text. */
 .sc-choice {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
+  border: 2px solid var(--rule);
+  background: var(--paper, var(--surface));
+  color: var(--text-h, var(--ink));
   border-radius: 999px;
   padding: 10px 18px;
   font-family: var(--font-mono);
@@ -215,43 +262,56 @@
   font-weight: 600;
   cursor: pointer;
   transition:
+    transform 0.12s ease,
     background 0.15s ease,
-    border-color 0.15s ease,
     color 0.15s ease;
 }
 
 .sc-choice:hover {
-  border-color: var(--text-muted);
+  background: var(--surface-2);
 }
 
-.sc-choice--selected {
+.sc-choice--selected,
+.sc-choice--selected:hover {
   background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  border-color: var(--rule);
+  color: var(--paper, #fff);
 }
 
+/* The check / submit action as a bold printed stamp: spot-ink fill, ink
+   outline, hard offset shadow, and a small lift on hover. */
 .sc-check {
   align-self: flex-start;
-  border: none;
+  border: 2px solid var(--rule);
   background: var(--accent);
-  color: #fff;
-  border-radius: 999px;
+  color: var(--paper, #fff);
+  border-radius: var(--radius-sm, 10px);
   padding: 12px 26px;
   font-family: var(--font-display);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
+  box-shadow: var(--shadow-md);
   transition:
-    filter 0.15s ease,
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
     opacity 0.15s ease;
 }
 
 .sc-check:hover:not(:disabled) {
-  filter: brightness(1.05);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 rgba(22, 22, 29, 0.18);
+}
+
+.sc-check:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .sc-check:disabled {
   opacity: 0.5;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -261,13 +321,27 @@
   color: var(--text-muted);
 }
 
+/* Solved: celebratory green note, printed with an ink outline. */
 .sc-solved {
   margin: 0;
-  padding: 12px 14px;
-  border-radius: var(--radius, 12px);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  padding: 14px 16px;
+  border: 2px solid var(--green);
+  border-radius: var(--radius, 14px);
+  background: var(--green-bg);
+  box-shadow: var(--shadow-sm);
   font-size: 15px;
   line-height: 1.55;
   color: var(--text-h, var(--ink));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-check,
+  .sc-choice {
+    transition: none;
+  }
+
+  .sc-check:hover:not(:disabled),
+  .sc-check:active:not(:disabled) {
+    transform: none;
+  }
 }

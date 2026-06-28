@@ -28,17 +28,21 @@
      (the only interactive part of this overlay must stay near the bottom). */
   max-height: 70vh;
   overflow-y: auto;
-  background: var(--surface);
-  border-radius: 20px 20px 0 0;
+  /* Lands as a printed stamp: tinted paper + bold ink-weight outline in the
+     feedback color, hard offset shadow, stamped-in on appear. */
+  background: var(--error-bg);
+  border-radius: var(--radius) var(--radius) 0 0;
   padding: 24px 20px 32px;
-  border-top: 3px solid var(--error);
+  border: 3px solid var(--error);
+  border-bottom: none;
   box-sizing: border-box;
   box-shadow: var(--shadow-pop);
-  animation: feedback-rise 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: feedbackpopup-stamp-in 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
 .feedback-sheet--correct {
-  border-top-color: var(--accent);
+  background: var(--green-bg);
+  border-color: var(--green);
 }
 
 .feedback-sheet p {
@@ -51,32 +55,37 @@
 .feedback-dismiss {
   width: 100%;
   min-height: 48px;
-  border: none;
+  border: 2px solid var(--rule);
   border-radius: var(--radius-sm);
-  background: var(--accent);
+  background: var(--green);
   color: #fff;
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   transition:
     background 0.15s ease,
-    transform 0.06s ease;
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .feedback-dismiss:hover {
-  background: var(--accent-hover);
+  background: color-mix(in srgb, var(--green) 88%, black);
 }
 
 .feedback-dismiss:active {
-  transform: translateY(1px);
+  transform: translate(2px, 2px);
+  box-shadow: none;
 }
 
 .feedback-sheet:not(.feedback-sheet--correct) .feedback-dismiss {
   background: var(--surface);
   color: var(--text-h);
-  border: 1px solid var(--border);
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.feedback-sheet:not(.feedback-sheet--correct) .feedback-dismiss:hover {
+  background: var(--surface-2);
 }
 
 @keyframes feedback-fade {
@@ -88,13 +97,14 @@
   }
 }
 
-@keyframes feedback-rise {
+/* Stamp-in: the sheet presses onto the page from slightly below + scaled down. */
+@keyframes feedbackpopup-stamp-in {
   from {
-    transform: translateY(16px);
-    opacity: 0.6;
+    transform: translateY(18px) scale(0.96);
+    opacity: 0.4;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }

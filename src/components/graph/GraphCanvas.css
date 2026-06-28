@@ -4,6 +4,8 @@
   max-width: 320px;
   margin: 0 auto;
   background: var(--surface);
+  /* Printed plot frame. */
+  border: 1.5px solid var(--border);
   border-radius: 12px;
 }
 
@@ -26,24 +28,23 @@
 }
 
 .graph-grid {
-  stroke: var(--code-bg);
+  stroke: var(--grid-line);
   stroke-width: 1;
 }
 
 .graph-grid--minor {
-  stroke: var(--border);
+  stroke: var(--grid-line);
   stroke-width: 0.75;
-  opacity: 0.55;
 }
 
 .graph-grid--major {
-  stroke: var(--text-muted);
-  stroke-width: 1.25;
-  opacity: 0.35;
+  stroke: var(--grid-line);
+  stroke-width: 1.5;
 }
 
+/* Axes are printed in bold ink. */
 .graph-axis {
-  stroke: var(--border);
+  stroke: var(--ink);
   stroke-width: 1.5;
 }
 
@@ -106,8 +107,8 @@
 }
 
 .graph-point-ring.correct {
-  fill: rgba(34, 197, 94, 0.15);
-  stroke: #16a34a;
+  fill: var(--green-bg);
+  stroke: var(--green);
   stroke-width: 3;
 }
 
@@ -151,7 +152,7 @@
 
 .graph-axis-label {
   font-size: 10px;
-  fill: var(--text-muted);
+  fill: var(--ink);
   pointer-events: none;
 }
 

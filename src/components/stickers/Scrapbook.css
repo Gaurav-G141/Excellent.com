@@ -1,10 +1,21 @@
 .scrapbook-board {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 28px 20px;
+  gap: 26px 18px;
   justify-items: center;
   align-items: start;
-  padding: 16px 4px 48px;
+  padding: 20px 6px 52px;
+  /* The board itself is a scrapbook PAGE: warm paper with a faint riso dot
+     halftone so notes read as pasted onto printed newsprint. */
+  background-color: var(--paper);
+  background-image: radial-gradient(
+    var(--border) 0.9px,
+    transparent 0.9px
+  );
+  background-size: 14px 14px;
+  border: 2px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
   animation: scrapbook-fade-in 500ms ease-out both;
 }
 
@@ -13,37 +24,81 @@
   height: 120px;
 }
 
-/* ── Sticky note ──────────────────────────────────────────────────────────── */
+/* ── Riso sticker note ────────────────────────────────────────────────────── */
 .sticker-note {
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--note-bg, #fff3b0);
-  border-radius: 3px;
-  box-shadow:
-    0 1px 1px rgba(20, 30, 60, 0.08),
-    0 6px 12px rgba(20, 30, 60, 0.18);
-  /* Pop-in when the note first appears (the API request has been kicked off). */
-  animation: sticker-note-pop 320ms cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+  background: var(--note-bg, var(--sun));
+  /* Bold die-cut ink outline + hard offset shadow = printed sticker. */
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  /* Resting tilt — survives prefers-reduced-motion (no animation there). */
+  transform: rotate(var(--sticker-rot, 0deg));
+  /* Stamped pop-in when the note first appears (request kicked off). */
+  animation: sticker-note-pop 360ms cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
 }
 
-/* A subtle folded bottom-right corner so it reads as a paper sticky note. */
+/* Translucent "tape" strip holding the sticker to the page. Its ink multiplies
+   over whatever sits beneath it, so it overprints like real risograph. */
+.sticker-note::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  top: -10px;
+  left: 50%;
+  width: 48%;
+  height: 20px;
+  transform: translateX(-50%) rotate(-4deg);
+  background: var(--overprint);
+  mix-blend-mode: multiply;
+  border-left: 1px dashed rgba(22, 22, 29, 0.18);
+  border-right: 1px dashed rgba(22, 22, 29, 0.18);
+}
+
+/* Folded bottom-right corner — riso ink tint so it reads as peeling paper. */
 .sticker-note::after {
   content: '';
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 22%;
-  height: 22%;
+  width: 24%;
+  height: 24%;
   background: linear-gradient(
     135deg,
     transparent 0%,
-    transparent 48%,
-    var(--note-edge, #f4e08a) 50%,
-    var(--note-bg, #fff3b0) 100%
+    transparent 46%,
+    var(--note-edge, var(--surface-2)) 48%,
+    var(--note-bg, var(--sun)) 100%
   );
-  border-bottom-right-radius: 3px;
-  filter: drop-shadow(-1px -1px 1px rgba(20, 30, 60, 0.12));
+  border-bottom-right-radius: var(--radius-sm);
+  mix-blend-mode: multiply;
+  filter: drop-shadow(-1px -1px 0 rgba(22, 22, 29, 0.18));
+}
+
+/* Varied per-slot tilt + tape angle so the page reads as a hand-pasted collage.
+   Applied to the note (cell nth-child) since each cell holds one note. */
+.scrapbook-cell:nth-child(4n + 1) .sticker-note {
+  --sticker-rot: -5deg;
+}
+.scrapbook-cell:nth-child(4n + 2) .sticker-note {
+  --sticker-rot: 3deg;
+}
+.scrapbook-cell:nth-child(4n + 3) .sticker-note {
+  --sticker-rot: -2deg;
+}
+.scrapbook-cell:nth-child(4n) .sticker-note {
+  --sticker-rot: 4deg;
+}
+
+.scrapbook-cell:nth-child(3n + 2) .sticker-note::before {
+  transform: translateX(-50%) rotate(5deg);
+  width: 40%;
+}
+.scrapbook-cell:nth-child(3n) .sticker-note::before {
+  transform: translateX(-46%) rotate(-7deg);
+  width: 44%;
 }
 
 /* ── Drawn sticker image ──────────────────────────────────────────────────── */
@@ -55,7 +110,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 3px;
+  border-radius: calc(var(--radius-sm) - 2px);
   opacity: 0;
   transform: scale(0.9);
   transition:
@@ -84,7 +139,7 @@
 
 .sticker-note__scribble path {
   fill: none;
-  stroke: rgba(40, 48, 70, 0.6);
+  stroke: var(--ink);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -103,37 +158,48 @@
 }
 
 .sticker-note__pencil-body {
-  fill: #5b6472;
+  fill: var(--ink);
 }
 
 .sticker-note__pencil-tip {
-  fill: #f4c790;
+  fill: var(--sun);
 }
 
 .sticker-note__pencil-eraser {
-  fill: #ef9ab0;
+  fill: var(--pink);
 }
 
-/* ── Empty state ──────────────────────────────────────────────────────────── */
+/* ── Empty state — a printed "blank scrapbook" invite ─────────────────────── */
 .scrapbook-empty {
   text-align: center;
   max-width: 420px;
   margin: 32px auto;
-  padding: 32px 24px;
-  border: 1px dashed var(--border);
-  border-radius: 16px;
-  background: var(--surface-2);
+  padding: 36px 28px;
+  border: 2px dashed var(--rule);
+  border-radius: var(--radius);
+  background-color: var(--paper);
+  background-image: radial-gradient(
+    var(--border) 0.9px,
+    transparent 0.9px
+  );
+  background-size: 14px 14px;
+  box-shadow: var(--shadow-sm);
 }
 
 .scrapbook-empty__icon {
+  display: inline-block;
   font-size: 40px;
   line-height: 1;
   margin-bottom: 12px;
+  color: var(--pink-ink);
+  transform: rotate(-6deg);
 }
 
 .scrapbook-empty h3 {
   margin: 0 0 8px;
   font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--text-h);
 }
 
@@ -142,6 +208,10 @@
   color: var(--text-muted);
   font-size: 14px;
   line-height: 1.5;
+}
+
+.scrapbook-empty p strong {
+  color: var(--accent);
 }
 
 @keyframes sticker-scribble-draw {
@@ -182,13 +252,16 @@
 }
 
 @keyframes sticker-note-pop {
-  from {
+  0% {
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(0.6) rotate(calc(var(--sticker-rot, 0deg) - 8deg));
   }
-  to {
+  60% {
+    transform: scale(1.06) rotate(calc(var(--sticker-rot, 0deg) + 2deg));
+  }
+  100% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) rotate(var(--sticker-rot, 0deg));
   }
 }
 
@@ -207,6 +280,11 @@
   .sticker-note__img {
     animation: none;
     transition: none;
+  }
+
+  /* Keep the resting tilt even without the pop-in animation. */
+  .sticker-note {
+    transform: rotate(var(--sticker-rot, 0deg));
   }
 
   .sticker-note__img {

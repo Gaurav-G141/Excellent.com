@@ -1,8 +1,13 @@
 /* The Applications stage hosts a text word-problem card rather than an
-   interactive slide, so it doesn't need the tall min-height the slides use. */
+   interactive slide, so it doesn't need the tall min-height the slides use.
+   Styled as a clean printed sheet: warm paper with a bold ink rule frame. */
 .applications-stage {
   min-height: auto;
   padding: 22px 18px 26px;
+  background: var(--paper, var(--surface));
+  border: 2px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
 }
 
 /* Shown while the next problem is being fetched + reworded by the AI. */
@@ -17,16 +22,21 @@
 
 .applications-loading p {
   margin: 0;
-  opacity: 0.65;
-  font-size: 0.95rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
+/* Riso-ink registration spinner. */
 .applications-spinner {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: 3px solid rgba(108, 92, 231, 0.25);
-  border-top-color: #6c5ce7;
+  border: 3px solid var(--accent-bg, rgba(41, 69, 224, 0.12));
+  border-top-color: var(--accent);
   animation: applications-spin 0.8s linear infinite;
 }
 

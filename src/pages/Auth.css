@@ -1,52 +1,84 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Auth — the COVER of a hand-printed math zine.
+   Newsprint paper + graph-paper grid substrate, one riso spot ink (blue),
+   chunky Bricolage wordmark, printed STAMP button, hard-offset shadows.
+   ───────────────────────────────────────────────────────────────────────── */
+
 .auth-page {
   min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  background-color: var(--surface);
+  /* Graph-paper substrate printed onto warm newsprint. */
+  background-color: var(--paper);
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-size: 22px 22px;
 }
 
 .auth-card {
+  position: relative;
   width: 100%;
   max-width: 400px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 2px solid var(--rule);
   border-radius: var(--radius);
-  padding: 32px 26px;
+  padding: 34px 28px 30px;
   text-align: left;
-  box-shadow: var(--shadow-md);
+  /* Big printed offset — the cover sits proud of the page. */
+  box-shadow: 5px 5px 0 var(--rule);
 }
 
-/* Brand eyebrow so the sign-in screen still reads as Excellent */
+/* A sun-yellow registration block overprinting the cover's top corner —
+   pure decoration, multiplies into the paper like a second pass on the press. */
+.auth-card::after {
+  content: '';
+  position: absolute;
+  top: -9px;
+  right: 22px;
+  width: 46px;
+  height: 18px;
+  background: var(--overprint);
+  mix-blend-mode: multiply;
+  border: 2px solid var(--rule);
+  border-radius: 3px;
+  transform: rotate(-5deg);
+  pointer-events: none;
+}
+
+/* Brand eyebrow / masthead so the sign-in screen still reads as Excellent. */
 .auth-card::before {
   content: 'Excellent\2032';
-  display: block;
+  display: inline-block;
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 18px;
+  color: var(--paper);
+  background: var(--accent);
+  padding: 4px 10px;
+  border: 2px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
 }
 
 .auth-card h1 {
   font-family: var(--font-display);
-  font-size: 29px;
-  font-weight: 600;
-  margin: 0 0 8px;
-  letter-spacing: -0.025em;
+  font-size: 40px;
+  font-weight: 800;
+  margin: 0 0 10px;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
   color: var(--ink);
 }
 
 .auth-subtitle {
   color: var(--text-muted);
-  margin: 0 0 24px;
+  margin: 0 0 26px;
   font-size: 16px;
   line-height: 1.5;
 }
@@ -62,31 +94,42 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .auth-form label {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-h);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
+/* Printed form fields: 2px ink outline on paper, accent focus ring. */
 .auth-form input {
   font: inherit;
+  font-family: var(--font-sans);
+  text-transform: none;
+  letter-spacing: 0;
   padding: 12px 14px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--rule);
   border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text-h);
-  min-height: 46px;
+  min-height: 48px;
   box-sizing: border-box;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
     background 0.15s ease;
+}
+
+.auth-form input::placeholder {
+  color: var(--text-muted);
 }
 
 .auth-form input:focus {
@@ -96,35 +139,45 @@
   box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
+/* Primary action as a bold printed STAMP button. */
 .auth-button {
   margin-top: 8px;
-  min-height: 48px;
-  border: none;
+  min-height: 50px;
+  border: 2px solid var(--rule);
   border-radius: var(--radius-sm);
   background: var(--accent);
   color: #fff;
-  font: inherit;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   transition:
     background 0.15s ease,
-    transform 0.06s ease;
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .auth-button:hover:not(:disabled) {
   background: var(--accent-hover);
+  /* Lift off the page — shadow grows. */
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--rule);
 }
 
 .auth-button:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .auth-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  box-shadow: var(--shadow-sm);
 }
 
+/* Error as a printed correction slip. */
 .auth-error {
   margin: 0;
   padding: 11px 13px;
@@ -132,22 +185,27 @@
   background: var(--error-bg);
   color: var(--error);
   font-size: 14px;
-  border: 1px solid color-mix(in srgb, var(--error) 22%, transparent);
+  font-weight: 500;
+  border: 2px solid var(--error);
 }
 
 .auth-footer {
-  margin: 24px 0 0;
+  margin: 26px 0 0;
+  padding-top: 20px;
   text-align: center;
   font-size: 14px;
   color: var(--text-muted);
+  /* Bold rule divides the footer from the form. */
+  border-top: 2px solid var(--rule);
 }
 
 .auth-footer a {
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
+  box-shadow: inset 0 -2px 0 var(--accent-ring);
 }
 
 .auth-footer a:hover {
-  text-decoration: underline;
+  box-shadow: inset 0 -0.7em 0 var(--accent-ring);
 }

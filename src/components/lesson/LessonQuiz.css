@@ -9,7 +9,7 @@
 }
 
 .quiz-score {
-  color: var(--accent, #6c5ce7);
+  color: var(--pink-ink);
 }
 
 .quiz-result {

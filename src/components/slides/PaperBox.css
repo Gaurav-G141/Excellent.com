@@ -284,23 +284,29 @@
   width: 100%;
   text-align: left;
   padding: 12px 14px;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--rule);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-h);
   font: inherit;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, background 0.15s ease,
+    transform 0.08s ease, box-shadow 0.08s ease;
 }
 
 .pb-mc-option:hover:not(:disabled) {
-  border-color: var(--accent);
   background: var(--accent-bg);
 }
 
+.pb-mc-option:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
 .pb-mc-option--correct {
-  border-color: var(--secant-line);
-  background: rgba(15, 148, 136, 0.12);
+  border-color: var(--green);
+  background: var(--green-bg);
 }
 
 .pb-mc-option:disabled {

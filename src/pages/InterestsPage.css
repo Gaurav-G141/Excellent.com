@@ -9,19 +9,28 @@
   gap: 8px;
 }
 
+/* Printed input — paper with a bold ink outline and a riso-blue focus ring. */
 .interests-input {
   flex: 1;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  border-radius: 10px;
+  border: 2px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
   font-size: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.interests-input::placeholder {
+  color: var(--text-muted);
 }
 
 .interests-input:focus {
   outline: none;
-  border-color: var(--accent, var(--text-muted));
+  border-color: var(--accent);
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 3px var(--accent-ring);
 }
 
 .interests-add {
@@ -32,13 +41,14 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
-  color: var(--danger, #c0392b);
+  color: var(--error, #c0392b);
 }
 
 .interests-count {
   margin: 0;
   font-family: var(--font-mono);
   font-size: 12px;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
 }
 
@@ -51,39 +61,78 @@
 .interests-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px 14px;
+  padding: 4px 2px;
 }
 
+/* ── Peelable printed sticker chips ───────────────────────────────────────── */
 .interests-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--rule);
   background: var(--surface);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 6px 8px 6px 14px;
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 7px 9px 7px 14px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+  transform: rotate(var(--chip-rot, 0deg));
+  transition:
+    transform 140ms ease-out,
+    box-shadow 140ms ease-out;
 }
 
+/* Collage of riso spot inks — fills only; text stays ink-dark for contrast. */
+.interests-chip:nth-child(4n + 1) {
+  --chip-rot: -3deg;
+  background: var(--accent-bg);
+}
+.interests-chip:nth-child(4n + 2) {
+  --chip-rot: 2.5deg;
+  background: var(--pink-bg);
+}
+.interests-chip:nth-child(4n + 3) {
+  --chip-rot: -1.5deg;
+  background: var(--green-bg);
+}
+.interests-chip:nth-child(4n) {
+  --chip-rot: 3deg;
+  background: var(--overprint);
+}
+
+/* Straighten and lift on hover/focus-within so labels stay easy to read. */
+.interests-chip:hover,
+.interests-chip:focus-within {
+  transform: rotate(0deg) translateY(-1px);
+  box-shadow: var(--shadow-pop), var(--shadow-md);
+}
+
+/* Remove control styled as a peeling sticker corner. */
 .interests-chip-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 20px;
   height: 20px;
-  border: none;
-  border-radius: 999px;
-  background: var(--surface-2, rgba(0, 0, 0, 0.06));
-  color: var(--text-muted);
+  border: 2px solid var(--rule);
+  border-radius: 4px 8px 4px 8px;
+  background: var(--paper);
+  color: var(--ink);
   font-size: 11px;
   cursor: pointer;
   line-height: 1;
+  transition:
+    background 120ms ease-out,
+    color 120ms ease-out,
+    transform 120ms ease-out;
 }
 
 .interests-chip-remove:hover {
-  color: var(--text-h);
+  background: var(--pink-bg);
+  color: var(--pink-ink);
+  transform: rotate(-8deg);
 }
 
 .interests-actions {
@@ -99,5 +148,22 @@
 }
 
 .interests-status--error {
-  color: var(--danger, #c0392b);
+  color: var(--error, #c0392b);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interests-chip,
+  .interests-chip-remove {
+    transition: none;
+  }
+
+  /* Keep the resting tilt; just drop the hover straighten motion. */
+  .interests-chip:hover,
+  .interests-chip:focus-within {
+    transform: rotate(var(--chip-rot, 0deg));
+  }
+
+  .interests-chip-remove:hover {
+    transform: none;
+  }
 }

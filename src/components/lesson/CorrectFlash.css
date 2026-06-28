@@ -7,12 +7,15 @@
   border-radius: 12px;
 }
 
+/* Correct answers wash the slide in a riso-green overprint: the ink multiplies
+   into the paper/illustration beneath instead of painting flatly over it. */
 .correct-flash-wrap--active::after {
   content: '';
   position: absolute;
   inset: -8px;
-  border-radius: 16px;
+  border-radius: var(--radius);
   background: var(--success-flash);
+  mix-blend-mode: multiply;
   pointer-events: none;
   opacity: 0;
   animation: correct-flash 0.7s ease-out forwards;

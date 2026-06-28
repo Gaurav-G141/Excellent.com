@@ -2,6 +2,7 @@
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  background: var(--paper);
 }
 
 .lesson-save-error {
@@ -18,16 +19,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+  /* Bold printed rule instead of a hairline divider. */
+  border-bottom: 2px solid var(--rule);
 }
 
 .lesson-title {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-h);
-  font-size: 16px;
+  font-size: 17px;
   text-align: center;
   flex: 1;
 }
@@ -63,33 +66,60 @@
   pointer-events: none;
 }
 
+/* Exit control reads as a printed stamp/pill: paper + 2px ink outline,
+   hard offset shadow, slight rotation. */
 .lesson-close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  color: var(--text-muted);
+  min-width: 40px;
+  height: 36px;
+  padding: 0 12px;
+  flex-shrink: 0;
+  color: var(--ink);
   text-decoration: none;
-  font-size: 18px;
-  border-radius: 10px;
+  font-size: 16px;
+  line-height: 1;
+  background: var(--surface);
+  border: 2px solid var(--rule);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  transform: rotate(2.5deg);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
 }
 
 .lesson-close:hover {
-  background: var(--surface-2);
-  color: var(--text-h);
+  background: var(--sun);
+  color: var(--ink);
+  transform: rotate(0deg);
 }
 
+.lesson-close:active {
+  transform: translate(1px, 1px) rotate(0deg);
+  box-shadow: none;
+}
+
+/* Progress reads as a printed track: paper + 2px ink outline, with a fluoro
+   fill that grows as the learner advances. */
 .lesson-progress {
-  height: 6px;
-  background: var(--border);
+  height: 12px;
+  margin: 10px 16px 2px;
+  background: var(--paper);
+  border: 2px solid var(--rule);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .lesson-progress-fill {
   height: 100%;
-  background: var(--accent);
-  border-radius: 0 999px 999px 0;
-  transition: width 0.3s ease;
+  background: var(--pink);
+  border-radius: 999px;
+  transition: width 0.45s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .lesson-slide {
@@ -120,17 +150,18 @@
   margin-top: auto;
   width: 100%;
   min-height: 48px;
-  border: none;
+  border: 2px solid var(--rule);
   border-radius: var(--radius-sm);
   background: var(--accent);
   color: #fff;
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   transition:
     background 0.15s ease,
-    transform 0.06s ease,
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
     opacity 0.15s ease;
 }
 
@@ -139,7 +170,8 @@
 }
 
 .slide-cta:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translate(2px, 2px);
+  box-shadow: none;
 }
 
 .slide-cta:disabled {
@@ -243,16 +275,18 @@
 .slide-secondary-cta {
   width: 100%;
   min-height: 46px;
-  border: 1px solid var(--accent);
+  border: 2px solid var(--rule);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--accent);
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
   transition:
     background 0.15s ease,
-    transform 0.06s ease;
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .slide-secondary-cta:hover:not(:disabled) {
@@ -260,7 +294,8 @@
 }
 
 .slide-secondary-cta:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .slide-secondary-cta:disabled {

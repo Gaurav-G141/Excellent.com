@@ -1,37 +1,63 @@
 :root {
-  /* Type — Space Grotesk display, IBM Plex Sans body, IBM Plex Mono for math/data */
-  --font-display: 'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif;
+  /* Type — Bricolage Grotesque display, IBM Plex Sans body, IBM Plex Mono for math/data */
+  --font-display: 'Bricolage Grotesque', 'Space Grotesk', system-ui, sans-serif;
   --font-sans: 'IBM Plex Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
-  /* Color — "graphing notebook": cool paper, indigo plot, coral + teal curves */
-  --ink: #131a26;
-  --text: #3f4a5c;
-  --text-h: #131a26;
-  --text-muted: #6b7689;
-  --bg: #edf0f6;
-  --surface: #ffffff;
-  --surface-2: #f5f7fc;
-  --border: #e2e7f0;
-  --code-bg: #eef1f8;
+  /* Color — "math zine / risograph": warm newsprint paper, bold riso spot inks.
+     Spot inks: Riso Blue (structure), Fluoro Pink (energy/curve/rewards),
+     Riso Green (secondary curve / correct), Sun Yellow (highlight/stickers). */
 
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-bg: rgba(79, 70, 229, 0.1);
-  --accent-ring: rgba(79, 70, 229, 0.4);
+  /* Ink + paper */
+  --ink: #16161d; /* rich riso black — body + headings */
+  --ink-2: #4a4a57; /* muted ink */
+  --text: #3a3630; /* warm body text */
+  --text-h: #16161d; /* headings */
+  --text-muted: #6e6656; /* warm muted */
 
-  --tangent-arrow: #f0612f;
-  --secant-line: #0f9488;
+  --paper: #f2ede1; /* the page */
+  --bg: #e3d9c4; /* kraft "desk" behind the 480px card */
+  --surface: #fcfaf4; /* cards — lightest */
+  --surface-2: #ece3d3; /* subtle fills */
+  --border: #d9cdb6; /* hairline borders */
+  --rule: #16161d; /* bold printed rules */
+  --code-bg: #ece3d3;
 
-  --success-flash: rgba(22, 163, 74, 0.22);
-  --error: #dc2626;
-  --error-bg: rgba(220, 38, 38, 0.08);
+  /* Riso Blue — structure, links, primary actions */
+  --accent: #2945e0;
+  --accent-hover: #1e34b8;
+  --accent-bg: rgba(41, 69, 224, 0.1);
+  --accent-ring: rgba(41, 69, 224, 0.4);
 
-  --radius: 16px;
-  --radius-sm: 12px;
-  --shadow-sm: 0 1px 2px rgba(20, 30, 60, 0.06);
-  --shadow-md: 0 10px 30px -16px rgba(20, 30, 60, 0.28);
-  --shadow-pop: 0 -8px 34px -12px rgba(20, 30, 60, 0.26);
+  /* Fluoro Pink — energy / live curve / rewards. FILLS & large shapes only. */
+  --pink: #ff4d8f;
+  --pink-ink: #d81e6a; /* contrast-safe pink for text/icons */
+  --pink-bg: rgba(255, 77, 143, 0.12);
+
+  /* Riso Green — secondary curve / correct */
+  --green: #00a35c;
+  --green-bg: rgba(0, 163, 92, 0.12);
+
+  /* Sun Yellow — highlight / streak / sticker pop / highlighter-swipe overprint */
+  --sun: #ffc23d;
+  --overprint: rgba(255, 194, 61, 0.6); /* highlighter ink, used with multiply */
+
+  /* Curves / feedback (kept names for backward-compat with component CSS) */
+  --tangent-arrow: #e83b7a; /* curve line — pink family */
+  --secant-line: #00a35c; /* curve line — green */
+  --success-flash: rgba(0, 163, 92, 0.22);
+  --error: #d8331f;
+  --error-bg: rgba(216, 51, 31, 0.1);
+
+  /* Graph substrate grid (previously undefined → grid was invisible) */
+  --grid-line: rgba(41, 69, 224, 0.07);
+
+  /* Shape — slightly tighter radii + printed offset shadows (sticker feel) */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-sm: 1.5px 1.5px 0 rgba(22, 22, 29, 0.12);
+  --shadow-md: 3px 3px 0 rgba(22, 22, 29, 0.14);
+  --shadow-pop: 0 -8px 34px -12px rgba(22, 22, 29, 0.24);
 
   font: 16px/1.55 var(--font-sans);
   color: var(--text);
@@ -53,14 +79,29 @@ body {
   background-color: var(--bg);
 }
 
+/* Paper grain — a low-opacity printed-newsprint texture over the whole viewport.
+   Pointer-events: none so it never intercepts clicks; sits above backgrounds but
+   below content via a low z-index on a fixed layer. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 #root {
+  position: relative;
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
   min-height: 100svh;
-  background: var(--surface);
+  background: var(--paper);
   box-shadow:
-    0 0 0 1px var(--border),
+    0 0 0 1.5px var(--ink),
     var(--shadow-md);
 }
 
@@ -68,10 +109,10 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-h);
   letter-spacing: -0.02em;
-  line-height: 1.15;
+  line-height: 1.12;
 }
 
 a {
@@ -90,6 +131,101 @@ select {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Zine utilities — shared design language for the parallel component work.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Real risograph overprint: overlapping inks multiply into a third color. */
+.overprint {
+  mix-blend-mode: multiply;
+}
+
+/* Small printed eyebrow / registration label (e.g. "ISSUE Nº 01"). */
+.zine-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Highlighter swipe — a sun-yellow overprint streak behind active/inline marks. */
+.zine-highlight {
+  position: relative;
+  isolation: isolate;
+}
+
+.zine-highlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--overprint);
+  mix-blend-mode: multiply;
+  transform-origin: left center;
+  animation: zine-swipe 0.35s ease-out both;
+}
+
+/* Printed status stamp — rotated, outlined, ink-on-paper. */
+.zine-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pink-ink);
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  transform: rotate(-4deg);
+  background: transparent;
+}
+
+/* A sticker that "stamps" onto the page on appear. */
+.zine-sticker {
+  box-shadow: var(--shadow-md);
+  animation: zine-stamp-in 0.32s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Keyframes
+   ───────────────────────────────────────────────────────────────────────── */
+
+@keyframes zine-stamp-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) rotate(-8deg);
+  }
+  60% {
+    transform: scale(1.06) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(var(--sticker-rot, 0deg));
+  }
+}
+
+@keyframes zine-swipe {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Curve "plots in" — drive a stroked SVG path's dashoffset to 0. The element
+   should set stroke-dasharray/​stroke-dashoffset to its own path length. */
+@keyframes zine-plot {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* Range sliders — the primary tactile control in lessons */
@@ -115,24 +251,22 @@ input[type='range']::-moz-range-track {
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  margin-top: -7px;
-  width: 20px;
-  height: 20px;
+  margin-top: -8px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: var(--accent);
-  border: 3px solid var(--surface);
-  box-shadow:
-    var(--shadow-sm),
-    0 0 0 1px var(--border);
+  background: var(--pink);
+  border: 2.5px solid var(--ink);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: var(--accent);
-  border: 3px solid var(--surface);
+  background: var(--pink);
+  border: 2.5px solid var(--ink);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
 }

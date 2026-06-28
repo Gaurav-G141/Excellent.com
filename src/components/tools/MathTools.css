@@ -1,30 +1,47 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   MathTools — the tab bar that switches the printed instruments. A segmented
+   control printed onto paper: 2px ink outline, the active tab stamped in.
+   ───────────────────────────────────────────────────────────────────────── */
+
 .math-tools-tabs {
   display: flex;
   gap: 6px;
-  margin-bottom: 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 4px;
+  margin-bottom: 16px;
+  padding: 5px;
+  background: var(--surface-2);
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-sm);
 }
 
 .math-tools-tab {
   flex: 1;
-  min-height: 36px;
-  border: none;
-  border-radius: 999px;
+  min-height: 38px;
+  border: 2px solid transparent;
+  border-radius: calc(var(--radius-sm) - 3px);
   background: transparent;
-  color: var(--text-h);
+  color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: 13px;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
+.math-tools-tab:hover:not(.math-tools-tab--active) {
+  color: var(--ink);
+}
+
+/* Active tab: stamped onto paper with an ink outline + hard offset. */
 .math-tools-tab--active {
   background: var(--surface);
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.12));
-  font-weight: 600;
+  border-color: var(--rule);
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
 }
 
 .math-tools-panel[hidden] {

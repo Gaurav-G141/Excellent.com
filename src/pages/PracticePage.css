@@ -1,13 +1,17 @@
+/* Practice + Applications page chrome, styled as a printed math zine: chunky
+   display intro, a clipped "worth reviewing" note, printed topic pills, and a
+   paper stage framed by a bold ink rule. */
 .practice-intro {
   margin-top: 4px;
 }
 
 .practice-intro h2 {
   font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ink);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text-h, var(--ink));
   margin: 0 0 6px;
 }
 
@@ -15,13 +19,17 @@
   margin: 0;
   font-size: 14px;
   color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
+/* "Worth reviewing" — a printed margin note: surface fill, a bold pink rule on
+   the left, and a sticker-style hard shadow. Pink is the single spot ink. */
 .practice-review {
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface-2, var(--surface));
+  border-left: 5px solid var(--pink);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -31,11 +39,11 @@
 .practice-review-title {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent, var(--text-h));
+  color: var(--pink-ink);
 }
 
 .practice-review-note {
@@ -50,25 +58,27 @@
   gap: 8px;
 }
 
+/* Printed mini-cards for each suggested concept. */
 .practice-review-chip {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  border-radius: 12px;
+  border: 1.5px solid var(--rule);
+  background: var(--paper, var(--surface));
+  color: var(--text-h, var(--ink));
+  border-radius: var(--radius-sm, 10px);
   padding: 8px 12px;
   cursor: pointer;
   text-align: left;
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
+    transform 0.12s ease,
+    background 0.15s ease;
 }
 
 .practice-review-chip:hover {
-  border-color: var(--accent, var(--text-muted));
+  background: var(--surface-2);
+  transform: translate(-1px, -1px);
 }
 
 .practice-review-chip-label {
@@ -88,12 +98,13 @@
   gap: 8px;
 }
 
+/* Printed eyebrow heading for each topic group. */
 .practice-group-title {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -104,10 +115,12 @@
   gap: 8px;
 }
 
+/* Printed topic pills: ink outline on paper; active flips to an accent fill
+   with paper-coloured text. */
 .practice-chip {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
+  border: 2px solid var(--rule);
+  background: var(--paper, var(--surface));
+  color: var(--text-h, var(--ink));
   border-radius: 999px;
   padding: 8px 14px;
   font-family: var(--font-mono);
@@ -116,22 +129,22 @@
   cursor: pointer;
   transition:
     background 0.15s ease,
-    border-color 0.15s ease,
     color 0.15s ease;
 }
 
 .practice-chip:hover {
-  border-color: var(--text-muted);
+  background: var(--surface-2);
 }
 
-.practice-chip--active {
+.practice-chip--active,
+.practice-chip--active:hover {
   background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  border-color: var(--rule);
+  color: var(--paper, #fff);
 }
 
 .practice-group--locked {
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
 .practice-locked-note {
@@ -144,6 +157,7 @@
   color: var(--text-h);
 }
 
+/* Locked panel: a printed "coming soon" sheet with a dashed ink rule. */
 .practice-locked {
   display: flex;
   flex-direction: column;
@@ -151,7 +165,7 @@
   text-align: center;
   gap: 8px;
   padding: 48px 24px;
-  border: 1px dashed var(--border);
+  border: 2px dashed var(--rule);
   border-radius: var(--radius);
   background: var(--surface);
 }
@@ -164,9 +178,10 @@
 .practice-locked h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-h, var(--ink));
 }
 
 .practice-locked p {
@@ -181,22 +196,26 @@
   color: var(--text-h);
 }
 
+/* Status line / difficulty readout as printed mono data. */
 .practice-meta {
   margin: 0;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
   color: var(--text-muted);
 }
 
 .practice-meta strong {
   color: var(--text-h);
+  font-weight: 700;
 }
 
-/* Reuses .lesson-slide for the inner slide layout; this adds the card frame. */
+/* The slide / card stage as a clean printed sheet framed by a bold ink rule. */
 .practice-stage {
-  border: 1px solid var(--border);
+  border: 2px solid var(--rule);
   border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  background: var(--paper, var(--surface));
+  box-shadow: var(--shadow-md);
   min-height: 56vh;
   padding: 20px 16px 24px;
 }
@@ -207,10 +226,11 @@
   padding-bottom: 12px;
 }
 
+/* Quiet printed "skip" pill. */
 .practice-skip {
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--rule);
   background: var(--surface);
-  color: var(--text-muted);
+  color: var(--text);
   border-radius: 999px;
   padding: 10px 20px;
   font-family: var(--font-mono);
@@ -225,4 +245,16 @@
 .practice-skip:hover {
   background: var(--surface-2);
   color: var(--text-h);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-review-chip,
+  .practice-chip,
+  .practice-skip {
+    transition: none;
+  }
+
+  .practice-review-chip:hover {
+    transform: none;
+  }
 }

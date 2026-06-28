@@ -1,3 +1,9 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Modal — a precision printed panel. Paper surface, bold 2px ink rule,
+   hard offset shadow, display-font title, close control as a small stamp.
+   Backdrop is a subtle ink wash.
+   ───────────────────────────────────────────────────────────────────────── */
+
 .tool-modal-overlay {
   position: fixed;
   inset: 0;
@@ -6,7 +12,8 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(20, 26, 38, 0.45);
+  /* Subtle ink wash over the page. */
+  background: rgba(22, 22, 29, 0.42);
   backdrop-filter: blur(2px);
 }
 
@@ -16,9 +23,10 @@
   max-height: calc(100svh - 40px);
   overflow-y: auto;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 2px solid var(--rule);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
+  /* Hard printed offset — the panel sits proud of the wash. */
+  box-shadow: 5px 5px 0 var(--rule);
   outline: none;
 }
 
@@ -27,40 +35,54 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--border);
+  padding: 15px 18px;
+  /* Bold rule under the masthead. */
+  border-bottom: 2px solid var(--rule);
+  background: var(--surface-2);
+  border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0;
 }
 
 .tool-modal-title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 
+/* Close control as a small printed stamp. */
 .tool-modal-close {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--rule);
+  border-radius: var(--radius-sm);
   background: var(--surface);
-  color: var(--text-h);
-  font-size: 15px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
   transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+    background 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .tool-modal-close:hover {
-  background: var(--surface-2);
-  border-color: var(--text-muted);
+  background: var(--pink);
+  color: var(--ink);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+
+.tool-modal-close:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .tool-modal-body {
