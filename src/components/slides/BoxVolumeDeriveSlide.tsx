@@ -22,16 +22,17 @@ interface Props {
 const QUESTION =
   'How would you find the corner cut x that makes the box hold the most? Describe your plan in a sentence or two.'
 const RUBRIC =
-  'A fully correct answer MUST describe BOTH steps of the method: (1) take the derivative of the volume function V(x), AND (2) set that derivative equal to zero (i.e. find where the slope / rate of change is zero) and solve for x to locate the critical point that gives the maximum volume. ' +
-  'Mark the answer INCORRECT if it only says to take the derivative without also explaining what to do with it — i.e. that it must be set equal to zero / used to find where the slope is zero / solved for x. ' +
-  'Vague answers such as "take the derivative of the volume", "use the derivative", or "differentiate V(x)" are NOT sufficient on their own and must be marked incorrect. Be strict and specific.'
+  'Grade VERY LENIENTLY — accept the core idea, in any words, however informal. The answer is CORRECT as long as it shows the learner knows the plan involves the derivative / slope of the volume, OR finding where that slope is zero / flat, OR locating the top / peak / maximum of V(x). ' +
+  'Any of these alone is enough — for example "take the derivative", "use the derivative of the volume", "find where the slope is zero", "find the maximum of V(x)", or "where the volume stops increasing" should ALL be marked correct. ' +
+  'Only mark it INCORRECT if the answer is unrelated, empty, or shows no understanding that the derivative / slope / maximum of the volume is what matters. When in doubt, mark it correct.'
 
-/** Local fallback used only when the AI grader is unavailable. */
+/** Local fallback used only when the AI grader is unavailable. Deliberately lenient. */
 function heuristicGrade(answer: string): boolean {
   const a = answer.toLowerCase()
   const mentionsMethod = /(deriv|slope|rate of change|d\/dx|v')/.test(a)
-  const mentionsZero = /(zero|= 0|equal 0|equals 0|flat|maximum|max|top|peak)/.test(a)
-  return answer.trim().length >= 12 && mentionsMethod && mentionsZero
+  const mentionsPeak = /(zero|= 0|equal 0|equals 0|flat|maximum|max|top|peak|highest|biggest|largest|most|stop)/.test(a)
+  // Accept any answer that gestures at the method OR the peak/maximum idea.
+  return answer.trim().length >= 4 && (mentionsMethod || mentionsPeak)
 }
 
 /** Static flat-sheet schematic with the corner cut labeled (no center label). */
@@ -156,6 +157,7 @@ export function BoxVolumeDeriveSlide({ slide, onCorrect }: Props) {
         question: QUESTION,
         rubric: RUBRIC,
         answer: response,
+        rigor: 'lenient',
       })
       const correct = verdict ? verdict.correct : heuristicGrade(response)
       if (correct) {
